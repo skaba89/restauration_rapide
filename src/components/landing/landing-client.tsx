@@ -5,6 +5,7 @@
 // Africa-First Restaurant Management System
 // ============================================
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Smartphone,
@@ -151,6 +152,12 @@ const mobileMoneyPartners = [
 ];
 
 export default function LandingPageClient() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* JSON-LD Structured Data */}
@@ -225,10 +232,10 @@ export default function LandingPageClient() {
                   Essai Gratuit 14 jours
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
-                <button className="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold border border-gray-200 hover:border-orange-300 transition-all group">
+                <Link href="/login" className="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold border border-gray-200 hover:border-orange-300 transition-all group">
                   <Play className="mr-2 w-5 h-5 text-orange-600" />
                   Voir la Démo
-                </button>
+                </Link>
               </motion.div>
 
               <motion.div variants={fadeInUp} className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-gray-500">
@@ -244,7 +251,7 @@ export default function LandingPageClient() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={mounted ? { opacity: 0, scale: 0.9 } : false}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
@@ -270,10 +277,14 @@ export default function LandingPageClient() {
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
-                      {['Commandes', 'Clients', 'Livraisons'].map((label) => (
-                        <div key={label} className="bg-gray-700/50 rounded-lg p-3">
-                          <p className="text-gray-400 text-xs">{label}</p>
-                          <p className="text-white font-semibold">{Math.floor(Math.random() * 50) + 20}</p>
+                      {[
+                        { label: 'Commandes', value: 47 },
+                        { label: 'Clients', value: 32 },
+                        { label: 'Livraisons', value: 28 }
+                      ].map((item) => (
+                        <div key={item.label} className="bg-gray-700/50 rounded-lg p-3">
+                          <p className="text-gray-400 text-xs">{item.label}</p>
+                          <p className="text-white font-semibold">{item.value}</p>
                         </div>
                       ))}
                     </div>
@@ -290,7 +301,7 @@ export default function LandingPageClient() {
 
               {/* Floating elements */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
+                animate={mounted ? { y: [0, -10, 0] } : {}}
                 transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
                 className="absolute -right-4 top-1/4 bg-white rounded-xl shadow-xl p-3 border border-gray-100"
               >
@@ -306,7 +317,7 @@ export default function LandingPageClient() {
               </motion.div>
 
               <motion.div
-                animate={{ y: [0, 10, 0] }}
+                animate={mounted ? { y: [0, 10, 0] } : {}}
                 transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                 className="absolute -left-4 bottom-1/4 bg-white rounded-xl shadow-xl p-3 border border-gray-100"
               >

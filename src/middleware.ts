@@ -17,11 +17,13 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Allow static pages without i18n
-  if (pathname.startsWith('/login') || 
-      pathname.startsWith('/kitchen') || 
-      pathname.startsWith('/driver') || 
-      pathname.startsWith('/staff')) {
+  // Allow app routes without i18n
+  const appRoutes = ['/login', '/dashboard', '/pos', '/orders', '/menu', '/reservations', 
+                     '/customers', '/deliveries', '/drivers', '/analytics', '/settings',
+                     '/kitchen', '/driver', '/staff', '/admin', '/profile', '/api',
+                     '/customer'];
+  
+  if (appRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next();
   }
   

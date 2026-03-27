@@ -1521,3 +1521,410 @@ GET /api/receipts/ORD-2024-1234?demo=true&format=text
 - ✅ Mobile Money QR codes
 - ✅ Multi-language (French/English)
 - ✅ All lint checks pass
+
+---
+## Task ID: admin-interface-fixes - Admin Interface Bug Fixes
+
+### Work Task
+Fix all reported issues in the admin interface:
+1. Orders page - "Nouvelle commande" button doesn't work
+2. Menu page - Replace "Vins & Alcools" category with "Accompagnements"
+3. Customers page - "Ajouter un client" button doesn't work
+4. Deliveries page - "Assigner driver" doesn't work
+5. Drivers page - "Ajouter un driver" button doesn't work and can't delete drivers
+6. Settings page - All "Enregistrer" buttons don't work
+7. Notification icon in header doesn't work
+8. Menu photos - Need ability to upload photos for menu items
+9. Restaurant settings - Need restaurant name, logo, and multi-site management
+
+### Work Summary
+
+#### Files Modified:
+
+##### 1. `/src/app/(app)/orders/page.tsx` - Orders Page
+**Changes:**
+- Added complete "Nouvelle commande" modal with:
+  - Order type selection (Dine-in, Takeaway, Delivery)
+  - Customer information form (name, phone)
+  - Address field for delivery orders
+  - Table number for dine-in orders
+  - Menu item selector with category filtering
+  - Real-time order total calculation
+  - Order notes field
+- Added order creation functionality with toast notifications
+- Added status update with toast notifications
+- Added demo menu items for order creation
+
+##### 2. `/src/app/(app)/menu/page.tsx` - Menu Page
+**Changes:**
+- Replaced "Vins & Alcools" category with "Accompagnements" (using Salad icon)
+- Added photo upload functionality:
+  - File input with image validation (type and size)
+  - Base64 image preview
+  - Remove image option
+  - 5MB max file size
+- Added "Accompagnements" demo items (Riz Gras, Foutou Banane, Ignan Pimenté)
+- Added edit dialog with full CRUD functionality
+- Added duplicate menu item feature
+- Added delete menu item with confirmation
+- Improved form handling with validation
+
+##### 3. `/src/app/(app)/customers/page.tsx` - Customers Page
+**Changes:**
+- Added "Ajouter un client" modal with:
+  - Name, phone, email, address fields
+  - VIP status toggle
+  - Notes field
+- Added customer creation with toast notifications
+- Added edit customer functionality
+- Added view customer profile dialog
+- Added delete customer with confirmation
+- Added loyalty points management (add 100 points action)
+
+##### 4. `/src/app/(app)/deliveries/page.tsx` - Deliveries Page
+**Changes:**
+- Added driver assignment modal with:
+  - Available drivers list with ratings
+  - Driver location display
+  - Vehicle type indication
+  - Radio group selection
+- Added driver assignment with toast notifications
+- Added status update buttons (En transit, Livrée)
+- Added demo available drivers data
+
+##### 5. `/src/app/(app)/drivers/page.tsx` - Drivers Page
+**Changes:**
+- Added "Ajouter un driver" modal with:
+  - Name, phone, email fields
+  - Vehicle type selection (motorcycle, bicycle, car)
+  - Vehicle plate field
+  - Notes field
+- Added driver creation with toast notifications
+- Added edit driver functionality
+- Added view driver profile dialog
+- Added delete driver with confirmation
+
+##### 6. `/src/app/(app)/settings/page.tsx` - Settings Page
+**Changes:**
+- Added logo upload functionality:
+  - Camera icon placeholder
+  - File validation (type, 2MB max)
+  - Image preview with remove option
+- Added "Sites" tab for multi-site management:
+  - Site listing with status badges
+  - Add new site dialog
+  - Delete site functionality (protected main site)
+  - Edit site button
+- Made all "Enregistrer" buttons functional:
+  - General settings save
+  - Orders settings save
+  - Payments settings save
+  - Delivery settings save
+  - Notifications settings save
+- Added toast notifications for all save actions
+- Added loading state during save
+
+##### 7. `/src/components/layout/app-layout.tsx` - App Layout
+**Changes:**
+- Added notification panel (Popover component):
+  - Notification bell with unread count badge
+  - 5 demo notifications (orders, deliveries, reservations, alerts)
+  - Mark as read functionality
+  - Mark all as read button
+  - Clear individual notification
+  - Different notification types with icons and colors:
+    - Order (orange)
+    - Delivery (purple)
+    - Reservation (blue)
+    - Alert (red)
+  - "Voir toutes les notifications" button
+  - Unread notifications highlighted
+
+### Features Implemented:
+
+#### Orders Page:
+- ✅ New order modal with order type selection
+- ✅ Customer information form
+- ✅ Menu item selector with categories
+- ✅ Real-time total calculation
+- ✅ Order creation with validation
+
+#### Menu Page:
+- ✅ "Accompagnements" replaces "Vins & Alcools"
+- ✅ Photo upload for menu items
+- ✅ Edit/Delete/Duplicate functionality
+- ✅ Full CRUD operations
+
+#### Customers Page:
+- ✅ Add customer modal
+- ✅ Edit customer dialog
+- ✅ View profile dialog
+- ✅ Delete with confirmation
+- ✅ Loyalty points management
+
+#### Deliveries Page:
+- ✅ Driver assignment modal
+- ✅ Driver selection with ratings
+- ✅ Status update buttons
+- ✅ Toast notifications
+
+#### Drivers Page:
+- ✅ Add driver modal
+- ✅ Edit driver dialog
+- ✅ View profile dialog
+- ✅ Delete with confirmation
+
+#### Settings Page:
+- ✅ Restaurant logo upload
+- ✅ Multi-site management tab
+- ✅ Functional save buttons with toast
+- ✅ Loading states
+
+#### Notifications:
+- ✅ Notification panel in header
+- ✅ Unread count badge
+- ✅ Mark as read functionality
+- ✅ Different notification types
+- ✅ Demo notifications
+
+### Technical Details:
+
+1. **State Management:**
+   - Local state for all modals and forms
+   - React hooks (useState, useMemo, useRef)
+   - Toast notifications for feedback
+
+2. **Form Validation:**
+   - Required field validation
+   - File type and size validation
+   - Conditional field requirements (delivery address)
+
+3. **UI Components Used:**
+   - Dialog for modals
+   - Popover for notifications
+   - RadioGroup for driver selection
+   - Switch for toggles
+   - Badge for status indicators
+   - ScrollArea for lists
+   - Tabs for settings organization
+
+4. **Demo Data:**
+   - All pages use realistic demo data
+   - FCFA currency formatting
+   - French labels throughout
+   - African restaurant theme
+
+### Stage Summary:
+- ✅ All 9 reported issues fixed
+- ✅ Full CRUD operations where needed
+- ✅ Toast notifications for all actions
+- ✅ Photo upload functionality
+- ✅ Multi-site management
+- ✅ Notification panel in header
+- ✅ No lint errors in modified files
+- ✅ Dev server running successfully
+
+---
+## Task ID: customer-interface-fixes - Customer Interface Complete Fixes
+
+### Work Task
+Fix all customer interface issues for Restaurant OS including:
+- Global cart state with Zustand
+- Functional cart system with add/remove/clear
+- Real Leaflet maps with OpenStreetMap
+- Working buttons on all customer pages
+- Internal messaging system
+
+### Work Log:
+- Created global cart store using Zustand with persistence
+- Updated cart page with clear cart functionality
+- Updated menu page to use cart store with add to cart
+- Updated order page with functional quantity buttons
+- Installed Leaflet packages for real maps
+- Created real map component with Leaflet/OpenStreetMap
+- Replaced simulated maps in tracking and driver pages
+- Fixed deals page with copy code and profiter buttons
+- Fixed loyalty page with reward redemption
+- Fixed favorites page with remove and add to cart
+- Fixed profile page with all actions
+- Created messaging API route and chat component
+- Created customer messages page
+
+### Files Created:
+
+#### 1. `/src/lib/cart-store.ts` - Global Cart Store
+**Features:**
+- Zustand store with persist middleware
+- Cart state persisted in localStorage
+- addItem, removeItem, updateQuantity methods
+- increaseQuantity, decreaseQuantity helpers
+- clearCart functionality
+- getTotal and getItemCount getters
+- TypeScript interfaces for CartItem
+
+#### 2. `/src/components/maps/real-map.tsx` - Real Map Component
+**Features:**
+- Leaflet/OpenStreetMap integration
+- Custom markers for driver, restaurant, destination
+- Route line between points
+- FitBounds for optimal view
+- DriverMap component for driver interface
+- Custom marker icons with emojis
+- Popup information on markers
+
+#### 3. `/src/app/api/messages/route.ts` - Messages API
+**Features:**
+- GET endpoint for retrieving messages
+- POST endpoint for sending messages
+- In-memory message storage (demo mode)
+- Message read tracking
+
+#### 4. `/src/components/messaging/chat-panel.tsx` - Chat Component
+**Features:**
+- Real-time messaging UI
+- Message input with send button
+- Message bubbles for different sender types
+- Floating chat button option
+- Minimized/maximized states
+- Demo message support
+
+#### 5. `/src/app/(customer)/customer/messages/page.tsx` - Messages Page
+**Features:**
+- Conversation list view
+- Individual chat view
+- Message threading
+- Sender type indicators (driver, restaurant, customer)
+- Call button integration
+
+### Files Modified:
+
+#### 1. `/src/app/(customer)/customer/cart/page.tsx`
+**Changes:**
+- Integrated useCartStore for global cart state
+- Added clear cart button functionality
+- Added payment method selection
+- Connected to cart store for add/remove items
+- Toast notifications for actions
+
+#### 2. `/src/app/(customer)/customer/menu/page.tsx`
+**Changes:**
+- Integrated useCartStore for global cart state
+- Add to cart with toast notifications
+- Favorites toggle functionality
+- Cart count badge in header
+- Fixed bottom cart summary
+
+#### 3. `/src/app/(customer)/customer/order/page.tsx`
+**Changes:**
+- Integrated useCartStore for global cart state
+- Functional quantity add/remove buttons
+- Order type selection (delivery, takeaway, dine-in)
+- Address form for delivery
+- Payment method selection
+- Order submission with loading state
+
+#### 4. `/src/app/(customer)/customer/tracking/page.tsx`
+**Changes:**
+- Replaced simulated map with real Leaflet map
+- Dynamic driver location updates
+- Route visualization
+- Message button linking to messages page
+- Real-time ETA countdown
+
+#### 5. `/src/app/(driver)/driver/map/page.tsx`
+**Changes:**
+- Replaced simulated map with real Leaflet map
+- Order markers on map
+- Online/offline toggle
+- Call and message buttons
+- Delivery confirmation
+
+#### 6. `/src/app/(customer)/customer/deals/page.tsx`
+**Changes:**
+- Copy promo code to clipboard
+- "Profiter" button adds deals to cart
+- Flash sale with limited quantity
+- Toast notifications for all actions
+- Link to loyalty page
+
+#### 7. `/src/app/(customer)/customer/loyalty/page.tsx`
+**Changes:**
+- Reward redemption with points deduction
+- Transaction history updates
+- Add rewards to cart
+- Points balance tracking
+- Tier progress display
+
+#### 8. `/src/app/(customer)/customer/favorites/page.tsx`
+**Changes:**
+- Remove from favorites functionality
+- Add to cart from favorites
+- Quantity controls
+- Toast notifications
+
+#### 9. `/src/app/(customer)/customer/profile/page.tsx`
+**Changes:**
+- Profile save functionality
+- Password change dialog
+- Address management (add/delete/set default)
+- Preference toggles with switches
+- Logout all devices button
+
+### Dependencies Installed:
+```bash
+npm install leaflet react-leaflet @types/leaflet
+```
+
+### Key Features Implemented:
+
+#### Cart System:
+- ✅ Global cart state with Zustand
+- ✅ Cart persistence in localStorage
+- ✅ Add/remove/update items
+- ✅ Clear cart functionality
+- ✅ Cart count and total
+- ✅ Payment method selection
+
+#### Real Maps:
+- ✅ Leaflet/OpenStreetMap integration
+- ✅ Custom markers with emojis
+- ✅ Route visualization
+- ✅ Driver position updates
+- ✅ Order location markers
+
+#### Customer Pages:
+- ✅ Menu: add to cart, favorites
+- ✅ Cart: full cart management
+- ✅ Order: order placement flow
+- ✅ Tracking: real map + messaging
+- ✅ Deals: promo codes, flash sales
+- ✅ Loyalty: points redemption
+- ✅ Favorites: remove, add to cart
+- ✅ Profile: all settings functional
+- ✅ Messages: conversation system
+
+#### Messaging System:
+- ✅ Messages API route
+- ✅ Chat panel component
+- ✅ Customer messages page
+- ✅ Driver/customer communication
+- ✅ Real-time message display
+
+### Testing Notes:
+- All customer pages tested
+- Cart persistence verified
+- Map rendering confirmed
+- All buttons have working onClick handlers
+- Toast notifications working
+- Navigation between pages working
+
+### Stage Summary:
+- ✅ Global cart store with Zustand
+- ✅ Real Leaflet maps with OpenStreetMap
+- ✅ All customer pages fully functional
+- ✅ Internal messaging system
+- ✅ All buttons working with onClick handlers
+- ✅ Toast notifications for all actions
+- ✅ African restaurant theme maintained (Orange/Red)
+- ✅ Currency in FCFA
+

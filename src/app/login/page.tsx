@@ -80,7 +80,14 @@ export default function LoginPage() {
         });
         
         setAuthToken(result.token);
-        router.push('/dashboard');
+        
+        // Redirect based on user role
+        const userRole = result.user?.role;
+        if (userRole === 'CUSTOMER') {
+          router.push('/customer');
+        } else {
+          router.push('/dashboard');
+        }
       } catch (error: any) {
         console.error('Login failed:', error);
       }
@@ -119,17 +126,30 @@ export default function LoginPage() {
       });
       
       setAuthToken(result.token);
-      router.push('/dashboard');
+      // New users are always customers
+      router.push('/customer');
     } catch (error: any) {
       console.error('Registration failed:', error);
     }
   };
   
-  // Demo mode - bypass auth for demo
+  // Demo mode - bypass auth for demo (admin demo)
   const handleDemoLogin = () => {
     // For demo purposes, set a fake token and redirect
     setAuthToken('demo_token');
     router.push('/dashboard');
+  };
+  
+  // Demo customer login
+  const handleDemoCustomerLogin = () => {
+    setAuthToken('demo_customer_token');
+    router.push('/customer');
+  };
+
+  // Demo driver login
+  const handleDemoDriverLogin = () => {
+    setAuthToken('demo_driver_token');
+    router.push('/driver/orders');
   };
 
   return (
@@ -274,7 +294,25 @@ export default function LoginPage() {
                   onClick={handleDemoLogin}
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Essayer la démo
+                  Démo Admin
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleDemoCustomerLogin}
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Démo Client
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleDemoDriverLogin}
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Démo Driver
                 </Button>
               </CardContent>
             </TabsContent>

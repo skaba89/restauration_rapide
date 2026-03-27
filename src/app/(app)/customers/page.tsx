@@ -8,13 +8,22 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-// Dialog import removed - not used
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
 import {
   Users,
   Search,
@@ -30,11 +39,14 @@ import {
   Eye,
   Edit,
   MoreVertical,
+  Trash2,
+  X,
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -51,6 +63,8 @@ const DEMO_CUSTOMERS = [
     lastOrder: new Date(Date.now() - 86400000),
     isVip: true,
     avatar: null,
+    address: 'Cocody, Riviera 3',
+    notes: 'Client régulier, préfère les plats sans piment',
   },
   {
     id: '2',
@@ -63,6 +77,8 @@ const DEMO_CUSTOMERS = [
     lastOrder: new Date(Date.now() - 172800000),
     isVip: true,
     avatar: null,
+    address: 'Plateau, Avenue 12',
+    notes: '',
   },
   {
     id: '3',
@@ -75,6 +91,8 @@ const DEMO_CUSTOMERS = [
     lastOrder: new Date(Date.now() - 259200000),
     isVip: false,
     avatar: null,
+    address: 'Treichville, Rue 12',
+    notes: '',
   },
   {
     id: '4',
@@ -87,6 +105,8 @@ const DEMO_CUSTOMERS = [
     lastOrder: new Date(Date.now() - 345600000),
     isVip: false,
     avatar: null,
+    address: 'Yopougon, Sicogi',
+    notes: 'Allergique aux fruits de mer',
   },
   {
     id: '5',
@@ -99,6 +119,8 @@ const DEMO_CUSTOMERS = [
     lastOrder: new Date(Date.now() - 432000000),
     isVip: false,
     avatar: null,
+    address: 'Marcory, Zone 4',
+    notes: '',
   },
 ];
 
@@ -106,12 +128,31 @@ const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FC
 const formatDate = (date: Date) => new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 
 export default function CustomersPage() {
+  const { toast } = useToast();
+  const [customers, setCustomers] = useState(DEMO_CUSTOMERS);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVip, setFilterVip] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('recent');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<typeof DEMO_CUSTOMERS[0] | null>(null);
+  
+  // New customer form state
+  const [newCustomer, setNewCustomer] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    isVip: false,
+    notes: '',
+  });
+
+  // Edit customer form state
+  const [editCustomer, setEditCustomer] = useState<typeof DEMO_CUSTOMERS[0] | null>(null);
 
   const filteredCustomers = useMemo(() => {
-    let result = [...DEMO_CUSTOMERS];
+    let result = [...customers];
     
     if (searchQuery) {
       result = result.filter(c => 
@@ -129,12 +170,110 @@ export default function CustomersPage() {
     if (sortBy === 'orders') result.sort((a, b) => b.totalOrders - a.totalOrders);
     
     return result;
-  }, [searchQuery, filterVip, sortBy]);
+  }, [customers, searchQuery, filterVip, sortBy]);
 
-  const totalCustomers = DEMO_CUSTOMERS.length;
-  const vipCustomers = DEMO_CUSTOMERS.filter(c => c.isVip).length;
-  const totalRevenue = DEMO_CUSTOMERS.reduce((sum, c) => sum + c.totalSpent, 0);
-  const avgOrderValue = totalRevenue / DEMO_CUSTOMERS.reduce((sum, c) => sum + c.totalOrders, 0);
+  const totalCustomers = customers.length;
+  const vipCustomers = customers.filter(c => c.isVip).length;
+  const totalRevenue = customers.reduce((sum, c) => sum + c.totalSpent, 0);
+  const avgOrderValue = totalRevenue / customers.reduce((sum, c) => sum + c.totalOrders, 0);
+
+  // Add new customer
+  const addCustomer = () => {
+    if (!newCustomer.name || !newCustomer.phone) {
+      toast({
+        title: 'Erreur',
+        description: 'Veuillez remplir le nom et le téléphone',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const customer = {
+      id: String(customers.length + 1),
+      name: newCustomer.name,
+      email: newCustomer.email,
+      phone: newCustomer.phone,
+      address: newCustomer.address,
+      notes: newCustomer.notes,
+      isVip: newCustomer.isVip,
+      totalOrders: 0,
+      totalSpent: 0,
+      loyaltyPoints: 0,
+      lastOrder: new Date(),
+      avatar: null,
+    };
+
+    setCustomers([customer, ...customers]);
+    
+    // Reset form
+    setNewCustomer({
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      isVip: false,
+      notes: '',
+    });
+    setIsAddDialogOpen(false);
+
+    toast({
+      title: 'Client ajouté',
+      description: `${customer.name} a été ajouté à la base de clients`,
+    });
+  };
+
+  // Update customer
+  const updateCustomer = () => {
+    if (!editCustomer) return;
+
+    setCustomers(prev => prev.map(c => 
+      c.id === editCustomer.id ? editCustomer : c
+    ));
+
+    setIsEditDialogOpen(false);
+    setEditCustomer(null);
+
+    toast({
+      title: 'Client mis à jour',
+      description: 'Les informations du client ont été modifiées',
+    });
+  };
+
+  // Delete customer
+  const deleteCustomer = (customerId: string) => {
+    const customer = customers.find(c => c.id === customerId);
+    if (!customer) return;
+
+    setCustomers(prev => prev.filter(c => c.id !== customerId));
+
+    toast({
+      title: 'Client supprimé',
+      description: `${customer.name} a été retiré de la base de clients`,
+    });
+  };
+
+  // Add loyalty points
+  const addLoyaltyPoints = (customerId: string, points: number) => {
+    setCustomers(prev => prev.map(c => 
+      c.id === customerId ? { ...c, loyaltyPoints: c.loyaltyPoints + points } : c
+    ));
+
+    const customer = customers.find(c => c.id === customerId);
+    toast({
+      title: 'Points ajoutés',
+      description: `${points} points de fidélité ajoutés à ${customer?.name}`,
+    });
+  };
+
+  const openEditDialog = (customer: typeof DEMO_CUSTOMERS[0]) => {
+    setEditCustomer({ ...customer });
+    setIsEditDialogOpen(true);
+  };
+
+  const openViewDialog = (customer: typeof DEMO_CUSTOMERS[0]) => {
+    setSelectedCustomer(customer);
+    setIsViewDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -144,7 +283,7 @@ export default function CustomersPage() {
           <h1 className="text-2xl font-bold">Clients</h1>
           <p className="text-muted-foreground">Gérez votre base de clients</p>
         </div>
-        <Button className="bg-gradient-to-r from-orange-500 to-red-600">
+        <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Ajouter un client
         </Button>
@@ -297,9 +436,19 @@ export default function CustomersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem><Eye className="h-4 w-4 mr-2" /> Voir profil</DropdownMenuItem>
-                      <DropdownMenuItem><Edit className="h-4 w-4 mr-2" /> Modifier</DropdownMenuItem>
-                      <DropdownMenuItem><Gift className="h-4 w-4 mr-2" /> Ajouter points</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openViewDialog(customer)}>
+                        <Eye className="h-4 w-4 mr-2" /> Voir profil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openEditDialog(customer)}>
+                        <Edit className="h-4 w-4 mr-2" /> Modifier
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => addLoyaltyPoints(customer.id, 100)}>
+                        <Gift className="h-4 w-4 mr-2" /> Ajouter 100 points
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-red-600" onClick={() => deleteCustomer(customer.id)}>
+                        <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -308,6 +457,228 @@ export default function CustomersPage() {
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Add Customer Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ajouter un client</DialogTitle>
+            <DialogDescription>Enregistrez un nouveau client dans votre base</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nom complet *</Label>
+              <Input
+                id="name"
+                placeholder="Kouamé Jean"
+                value={newCustomer.name}
+                onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Téléphone *</Label>
+              <Input
+                id="phone"
+                placeholder="07 08 09 10 11"
+                value={newCustomer.phone}
+                onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="jean.kouame@email.com"
+                value={newCustomer.email}
+                onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">Adresse</Label>
+              <Input
+                id="address"
+                placeholder="Cocody, Riviera 3"
+                value={newCustomer.address}
+                onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Input
+                id="notes"
+                placeholder="Préférences, allergies..."
+                value={newCustomer.notes}
+                onChange={(e) => setNewCustomer({ ...newCustomer, notes: e.target.value })}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="vip"
+                checked={newCustomer.isVip}
+                onCheckedChange={(v) => setNewCustomer({ ...newCustomer, isVip: v })}
+              />
+              <Label htmlFor="vip">Client VIP</Label>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Annuler</Button>
+            <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={addCustomer}>
+              Ajouter
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Customer Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le client</DialogTitle>
+            <DialogDescription>Modifiez les informations du client</DialogDescription>
+          </DialogHeader>
+          {editCustomer && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nom complet *</Label>
+                <Input
+                  id="edit-name"
+                  value={editCustomer.name}
+                  onChange={(e) => setEditCustomer({ ...editCustomer, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Téléphone *</Label>
+                <Input
+                  id="edit-phone"
+                  value={editCustomer.phone}
+                  onChange={(e) => setEditCustomer({ ...editCustomer, phone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editCustomer.email}
+                  onChange={(e) => setEditCustomer({ ...editCustomer, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-address">Adresse</Label>
+                <Input
+                  id="edit-address"
+                  value={editCustomer.address || ''}
+                  onChange={(e) => setEditCustomer({ ...editCustomer, address: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-notes">Notes</Label>
+                <Input
+                  id="edit-notes"
+                  value={editCustomer.notes || ''}
+                  onChange={(e) => setEditCustomer({ ...editCustomer, notes: e.target.value })}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="edit-vip"
+                  checked={editCustomer.isVip}
+                  onCheckedChange={(v) => setEditCustomer({ ...editCustomer, isVip: v })}
+                />
+                <Label htmlFor="edit-vip">Client VIP</Label>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Annuler</Button>
+            <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={updateCustomer}>
+              Enregistrer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Customer Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Profil client</DialogTitle>
+          </DialogHeader>
+          {selectedCustomer && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-600 text-white text-xl">
+                    {selectedCustomer.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">{selectedCustomer.name}</h3>
+                    {selectedCustomer.isVip && (
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
+                        <Crown className="h-3 w-3 mr-1" /> VIP
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Client depuis {formatDate(selectedCustomer.lastOrder)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">{selectedCustomer.totalOrders}</p>
+                    <p className="text-xs text-muted-foreground">Commandes</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-green-600">{formatCurrency(selectedCustomer.totalSpent)}</p>
+                    <p className="text-xs text-muted-foreground">Total dépensé</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-orange-600">{selectedCustomer.loyaltyPoints}</p>
+                    <p className="text-xs text-muted-foreground">Points fidélité</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">{formatCurrency(Math.round(selectedCustomer.totalSpent / Math.max(selectedCustomer.totalOrders, 1)))}</p>
+                    <p className="text-xs text-muted-foreground">Panier moyen</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm"><strong>Email:</strong> {selectedCustomer.email}</p>
+                <p className="text-sm"><strong>Téléphone:</strong> {selectedCustomer.phone}</p>
+                {selectedCustomer.address && (
+                  <p className="text-sm"><strong>Adresse:</strong> {selectedCustomer.address}</p>
+                )}
+                {selectedCustomer.notes && (
+                  <p className="text-sm"><strong>Notes:</strong> {selectedCustomer.notes}</p>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>Fermer</Button>
+            <Button 
+              className="bg-gradient-to-r from-orange-500 to-red-600"
+              onClick={() => {
+                setIsViewDialogOpen(false);
+                if (selectedCustomer) openEditDialog(selectedCustomer);
+              }}
+            >
+              Modifier
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

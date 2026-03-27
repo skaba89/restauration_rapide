@@ -21,6 +21,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import {
   ShoppingCart,
   Search,
   Filter,
@@ -41,6 +51,10 @@ import {
   MapPin,
   ArrowRight,
   AlertCircle,
+  Plus,
+  Minus,
+  Trash2,
+  User,
 } from 'lucide-react';
 
 // Demo orders data
@@ -61,6 +75,7 @@ const DEMO_ORDERS = [
     deliveryAddress: 'Cocody, Riviera 3',
     createdAt: new Date(),
     timer: 5,
+    notes: '',
   },
   {
     id: '2',
@@ -77,6 +92,7 @@ const DEMO_ORDERS = [
     tableNumber: 'T-05',
     createdAt: new Date(Date.now() - 600000),
     timer: 10,
+    notes: 'Sans piment',
   },
   {
     id: '3',
@@ -92,6 +108,7 @@ const DEMO_ORDERS = [
     total: 12000,
     createdAt: new Date(Date.now() - 1200000),
     timer: 20,
+    notes: '',
   },
   {
     id: '4',
@@ -109,6 +126,7 @@ const DEMO_ORDERS = [
     deliveryAddress: 'Treichville, Rue 12',
     createdAt: new Date(Date.now() - 1800000),
     timer: 30,
+    notes: '',
   },
   {
     id: '5',
@@ -125,11 +143,33 @@ const DEMO_ORDERS = [
     deliveryAddress: 'Yopougon, Sicogi',
     createdAt: new Date(Date.now() - 3600000),
     timer: 60,
+    notes: '',
   },
+];
+
+// Demo menu items for order creation
+const MENU_ITEMS = [
+  { id: '1', name: 'Attieké Poisson Grillé', price: 3500, category: 'Plats Principaux' },
+  { id: '2', name: 'Kedjenou de Poulet', price: 4500, category: 'Plats Principaux' },
+  { id: '3', name: 'Thiéboudienne', price: 3500, category: 'Plats Principaux' },
+  { id: '4', name: 'Dibi Agneau', price: 5000, category: 'Plats Principaux' },
+  { id: '5', name: 'Alloco Sauce Graine', price: 2500, category: 'Plats Principaux' },
+  { id: '6', name: 'Riz Gras', price: 2500, category: 'Accompagnements' },
+  { id: '7', name: 'Foutou Banane', price: 2000, category: 'Accompagnements' },
+  { id: '8', name: 'Jus de Bissap', price: 750, category: 'Boissons' },
+  { id: '9', name: 'Jus de Gingembre', price: 1000, category: 'Boissons' },
+  { id: '10', name: 'Eau minérale', price: 500, category: 'Boissons' },
 ];
 
 type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED';
 type OrderType = 'DINE_IN' | 'TAKEAWAY' | 'DELIVERY';
+
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
 
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
 
@@ -170,11 +210,23 @@ const getTypeIcon = (type: OrderType) => {
 };
 
 export default function OrdersPage() {
+  const { toast } = useToast();
   const [orders, setOrders] = useState(DEMO_ORDERS);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  
+  // New order dialog state
+  const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
+  const [orderType, setOrderType] = useState<OrderType>('DINE_IN');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [tableNumber, setTableNumber] = useState('');
+  const [orderNotes, setOrderNotes] = useState('');
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
@@ -200,6 +252,97 @@ export default function OrdersPage() {
 
   const updateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    toast({
+      title: 'Statut mis à jour',
+      description: `La commande a été marquée comme "${getStatusLabel(newStatus)}"`,
+    });
+  };
+
+  // Add item to order
+  const addItemToOrder = (item: typeof MENU_ITEMS[0]) => {
+    const existing = orderItems.find(i => i.id === item.id);
+    if (existing) {
+      setOrderItems(orderItems.map(i => 
+        i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+      ));
+    } else {
+      setOrderItems([...orderItems, { id: item.id, name: item.name, price: item.price, quantity: 1 }]);
+    }
+  };
+
+  // Remove item from order
+  const removeItemFromOrder = (itemId: string) => {
+    setOrderItems(orderItems.filter(i => i.id !== itemId));
+  };
+
+  // Update item quantity
+  const updateItemQuantity = (itemId: string, delta: number) => {
+    setOrderItems(orderItems.map(i => {
+      if (i.id === itemId) {
+        const newQty = i.quantity + delta;
+        return newQty > 0 ? { ...i, quantity: newQty } : i;
+      }
+      return i;
+    }).filter(i => i.quantity > 0));
+  };
+
+  // Calculate order total
+  const orderTotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const deliveryFee = orderType === 'DELIVERY' ? 1500 : 0;
+
+  // Create new order
+  const createOrder = () => {
+    if (!customerName || !customerPhone || orderItems.length === 0) {
+      toast({
+        title: 'Erreur',
+        description: 'Veuillez remplir tous les champs obligatoires et ajouter au moins un article',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (orderType === 'DELIVERY' && !deliveryAddress) {
+      toast({
+        title: 'Erreur',
+        description: 'Veuillez entrer l\'adresse de livraison',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const newOrder = {
+      id: String(orders.length + 1),
+      orderNumber: `ORD-2024-${String(orders.length + 146).padStart(4, '0')}`,
+      customerName,
+      customerPhone,
+      status: 'PENDING' as OrderStatus,
+      type: orderType,
+      items: orderItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
+      total: orderTotal,
+      deliveryFee,
+      deliveryAddress: orderType === 'DELIVERY' ? deliveryAddress : undefined,
+      tableNumber: orderType === 'DINE_IN' ? tableNumber : undefined,
+      createdAt: new Date(),
+      timer: 0,
+      notes: orderNotes,
+    };
+
+    setOrders([newOrder, ...orders]);
+    
+    // Reset form
+    setIsNewOrderOpen(false);
+    setCustomerName('');
+    setCustomerPhone('');
+    setDeliveryAddress('');
+    setTableNumber('');
+    setOrderNotes('');
+    setOrderItems([]);
+    setOrderType('DINE_IN');
+
+    toast({
+      title: 'Commande créée',
+      description: `La commande ${newOrder.orderNumber} a été créée avec succès`,
+    });
   };
 
   const columns = [
@@ -209,6 +352,11 @@ export default function OrdersPage() {
     { status: 'OUT_FOR_DELIVERY' as OrderStatus, title: 'En livraison', icon: Truck, color: 'purple' },
     { status: 'COMPLETED' as OrderStatus, title: 'Terminées', icon: CheckCircle, color: 'emerald' },
   ];
+
+  const categories = ['all', ...new Set(MENU_ITEMS.map(i => i.category))];
+  const filteredMenuItems = selectedCategory === 'all' 
+    ? MENU_ITEMS 
+    : MENU_ITEMS.filter(i => i.category === selectedCategory);
 
   return (
     <div className="space-y-6">
@@ -222,7 +370,7 @@ export default function OrdersPage() {
           <Button variant="outline" size="icon" onClick={() => setViewMode(viewMode === 'kanban' ? 'list' : 'kanban')}>
             {viewMode === 'kanban' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
           </Button>
-          <Button className="bg-gradient-to-r from-orange-500 to-red-600">
+          <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={() => setIsNewOrderOpen(true)}>
             <ShoppingCart className="h-4 w-4 mr-2" />
             Nouvelle commande
           </Button>
@@ -379,6 +527,192 @@ export default function OrdersPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* New Order Dialog */}
+      <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nouvelle commande</DialogTitle>
+            <DialogDescription>Créez une nouvelle commande pour un client</DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Left: Customer Info */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Type de commande</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: 'DINE_IN', label: 'Sur place', icon: Utensils },
+                    { value: 'TAKEAWAY', label: 'À emporter', icon: Package },
+                    { value: 'DELIVERY', label: 'Livraison', icon: Truck },
+                  ].map((type) => (
+                    <Button
+                      key={type.value}
+                      variant={orderType === type.value ? 'default' : 'outline'}
+                      className={`flex flex-col h-auto py-3 ${orderType === type.value ? 'bg-gradient-to-r from-orange-500 to-red-600' : ''}`}
+                      onClick={() => setOrderType(type.value as OrderType)}
+                    >
+                      <type.icon className="h-5 w-5 mb-1" />
+                      <span className="text-xs">{type.label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="customerName">Nom du client *</Label>
+                  <Input
+                    id="customerName"
+                    placeholder="Kouamé Jean"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="customerPhone">Téléphone *</Label>
+                  <Input
+                    id="customerPhone"
+                    placeholder="07 08 09 10 11"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {orderType === 'DINE_IN' && (
+                <div className="space-y-2">
+                  <Label htmlFor="tableNumber">Numéro de table</Label>
+                  <Input
+                    id="tableNumber"
+                    placeholder="T-01"
+                    value={tableNumber}
+                    onChange={(e) => setTableNumber(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {orderType === 'DELIVERY' && (
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryAddress">Adresse de livraison *</Label>
+                  <Input
+                    id="deliveryAddress"
+                    placeholder="Cocody, Riviera 3, Avenue 25"
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Instructions spéciales..."
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                />
+              </div>
+
+              {/* Order Summary */}
+              <Card className="bg-orange-50 dark:bg-orange-950/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Résumé de la commande</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {orderItems.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Aucun article ajouté</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {orderItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between text-sm">
+                          <span>{item.quantity}x {item.name}</span>
+                          <span>{formatCurrency(item.price * item.quantity)}</span>
+                        </div>
+                      ))}
+                      <div className="border-t pt-2 mt-2">
+                        {orderType === 'DELIVERY' && (
+                          <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>Livraison</span>
+                            <span>{formatCurrency(deliveryFee)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold">
+                          <span>Total</span>
+                          <span>{formatCurrency(orderTotal + deliveryFee)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right: Menu Items */}
+            <div className="space-y-4">
+              <div className="flex gap-2 flex-wrap">
+                {categories.map((cat) => (
+                  <Button
+                    key={cat}
+                    variant={selectedCategory === cat ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory(cat)}
+                    className={selectedCategory === cat ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                  >
+                    {cat === 'all' ? 'Tous' : cat}
+                  </Button>
+                ))}
+              </div>
+
+              <ScrollArea className="h-[400px]">
+                <div className="grid gap-2">
+                  {filteredMenuItems.map((item) => {
+                    const inOrder = orderItems.find(i => i.id === item.id);
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      >
+                        <div>
+                          <p className="font-medium text-sm">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">{formatCurrency(item.price)}</p>
+                        </div>
+                        {inOrder ? (
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => updateItemQuantity(item.id, -1)}>
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span className="w-6 text-center text-sm">{inOrder.quantity}</span>
+                            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => updateItemQuantity(item.id, 1)}>
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="outline" onClick={() => addItemToOrder(item)}>
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setIsNewOrderOpen(false)}>Annuler</Button>
+            <Button 
+              className="bg-gradient-to-r from-orange-500 to-red-600"
+              onClick={createOrder}
+              disabled={orderItems.length === 0}
+            >
+              Créer la commande • {formatCurrency(orderTotal + deliveryFee)}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

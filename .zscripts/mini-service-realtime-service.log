@@ -7,7 +7,7 @@ bun install v1.3.10 (30e609e0)
 + socket.io@4.8.3
 + uuid@9.0.1
 
-40 packages installed [70.00ms]
+40 packages installed [96.00ms]
 [realtime-service] Running bun run dev...
 $ bun --hot index.ts
 [WS] Restaurant OS WebSocket server running on port 3003

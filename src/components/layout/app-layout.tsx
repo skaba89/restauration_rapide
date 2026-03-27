@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -15,6 +16,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -34,10 +41,18 @@ import {
   Globe,
   Moon,
   Sun,
+  Calculator,
+  Package,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Trash2,
+  X,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useLogout, useAuth } from '@/hooks/use-api';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 interface NavItem {
   title: string;
@@ -48,6 +63,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { title: 'POS', href: '/pos', icon: Calculator },
   { title: 'Commandes', href: '/orders', icon: ShoppingCart, badge: 5 },
   { title: 'Menu', href: '/menu', icon: UtensilsCrossed },
   { title: 'Réservations', href: '/reservations', icon: CalendarDays },
@@ -56,6 +72,55 @@ const NAV_ITEMS: NavItem[] = [
   { title: 'Drivers', href: '/drivers', icon: Bike },
   { title: 'Analytics', href: '/analytics', icon: BarChart3 },
   { title: 'Paramètres', href: '/settings', icon: Settings },
+];
+
+// Demo notifications
+const DEMO_NOTIFICATIONS = [
+  {
+    id: '1',
+    type: 'order',
+    title: 'Nouvelle commande',
+    message: 'Commande ORD-2024-0146 reçue de Kouamé Jean',
+    time: 'Il y a 2 min',
+    read: false,
+    icon: ShoppingCart,
+  },
+  {
+    id: '2',
+    type: 'delivery',
+    title: 'Livraison en cours',
+    message: 'ORD-2024-0144 est en route vers Treichville',
+    time: 'Il y a 15 min',
+    read: false,
+    icon: Truck,
+  },
+  {
+    id: '3',
+    type: 'reservation',
+    title: 'Nouvelle réservation',
+    message: 'Réservation pour 4 personnes ce soir à 20h',
+    time: 'Il y a 30 min',
+    read: false,
+    icon: CalendarDays,
+  },
+  {
+    id: '4',
+    type: 'alert',
+    title: 'Stock faible',
+    message: 'Le stock de poisson est bas (5 unités restantes)',
+    time: 'Il y a 1h',
+    read: true,
+    icon: AlertCircle,
+  },
+  {
+    id: '5',
+    type: 'order',
+    title: 'Commande terminée',
+    message: 'ORD-2024-0142 livrée avec succès',
+    time: 'Il y a 2h',
+    read: true,
+    icon: CheckCircle,
+  },
 ];
 
 // Separate NavContent component
@@ -121,13 +186,55 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState(DEMO_NOTIFICATIONS);
   const { user } = useAuth();
   const logoutMutation = useLogout();
   const router = useRouter();
+  const { toast } = useToast();
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleLogout = async () => {
     await logoutMutation.mutateAsync();
     router.push('/login');
+  };
+
+  const markAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    ));
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    toast({
+      title: 'Notifications',
+      description: 'Toutes les notifications ont été marquées comme lues',
+    });
+  };
+
+  const clearNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'order': return ShoppingCart;
+      case 'delivery': return Truck;
+      case 'reservation': return CalendarDays;
+      case 'alert': return AlertCircle;
+      default: return Bell;
+    }
+  };
+
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'order': return 'bg-orange-100 text-orange-600';
+      case 'delivery': return 'bg-purple-100 text-purple-600';
+      case 'reservation': return 'bg-blue-100 text-blue-600';
+      case 'alert': return 'bg-red-100 text-red-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
   };
 
   return (
@@ -140,6 +247,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-64">
+          <VisuallyHidden>
+            <SheetTitle>Menu de navigation</SheetTitle>
+          </VisuallyHidden>
           <NavContent pathname={pathname} onNavigate={() => setSidebarOpen(false)} />
         </SheetContent>
       </Sheet>
@@ -161,14 +271,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
             {/* Quick Actions */}
             <div className="hidden lg:flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-2">
-                <CreditCard className="h-4 w-4" />
-                POS
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Globe className="h-4 w-4" />
-                Site Web
-              </Button>
+              <Link href="/pos">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  POS
+                </Button>
+              </Link>
+              <Link href="/" target="_blank">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Globe className="h-4 w-4" />
+                  Site Web
+                </Button>
+              </Link>
             </div>
 
             {/* Right Actions */}
@@ -179,12 +293,81 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </Button>
 
               {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
-                  3
-                </span>
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80 p-0">
+                  <div className="flex items-center justify-between p-4 border-b">
+                    <h3 className="font-semibold">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <Button variant="ghost" size="sm" className="text-xs h-auto py-1 px-2" onClick={markAllAsRead}>
+                        Tout marquer lu
+                      </Button>
+                    )}
+                  </div>
+                  <ScrollArea className="h-[300px]">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-muted-foreground">
+                        <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Aucune notification</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y">
+                        {notifications.map((notification) => {
+                          const Icon = getNotificationIcon(notification.type);
+                          const colorClass = getNotificationColor(notification.type);
+                          return (
+                            <div 
+                              key={notification.id} 
+                              className={`p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer ${
+                                !notification.read ? 'bg-orange-50/50 dark:bg-orange-950/10' : ''
+                              }`}
+                              onClick={() => markAsRead(notification.id)}
+                            >
+                              <div className="flex gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+                                  <Icon className="h-4 w-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="font-medium text-sm">{notification.title}</p>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-5 w-5 flex-shrink-0"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        clearNotification(notification.id);
+                                      }}
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground line-clamp-2">{notification.message}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </ScrollArea>
+                  <div className="p-2 border-t">
+                    <Button variant="ghost" size="sm" className="w-full text-xs">
+                      Voir toutes les notifications
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
 
               {/* User Menu */}
               <DropdownMenu>
@@ -207,13 +390,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    Mon Profil
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Mon Profil
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Paramètres
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Paramètres
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-red-600" onClick={handleLogout}>

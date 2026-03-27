@@ -1,0 +1,13 @@
+[realtime-service] Installing dependencies...
+bun install v1.3.10 (30e609e0)
+
++ @types/jsonwebtoken@9.0.10
++ @types/uuid@9.0.8
++ jsonwebtoken@9.0.3
++ socket.io@4.8.3
++ uuid@9.0.1
+
+40 packages installed [70.00ms]
+[realtime-service] Running bun run dev...
+$ bun --hot index.ts
+[WS] Restaurant OS WebSocket server running on port 3003

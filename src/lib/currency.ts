@@ -209,6 +209,18 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     symbolPosition: 'before',
     countries: ['GB'],
   },
+  // Guinean Franc
+  GNF: {
+    code: 'GNF',
+    name: 'Franc Guinéen',
+    symbol: 'GNF',
+    decimalPlaces: 0,
+    format: '{amount} {symbol}',
+    thousandsSeparator: ' ',
+    decimalSeparator: ',',
+    symbolPosition: 'after',
+    countries: ['GN'],
+  },
 };
 
 // Format currency amount

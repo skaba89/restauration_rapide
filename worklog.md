@@ -1951,3 +1951,107 @@ Stage Summary:
 - PWA configuré pour expérience native
 - Service de paiement Mobile Money préparé pour production
 - Build réussi sans erreurs
+
+---
+## Task ID: public-restaurant-page - Page Publique Restaurant KFM DELICE
+### Work Task
+Créer une page publique pour le restaurant KFM DELICE où les clients peuvent voir le menu, ajouter au panier, passer une commande et se connecter.
+
+### Work Summary
+
+#### Fichiers Créés:
+
+##### 1. `/src/app/api/public/restaurant/[slug]/route.ts` - API Publique Restaurant
+**Fonctionnalités:**
+- Endpoint GET public sans authentification
+- Récupère les données du restaurant par slug
+- Inclut menus, catégories, articles avec variants et options
+- Inclut zones de livraison et horaires
+- Retourne seulement les données actives (isActive: true)
+
+##### 2. `/src/lib/restaurant-cart-store.ts` - Store Panier Restaurant
+**Fonctionnalités:**
+- Store Zustand avec persistance localStorage
+- Gestion du panier par restaurant
+- Support des variants et options
+- Calcul automatique du sous-total
+- Gestion des notes par article
+
+##### 3. `/src/app/r/[slug]/page.tsx` - Page Menu Restaurant
+**Fonctionnalités:**
+- Affichage du menu organisé par catégories
+- Recherche d'articles
+- Modal de détail d'article avec variants/options
+- Panier flottant (mobile) et sidebar (desktop)
+- Interface responsive avec design moderne
+- Badges (Populaire, Nouveau, Végétarien, Épicé)
+- Support multi-devises via formatCurrency
+
+##### 4. `/src/app/r/[slug]/cart/page.tsx` - Page Panier
+**Fonctionnalités:**
+- Liste des articles avec modification quantité
+- Résumé de la commande
+- Informations de livraison
+- Navigation vers checkout
+- Gestion du panier vide
+
+##### 5. `/src/app/r/[slug]/checkout/page.tsx` - Page Commande
+**Fonctionnalités:**
+- Authentification (login/inscription) via modal
+- Choix type de commande (livraison/à emporter)
+- Formulaire d'adresse de livraison (39 villes guinéennes)
+- Paiement Mobile Money (Orange Money, MTN MoMo)
+- Récapitulatif de commande
+- Intégration API orders
+
+##### 6. `/src/app/r/[slug]/order-success/page.tsx` - Page Confirmation
+**Fonctionnalités:**
+- Confirmation de commande
+- Affichage du statut en temps réel
+- Détails de la commande
+- Instructions Mobile Money
+- Contact restaurant
+
+#### Modifications:
+
+##### `/src/lib/currency.ts` - Ajout Devise GNF
+- Ajout de la devise Franc Guinéen (GNF)
+- Format: "{amount} GNF"
+- Pays: Guinée (GN)
+
+### Architecture Frontend:
+- **State Management**: Zustand avec persist
+- **Data Fetching**: React Query (TanStack Query)
+- **UI Components**: shadcn/ui (Dialog, Sheet, Card, Button, etc.)
+- **Navigation**: Next.js App Router avec params dynamiques
+- **Formulaires**: React controlled components
+- **Responsive**: Mobile-first avec breakpoints Tailwind
+
+### Flux Utilisateur:
+1. Accès via `/r/kfm-delice-conakry`
+2. Navigation dans le menu par catégories
+3. Ajout d'articles au panier avec options
+4. Consultation du panier `/r/[slug]/cart`
+5. Checkout avec login/inscription `/r/[slug]/checkout`
+6. Confirmation Mobile Money
+7. Page de succès avec suivi
+
+### Points Techniques:
+- API publique sans authentification pour consultation menu
+- Authentification requise uniquement pour finaliser commande
+- Panier persistant en localStorage
+- Support variants (tailles, options) avec prix dynamiques
+- Formatage prix selon devise du restaurant
+- Gestion du minimum de commande
+- Calcul automatique frais de livraison
+
+### Stage Summary:
+- ✅ Page menu publique avec design moderne
+- ✅ Panier persistant avec Zustand
+- ✅ Checkout avec authentification
+- ✅ Paiement Mobile Money (Orange, MTN)
+- ✅ 39 villes de Guinée pour livraison
+- ✅ Devise GNF (Franc Guinéen)
+- ✅ Interface responsive mobile/desktop
+- ✅ Modal de connexion/inscription
+- ✅ Page de confirmation de commande

@@ -19,9 +19,11 @@ import {
   Play,
   Star,
   MapPin,
-  Globe
+  Globe,
+  X,
+  Menu
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LandingPageJsonLd } from '@/components/seo/json-ld';
 
 // Animation variants
@@ -153,9 +155,21 @@ const mobileMoneyPartners = [
 
 export default function LandingPageClient() {
   const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
@@ -189,15 +203,77 @@ export default function LandingPageClient() {
                 Essai Gratuit
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
-              <button className="md:hidden p-2 text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+              
+              {/* Mobile Menu Button - FIXED */}
+              <button 
+                className="md:hidden p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              >
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
               </button>
             </div>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-16 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-lg md:hidden"
+          >
+            <div className="px-4 py-4 space-y-1">
+              <a 
+                href="#features" 
+                className="block px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Fonctionnalités
+              </a>
+              <a 
+                href="#pricing" 
+                className="block px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Tarifs
+              </a>
+              <a 
+                href="#testimonials" 
+                className="block px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Témoignages
+              </a>
+              <Link 
+                href="/login" 
+                className="block px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Connexion
+              </Link>
+              <div className="pt-2 border-t border-gray-100">
+                <Link 
+                  href="/login"
+                  className="flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-xl font-semibold"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Essai Gratuit 14 jours
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hero Section */}
       <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-orange-50 via-white to-amber-50">

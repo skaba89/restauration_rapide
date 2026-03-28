@@ -115,8 +115,63 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    /* iOS touch fixes */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   body {
     @apply bg-background text-foreground;
+    /* Prevent iOS zoom on input focus */
+    -webkit-text-size-adjust: 100%;
+  }
+  /* iOS fix for clickable elements */
+  [role="button"],
+  button,
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  a,
+  .cursor-pointer,
+  [onclick],
+  .clickable {
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Fix for iOS modal/overlay scroll */
+  html, body {
+    overscroll-behavior: none;
+  }
+  body.modal-open {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+  }
+  /* iOS safe area support for notch/home indicator */
+  @supports (padding: max(0px)) {
+    .safe-area-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    .safe-area-top {
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+    }
+  }
+  /* Fix for iOS input zoom on focus (font-size must be >= 16px) */
+  input, textarea, select {
+    font-size: 16px;
+  }
+  /* Smooth scrolling for iOS */
+  .scroll-smooth-ios {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+  /* Hide scrollbar for category navigation */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

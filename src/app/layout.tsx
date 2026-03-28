@@ -191,6 +191,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   colorScheme: "light dark",
+  // iOS safe area support
+  viewportFit: "cover",
 };
 
 // JSON-LD structured data for the root layout

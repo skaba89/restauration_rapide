@@ -602,10 +602,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
       </main>
 
       {/* Fixed Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 pb-6 z-40 safe-area-bottom">
         <div className="max-w-2xl mx-auto">
           <Button 
-            className="w-full bg-orange-500 hover:bg-orange-600 h-14 text-lg"
+            className="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 h-14 text-lg"
             onClick={handlePlaceOrder}
             disabled={isProcessing || placeOrderMutation.isPending}
           >

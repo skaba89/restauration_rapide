@@ -479,7 +479,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                   {category.items.map((item) => (
                     <Card 
                       key={item.id}
-                      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group clickable"
                       onClick={() => {
                         setSelectedItem(item);
                         setSelectedVariant(item.variants?.find(v => v.isDefault)?.id || '');
@@ -491,6 +491,23 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                           }, {} as Record<string, string[]>) || {}
                         );
                         setIsItemModalOpen(true);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedItem(item);
+                          setSelectedVariant(item.variants?.find(v => v.isDefault)?.id || '');
+                          setSelectedOptions(
+                            item.options?.reduce((acc, opt) => {
+                              const defaults = opt.values.filter(v => v.isDefault).map(v => v.id);
+                              if (defaults.length > 0) acc[opt.id] = defaults;
+                              return acc;
+                            }, {} as Record<string, string[]>) || {}
+                          );
+                          setIsItemModalOpen(true);
+                        }
                       }}
                     >
                       <div className="flex gap-3 p-3">
@@ -656,20 +673,31 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                   <h4 className="font-medium">Choisir une option</h4>
                   <div className="space-y-2">
                     {selectedItem.variants.map((variant) => (
-                      <label
+                      <div
                         key={variant.id}
-                        className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${
+                        className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors clickable ${
                           selectedVariant === variant.id ? 'border-orange-500 bg-orange-50' : 'hover:bg-gray-50'
                         }`}
+                        onClick={() => setSelectedVariant(variant.id)}
+                        role="radio"
+                        aria-checked={selectedVariant === variant.id}
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedVariant(variant.id);
+                          }
+                        }}
                       >
                         <div className="flex items-center gap-2">
                           <input
                             type="radio"
                             name="variant"
+                            id={`variant-${variant.id}`}
                             value={variant.id}
                             checked={selectedVariant === variant.id}
                             onChange={(e) => setSelectedVariant(e.target.value)}
-                            className="text-orange-500"
+                            className="text-orange-500 pointer-events-none"
                           />
                           <span>{variant.name}</span>
                         </div>
@@ -677,7 +705,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                           {variant.price > selectedItem.price && '+'}
                           {formatPrice(variant.price)}
                         </span>
-                      </label>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -696,35 +724,59 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                     {option.values.map((value) => {
                       const isSelected = selectedOptions[option.id]?.includes(value.id);
                       return (
-                        <label
+                        <div
                           key={value.id}
-                          className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${
+                          className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors clickable ${
                             isSelected ? 'border-orange-500 bg-orange-50' : 'hover:bg-gray-50'
                           }`}
+                          onClick={() => {
+                            if (option.multiSelect) {
+                              setSelectedOptions(prev => {
+                                const current = prev[option.id] || [];
+                                const updated = isSelected
+                                  ? current.filter(id => id !== value.id)
+                                  : [...current, value.id];
+                                return { ...prev, [option.id]: updated };
+                              });
+                            } else {
+                              setSelectedOptions(prev => ({
+                                ...prev,
+                                [option.id]: [value.id],
+                              }));
+                            }
+                          }}
+                          role={option.multiSelect ? 'checkbox' : 'radio'}
+                          aria-checked={isSelected}
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              if (option.multiSelect) {
+                                setSelectedOptions(prev => {
+                                  const current = prev[option.id] || [];
+                                  const updated = isSelected
+                                    ? current.filter(id => id !== value.id)
+                                    : [...current, value.id];
+                                  return { ...prev, [option.id]: updated };
+                                });
+                              } else {
+                                setSelectedOptions(prev => ({
+                                  ...prev,
+                                  [option.id]: [value.id],
+                                }));
+                              }
+                            }
+                          }}
                         >
                           <div className="flex items-center gap-2">
                             <input
                               type={option.multiSelect ? 'checkbox' : 'radio'}
                               name={option.id}
+                              id={`option-${option.id}-${value.id}`}
                               value={value.id}
                               checked={isSelected}
-                              onChange={(e) => {
-                                if (option.multiSelect) {
-                                  setSelectedOptions(prev => {
-                                    const current = prev[option.id] || [];
-                                    const updated = e.target.checked
-                                      ? [...current, value.id]
-                                      : current.filter(id => id !== value.id);
-                                    return { ...prev, [option.id]: updated };
-                                  });
-                                } else {
-                                  setSelectedOptions(prev => ({
-                                    ...prev,
-                                    [option.id]: [value.id],
-                                  }));
-                                }
-                              }}
-                              className="text-orange-500"
+                              onChange={() => {}} // Handled by parent div onClick
+                              className="text-orange-500 pointer-events-none"
                             />
                             <span>{value.name}</span>
                           </div>
@@ -733,7 +785,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                               +{formatPrice(value.price)}
                             </span>
                           )}
-                        </label>
+                        </div>
                       );
                     })}
                   </div>
@@ -786,9 +838,9 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
 
       {/* Floating Cart Button (Mobile) */}
       {getTotalItems() > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg sm:hidden z-50">
+        <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-white border-t shadow-lg sm:hidden z-50 safe-area-bottom">
           <Link href={`/r/${slug}/cart`}>
-            <Button className="w-full bg-orange-500 hover:bg-orange-600 h-14 text-lg">
+            <Button className="w-full bg-orange-500 hover:bg-orange-600 h-14 text-lg active:bg-orange-700">
               <ShoppingCart className="h-5 w-5 mr-2" />
               Voir le panier • {getTotalItems()} articles • {formatPrice(getSubtotal())}
             </Button>

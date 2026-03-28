@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#ea580c"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="76.8" fill="url(#grad)"/>
+  
+  <!-- Plate -->
+  <ellipse cx="256" cy="281.6" rx="179.2" ry="128" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="256" cy="281.6" rx="143.36" ry="102.4" fill="#fef3c7"/>
+  
+  <!-- Food -->
+  <ellipse cx="256" cy="266.24" rx="92.16" ry="61.44" fill="#fbbf24"/>
+  <ellipse cx="256" cy="256" rx="61.44" ry="40.96" fill="#f59e0b"/>
+  
+  <!-- Steam -->
+  <g stroke="#ffffff" stroke-width="7.68" fill="none" opacity="0.8">
+    <path d="M194.56 179.2 Q215.04 143.36 194.56 102.4"/>
+    <path d="M256 163.84 Q276.48 128 256 92.16"/>
+    <path d="M317.44 179.2 Q337.92 143.36 317.44 102.4"/>
+  </g>
+</svg>

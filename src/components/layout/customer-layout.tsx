@@ -40,6 +40,7 @@ import { useRouter } from 'next/navigation';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useCartStore } from '@/lib/cart-store';
 import { useSettings } from '@/hooks/use-settings';
+import { MobileNav } from '@/components/mobile/mobile-nav';
 
 interface NavItem {
   title: string;
@@ -251,8 +252,11 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="p-4 lg:p-6">{children}</main>
+        <main className="p-4 lg:p-6 pb-24 lg:pb-6">{children}</main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileNav variant="customer" />
     </div>
   );
 }

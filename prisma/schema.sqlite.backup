@@ -1,53 +1,34 @@
-// ============================================
-// RESTAURANT OS - PostgreSQL Schema
-// For Supabase / Production Deployment
-// ============================================
-
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
-// ============================================
-// CORE - Users & Authentication
-// ============================================
-
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  phone         String?   @unique
-  passwordHash  String
-  role          UserRole  @default(CUSTOMER)
-  
-  // Profile
-  firstName     String?
-  lastName      String?
-  avatar        String?
-  language      String    @default("fr")
-  timezone      String    @default("Africa/Abidjan")
-  
-  // Verification
-  emailVerified DateTime?
-  phoneVerified DateTime?
-  
-  // Status
-  isActive      Boolean   @default(true)
-  isLocked      Boolean   @default(false)
-  lockedAt      DateTime?
-  lastLoginAt   DateTime?
-  lastLoginIp   String?
-  
-  // Timestamps
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-  
-  // Relations
+  id                String             @id @default(cuid())
+  email             String             @unique
+  phone             String?            @unique
+  passwordHash      String
+  role              UserRole           @default("CUSTOMER")
+  firstName         String?
+  lastName          String?
+  avatar            String?
+  language          String             @default("fr")
+  timezone          String             @default("Africa/Abidjan")
+  emailVerified     DateTime?
+  phoneVerified     DateTime?
+  isActive          Boolean            @default(true)
+  isLocked          Boolean            @default(false)
+  lockedAt          DateTime?
+  lastLoginAt       DateTime?
+  lastLoginIp       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  deletedAt         DateTime?
   auditLogs         AuditLog[]
   customerProfiles  CustomerProfile[]
   driverProfile     Driver?
@@ -106,10 +87,6 @@ model OtpCode {
   @@index([email, type])
 }
 
-// ============================================
-// ORGANIZATION - Multi-tenant
-// ============================================
-
 model Organization {
   id               String                @id @default(cuid())
   name             String
@@ -125,7 +102,7 @@ model Organization {
   taxId            String?
   businessType     String?
   currencyId       String
-  plan             Plan                  @default(STARTER)
+  plan             Plan                  @default("STARTER")
   planExpiresAt    DateTime?
   stripeCustomerId String?
   isActive         Boolean               @default(true)
@@ -350,7 +327,7 @@ model Table {
   width                Float?
   height               Float?
   rotation             Float?
-  status               TableStatus        @default(AVAILABLE)
+  status               TableStatus        @default("AVAILABLE")
   currentPartySize     Int?
   currentReservationId String?
   serverId             String?
@@ -551,7 +528,7 @@ model Reservation {
   date               DateTime
   time               String
   duration           Int                @default(120)
-  status             ReservationStatus  @default(PENDING)
+  status             ReservationStatus  @default("PENDING")
   source             String             @default("web")
   occasion           String?
   specialRequests    String?
@@ -600,7 +577,7 @@ model WaitlistEntry {
   partySize                Int
   preferredArea            String?
   specialRequests          String?
-  status                   WaitlistStatus   @default(WAITING)
+  status                   WaitlistStatus   @default("WAITING")
   priority                 Int              @default(0)
   estimatedWait            Int?
   quotedWait               Int?
@@ -626,11 +603,11 @@ model Order {
   customerName        String
   customerPhone       String
   customerEmail       String?
-  orderType           OrderType            @default(DINE_IN)
+  orderType           OrderType            @default("DINE_IN")
   source              String               @default("web")
   channelId           String?
-  status              OrderStatus          @default(PENDING)
-  paymentStatus       PaymentStatus        @default(PENDING)
+  status              OrderStatus          @default("PENDING")
+  paymentStatus       PaymentStatus        @default("PENDING")
   tableId             String?
   tableNumber         String?
   deliveryAddress     String?
@@ -821,7 +798,7 @@ model Delivery {
   dropoffNotes    String?
   dropoffLandmark String?
   driverId        String?
-  status          DeliveryStatus          @default(PENDING)
+  status          DeliveryStatus          @default("PENDING")
   dispatchType    String                  @default("auto")
   deliveryFee     Float
   driverEarning   Float
@@ -1012,7 +989,7 @@ model Payment {
   currencyId    String
   method        PaymentMethod
   provider      String?
-  status        PaymentStatus @default(PENDING)
+  status        PaymentStatus @default("PENDING")
   phoneNumber   String?
   providerRef   String?
   transactionId String?
@@ -1400,8 +1377,6 @@ model Country {
   paymentProviders   PaymentProviderCountry[]
   restaurants        Restaurant[]
   taxRules           TaxRule[]
-
-  @@index([code])
 }
 
 model City {
@@ -1644,10 +1619,6 @@ model PushSubscription {
   @@index([userId])
   @@index([endpoint])
 }
-
-// ============================================
-// ENUMS
-// ============================================
 
 enum UserRole {
   SUPER_ADMIN

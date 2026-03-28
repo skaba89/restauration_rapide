@@ -9,7 +9,7 @@
     "dev": "next dev -p 3010",
     "dev:clean": "npx kill-port 3010 && next dev -p 3010",
     "build": "npx prisma generate --schema=./prisma/schema.prisma && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
-    "start": "node .next/standalone/server.js",
+    "start": "PORT=${PORT:-10000} node .next/standalone/server.js",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",

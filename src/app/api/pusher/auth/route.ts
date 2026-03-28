@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import pusher from '@/lib/pusher-server';
+import { pusher } from '@/lib/pusher-server';
 
 // Pusher authentication endpoint
 // Required for private and presence channels

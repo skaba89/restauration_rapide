@@ -137,6 +137,16 @@ export function detectProvider(phone: string): PaymentProvider | null {
     return 'wave';
   }
   
+  // Guinée prefixes
+  // Orange Guinée: 62, 64, 65, 66
+  if (cleaned.includes('622') || cleaned.includes('624') || cleaned.includes('625') || cleaned.includes('626')) {
+    return 'orange_money';
+  }
+  // MTN Guinée: 66, 67, 68
+  if (cleaned.includes('667') || cleaned.includes('668') || cleaned.includes('669')) {
+    return 'mtn_momo';
+  }
+  
   return null;
 }
 

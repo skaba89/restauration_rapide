@@ -39,6 +39,7 @@ import { useLogout, useAuth } from '@/hooks/use-api';
 import { useRouter } from 'next/navigation';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useCartStore } from '@/lib/cart-store';
+import { useSettings } from '@/hooks/use-settings';
 
 interface NavItem {
   title: string;
@@ -61,6 +62,8 @@ const CUSTOMER_NAV_ITEMS: NavItem[] = [
 
 // Separate NavContent component
 function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  const { currentRestaurant, formatCurrency } = useSettings();
+  
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
@@ -69,10 +72,10 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
           <ChefHat className="h-6 w-6 text-white" />
         </div>
         <div>
-          <h1 className="font-bold text-lg">Le Petit Maquis</h1>
+          <h1 className="font-bold text-lg">{currentRestaurant?.name || 'Restaurant'}</h1>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3" />
-            <span>Cocody, Abidjan</span>
+            <span>{currentRestaurant?.address?.split(',')[0] || 'Abidjan'}</span>
           </div>
         </div>
       </div>

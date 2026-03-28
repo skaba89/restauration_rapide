@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useSettings } from '@/hooks/use-settings';
+import { CURRENCIES, COUNTRIES, type CurrencyCode, type CountryCode, type RestaurantInfo } from '@/lib/settings-store';
 import {
   Settings,
   Store,
@@ -47,292 +49,178 @@ import {
   Trash2,
   Edit,
   Check,
+  Flag,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 
-// African countries with currencies
-const AFRICAN_COUNTRIES = [
-  { code: 'CI', name: 'Côte d\'Ivoire', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'SN', name: 'Sénégal', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'ML', name: 'Mali', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'BF', name: 'Burkina Faso', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'GN', name: 'Guinée', currency: 'GNF', currencyName: 'Franc Guinéen' },
-  { code: 'CM', name: 'Cameroun', currency: 'XAF', currencyName: 'Franc CFA' },
-  { code: 'TG', name: 'Togo', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'BJ', name: 'Bénin', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'NE', name: 'Niger', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'CD', name: 'RD Congo', currency: 'CDF', currencyName: 'Franc Congolais' },
-  { code: 'MG', name: 'Madagascar', currency: 'MGA', currencyName: 'Ariary' },
-  { code: 'KE', name: 'Kenya', currency: 'KES', currencyName: 'Shilling Kényan' },
-  { code: 'NG', name: 'Nigeria', currency: 'NGN', currencyName: 'Naira' },
-  { code: 'GH', name: 'Ghana', currency: 'GHS', currencyName: 'Cedi' },
-];
-
-// Mobile money providers by country
-const MOBILE_MONEY_PROVIDERS: Record<string, string[]> = {
-  CI: ['Orange Money', 'MTN MoMo', 'Wave', 'Moov Money'],
-  SN: ['Orange Money', 'Wave', 'Free Money'],
-  GN: ['Orange Money', 'MTN MoMo', 'Cellcom'],
-  ML: ['Orange Money', 'Moov Money'],
-  BF: ['Orange Money', 'Moov Money'],
-  CM: ['Orange Money', 'MTN MoMo'],
-  KE: ['M-Pesa', 'Airtel Money'],
-  GH: ['MTN MoMo', 'Vodafone Cash', 'AirtelTigo Money'],
-  NG: ['Paga', 'OPay', 'PalmPay'],
+// Feature labels
+const FEATURE_LABELS: Record<string, { label: string; description: string }> = {
+  pos: { label: 'Point de Vente (POS)', description: 'Système de caisse pour les ventes sur place' },
+  deliveries: { label: 'Livraison', description: 'Gestion des livraisons et livreurs' },
+  reservations: { label: 'Réservations', description: 'Système de réservation de tables' },
+  loyalty: { label: 'Programme Fidélité', description: 'Points et récompenses pour les clients' },
+  kitchenDisplay: { label: 'Écran Cuisine (KDS)', description: 'Affichage des commandes en cuisine' },
+  analytics: { label: 'Analytics', description: 'Statistiques et rapports de ventes' },
+  multiRestaurant: { label: 'Multi-Restaurants', description: 'Gérer plusieurs restaurants' },
+  messaging: { label: 'Messagerie', description: 'Chat entre clients, drivers et restaurant' },
+  onlinePayment: { label: 'Paiement en Ligne', description: 'Paiement par carte et mobile money' },
+  cashPayment: { label: 'Paiement Espèces', description: 'Accepter les paiements en espèces' },
+  mobileMoney: { label: 'Mobile Money', description: 'Orange Money, MTN MoMo, Wave, etc.' },
+  tips: { label: 'Pourboires', description: 'Permettre aux clients de laisser des pourboires' },
+  reviews: { label: 'Avis Clients', description: 'Système de notation et commentaires' },
+  promotions: { label: 'Promotions', description: 'Bons plans et codes promo' },
+  inventory: { label: 'Inventaire', description: 'Gestion des stocks' },
+  staffManagement: { label: 'Gestion Personnel', description: 'Gestion des employés et planning' },
 };
-
-// Demo sites data
-const DEMO_SITES = [
-  {
-    id: '1',
-    name: 'Restaurant Le Savana - Cocody',
-    address: 'Cocody, Rue des Jardins',
-    city: 'Abidjan',
-    phone: '07 00 00 00 01',
-    email: 'contact@savana-ci.com',
-    isMain: true,
-    status: 'active',
-  },
-  {
-    id: '2',
-    name: 'Restaurant Le Savana - Plateau',
-    address: 'Plateau, Avenue 12',
-    city: 'Abidjan',
-    phone: '07 00 00 00 02',
-    email: 'plateau@savana-ci.com',
-    isMain: false,
-    status: 'active',
-  },
-];
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const [selectedCountry, setSelectedCountry] = useState('CI');
+  const {
+    currency,
+    country,
+    currentRestaurant,
+    features,
+    setCurrency,
+    setCountry,
+    setCurrentRestaurant,
+    updateFeature,
+    formatCurrency,
+  } = useSettings();
+  
   const [isSaving, setIsSaving] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   
-  // Restaurant settings
-  const [restaurantSettings, setRestaurantSettings] = useState({
-    name: 'Restaurant Le Savana',
-    phone: '07 00 00 00 01',
-    email: 'contact@savana.ci',
-    address: 'Cocody, Rue des Jardins',
-    city: 'Abidjan',
-    currency: 'XOF',
+  // Local restaurant form state
+  const [restaurantForm, setRestaurantForm] = useState({
+    name: currentRestaurant?.name || 'Le Petit Maquis',
+    phone: currentRestaurant?.phone || '+225 07 00 00 00 00',
+    email: currentRestaurant?.email || 'contact@restaurant.com',
+    address: currentRestaurant?.address || 'Cocody, Riviera 2, Abidjan',
+    deliveryFee: currentRestaurant?.deliveryFee || 500,
+    minOrderAmount: currentRestaurant?.minOrderAmount || 1000,
+    deliveryTimeMin: currentRestaurant?.deliveryTime.min || 25,
+    deliveryTimeMax: currentRestaurant?.deliveryTime.max || 45,
     logo: null as string | null,
   });
 
-  // Order settings
-  const [orderSettings, setOrderSettings] = useState({
-    autoAccept: false,
-    prepTime: 20,
-    minOrder: 2500,
-    deliveryFee: 1000,
-    maxRadius: 10,
-  });
-
-  // Payment settings
-  const [paymentSettings, setPaymentSettings] = useState({
-    acceptsCash: true,
-    acceptsOrangeMoney: true,
-    acceptsMTN: true,
-    acceptsWave: true,
-    acceptsCard: false,
-  });
-
-  // Delivery settings
-  const [deliverySettings, setDeliverySettings] = useState({
-    selfDelivery: true,
-    thirdParty: false,
-    driverCommission: 70,
-  });
-
-  // Notification settings
-  const [notificationSettings, setNotificationSettings] = useState({
-    newOrders: true,
-    reservations: true,
-    cancellations: true,
-    dailyReports: true,
-  });
-
-  // Sites management
-  const [sites, setSites] = useState(DEMO_SITES);
-  const [isAddSiteOpen, setIsAddSiteOpen] = useState(false);
-  const [newSite, setNewSite] = useState({
-    name: '',
-    address: '',
-    city: 'Abidjan',
-    phone: '',
-    email: '',
-  });
-
-  // Handle logo upload
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: 'Erreur',
-          description: 'Veuillez sélectionner un fichier image',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      if (file.size > 2 * 1024 * 1024) {
-        toast({
-          title: 'Erreur',
-          description: 'L\'image ne doit pas dépasser 2 Mo',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        setRestaurantSettings({ ...restaurantSettings, logo: base64 });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Save general settings
-  const saveGeneralSettings = async () => {
+  // Save restaurant settings
+  const saveRestaurantSettings = async () => {
     setIsSaving(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
-    setIsSaving(false);
     
+    setCurrentRestaurant({
+      id: currentRestaurant?.id || 'default',
+      name: restaurantForm.name,
+      slug: currentRestaurant?.slug || 'default',
+      phone: restaurantForm.phone,
+      email: restaurantForm.email,
+      address: restaurantForm.address,
+      deliveryFee: restaurantForm.deliveryFee,
+      minOrderAmount: restaurantForm.minOrderAmount,
+      deliveryTime: {
+        min: restaurantForm.deliveryTimeMin,
+        max: restaurantForm.deliveryTimeMax,
+      },
+      openingHours: currentRestaurant?.openingHours || {
+        open: '11:00',
+        close: '23:00',
+        days: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
+      },
+    });
+    
+    setIsSaving(false);
     toast({
       title: 'Paramètres enregistrés',
       description: 'Les informations du restaurant ont été mises à jour',
     });
   };
 
-  // Save order settings
-  const saveOrderSettings = async () => {
+  // Save currency/country settings
+  const saveLocalizationSettings = async () => {
     setIsSaving(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     setIsSaving(false);
     
     toast({
-      title: 'Paramètres enregistrés',
-      description: 'Les paramètres des commandes ont été mis à jour',
+      title: 'Localisation mise à jour',
+      description: `Devise: ${CURRENCIES[currency].symbol} | Pays: ${COUNTRIES[country].name}`,
     });
   };
 
-  // Save payment settings
-  const savePaymentSettings = async () => {
+  // Save features settings
+  const saveFeaturesSettings = async () => {
     setIsSaving(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     setIsSaving(false);
     
     toast({
-      title: 'Paramètres enregistrés',
-      description: 'Les moyens de paiement ont été mis à jour',
+      title: 'Fonctionnalités mises à jour',
+      description: 'Les modules actifs ont été configurés',
     });
   };
 
-  // Save delivery settings
-  const saveDeliverySettings = async () => {
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsSaving(false);
-    
-    toast({
-      title: 'Paramètres enregistrés',
-      description: 'Les paramètres de livraison ont été mis à jour',
-    });
-  };
-
-  // Save notification settings
-  const saveNotificationSettings = async () => {
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsSaving(false);
-    
-    toast({
-      title: 'Paramètres enregistrés',
-      description: 'Les préférences de notification ont été mises à jour',
-    });
-  };
-
-  // Add new site
-  const addSite = () => {
-    if (!newSite.name || !newSite.address || !newSite.phone) {
-      toast({
-        title: 'Erreur',
-        description: 'Veuillez remplir tous les champs obligatoires',
-        variant: 'destructive',
-      });
-      return;
+  // Handle logo upload
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({ title: 'Erreur', description: 'Veuillez sélectionner un fichier image', variant: 'destructive' });
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        toast({ title: 'Erreur', description: 'L\'image ne doit pas dépasser 2 Mo', variant: 'destructive' });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setRestaurantForm({ ...restaurantForm, logo: event.target?.result as string });
+      };
+      reader.readAsDataURL(file);
     }
-
-    const site = {
-      id: String(sites.length + 1),
-      ...newSite,
-      isMain: false,
-      status: 'active',
-    };
-
-    setSites([...sites, site]);
-    setNewSite({ name: '', address: '', city: 'Abidjan', phone: '', email: '' });
-    setIsAddSiteOpen(false);
-
-    toast({
-      title: 'Site ajouté',
-      description: `${site.name} a été ajouté à vos établissements`,
-    });
   };
 
-  // Delete site
-  const deleteSite = (siteId: string) => {
-    const site = sites.find(s => s.id === siteId);
-    if (site?.isMain) {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de supprimer le site principal',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setSites(sites.filter(s => s.id !== siteId));
-    toast({
-      title: 'Site supprimé',
-      description: 'Le site a été retiré de vos établissements',
-    });
-  };
+  // Count enabled features
+  const enabledFeaturesCount = Object.values(features).filter(Boolean).length;
+  const totalFeaturesCount = Object.keys(features).length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Paramètres</h1>
-        <p className="text-muted-foreground">Configurez votre restaurant</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Paramètres</h1>
+          <p className="text-muted-foreground">Configurez votre restaurant</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="gap-1">
+            <Flag className="h-3 w-3" />
+            {COUNTRIES[country].flag} {COUNTRIES[country].name}
+          </Badge>
+          <Badge variant="secondary" className="gap-1">
+            <DollarSign className="h-3 w-3" />
+            {CURRENCIES[currency].symbol}
+          </Badge>
+        </div>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
           <TabsTrigger value="general" className="gap-2">
             <Store className="h-4 w-4" />
-            <span className="hidden sm:inline">Général</span>
+            <span className="hidden sm:inline">Restaurant</span>
           </TabsTrigger>
-          <TabsTrigger value="sites" className="gap-2">
-            <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Sites</span>
+          <TabsTrigger value="localization" className="gap-2">
+            <Globe className="h-4 w-4" />
+            <span className="hidden sm:inline">Localisation</span>
           </TabsTrigger>
-          <TabsTrigger value="orders" className="gap-2">
-            <ChefHat className="h-4 w-4" />
-            <span className="hidden sm:inline">Commandes</span>
+          <TabsTrigger value="features" className="gap-2">
+            <ToggleRight className="h-4 w-4" />
+            <span className="hidden sm:inline">Fonctionnalités</span>
           </TabsTrigger>
           <TabsTrigger value="payments" className="gap-2">
             <CreditCard className="h-4 w-4" />
             <span className="hidden sm:inline">Paiements</span>
-          </TabsTrigger>
-          <TabsTrigger value="delivery" className="gap-2">
-            <Truck className="h-4 w-4" />
-            <span className="hidden sm:inline">Livraison</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="gap-2">
             <Bell className="h-4 w-4" />
@@ -340,12 +228,12 @@ export default function SettingsPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* General Settings */}
+        {/* Restaurant Settings */}
         <TabsContent value="general" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Informations du restaurant</CardTitle>
-              <CardDescription>Informations de base de votre établissement</CardDescription>
+              <CardDescription>Ces informations apparaîtront sur votre menu et vos reçus</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Logo Upload */}
@@ -358,13 +246,11 @@ export default function SettingsPage() {
                   accept="image/*"
                   onChange={handleLogoUpload}
                 />
-                <div 
-                  className="flex items-center gap-4"
-                >
-                  {restaurantSettings.logo ? (
+                <div className="flex items-center gap-4">
+                  {restaurantForm.logo ? (
                     <div className="relative">
                       <img 
-                        src={restaurantSettings.logo} 
+                        src={restaurantForm.logo} 
                         alt="Logo" 
                         className="w-20 h-20 rounded-lg object-cover border"
                       />
@@ -372,7 +258,7 @@ export default function SettingsPage() {
                         variant="destructive"
                         size="icon"
                         className="absolute -top-2 -right-2 h-6 w-6"
-                        onClick={() => setRestaurantSettings({ ...restaurantSettings, logo: null })}
+                        onClick={() => setRestaurantForm({ ...restaurantForm, logo: null })}
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -399,16 +285,16 @@ export default function SettingsPage() {
                   <Label htmlFor="name">Nom du restaurant</Label>
                   <Input
                     id="name"
-                    value={restaurantSettings.name}
-                    onChange={(e) => setRestaurantSettings({ ...restaurantSettings, name: e.target.value })}
+                    value={restaurantForm.name}
+                    onChange={(e) => setRestaurantForm({ ...restaurantForm, name: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Téléphone</Label>
                   <Input
                     id="phone"
-                    value={restaurantSettings.phone}
-                    onChange={(e) => setRestaurantSettings({ ...restaurantSettings, phone: e.target.value })}
+                    value={restaurantForm.phone}
+                    onChange={(e) => setRestaurantForm({ ...restaurantForm, phone: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -416,24 +302,16 @@ export default function SettingsPage() {
                   <Input
                     id="email"
                     type="email"
-                    value={restaurantSettings.email}
-                    onChange={(e) => setRestaurantSettings({ ...restaurantSettings, email: e.target.value })}
+                    value={restaurantForm.email}
+                    onChange={(e) => setRestaurantForm({ ...restaurantForm, email: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
-                  <Input
-                    id="city"
-                    value={restaurantSettings.city}
-                    onChange={(e) => setRestaurantSettings({ ...restaurantSettings, city: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="address">Adresse</Label>
                   <Input
                     id="address"
-                    value={restaurantSettings.address}
-                    onChange={(e) => setRestaurantSettings({ ...restaurantSettings, address: e.target.value })}
+                    value={restaurantForm.address}
+                    onChange={(e) => setRestaurantForm({ ...restaurantForm, address: e.target.value })}
                   />
                 </div>
               </div>
@@ -442,60 +320,60 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                Localisation & Devise
-              </CardTitle>
-              <CardDescription>Configurez votre pays et votre devise</CardDescription>
+              <CardTitle>Paramètres de livraison</CardTitle>
+              <CardDescription>Configurez les frais et délais de livraison</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Pays</Label>
-                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AFRICAN_COUNTRIES.map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
-                          {country.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Frais de livraison</Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      value={restaurantForm.deliveryFee}
+                      onChange={(e) => setRestaurantForm({ ...restaurantForm, deliveryFee: parseInt(e.target.value) || 0 })}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      {CURRENCIES[currency].symbol}
+                    </span>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Devise</Label>
-                  <Select
-                    value={restaurantSettings.currency}
-                    onValueChange={(v) => setRestaurantSettings({ ...restaurantSettings, currency: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from(new Set(AFRICAN_COUNTRIES.map(c => c.currency))).map((currency) => {
-                        const country = AFRICAN_COUNTRIES.find(c => c.currency === currency);
-                        return (
-                          <SelectItem key={currency} value={currency}>
-                            {currency} - {country?.currencyName}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+                  <Label>Minimum de commande</Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      value={restaurantForm.minOrderAmount}
+                      onChange={(e) => setRestaurantForm({ ...restaurantForm, minOrderAmount: parseInt(e.target.value) || 0 })}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      {CURRENCIES[currency].symbol}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Délai minimum (min)</Label>
+                  <Input
+                    type="number"
+                    value={restaurantForm.deliveryTimeMin}
+                    onChange={(e) => setRestaurantForm({ ...restaurantForm, deliveryTimeMin: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Délai maximum (min)</Label>
+                  <Input
+                    type="number"
+                    value={restaurantForm.deliveryTimeMax}
+                    onChange={(e) => setRestaurantForm({ ...restaurantForm, deliveryTimeMax: parseInt(e.target.value) || 0 })}
+                  />
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 mt-4">
-                <Badge variant="secondary" className="gap-1">
-                  <DollarSign className="h-3 w-3" />
-                  Multi-devises supporté
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <Globe className="h-3 w-3" />
-                  {AFRICAN_COUNTRIES.length} pays africains
-                </Badge>
+              <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                <p className="text-sm">
+                  <span className="font-medium">Aperçu:</span> Livraison {formatCurrency(restaurantForm.deliveryFee)} • 
+                  Min. {formatCurrency(restaurantForm.minOrderAmount)} • 
+                  Délai: {restaurantForm.deliveryTimeMin}-{restaurantForm.deliveryTimeMax} min
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -503,7 +381,7 @@ export default function SettingsPage() {
           <div className="flex justify-end">
             <Button 
               className="bg-gradient-to-r from-orange-500 to-red-600"
-              onClick={saveGeneralSettings}
+              onClick={saveRestaurantSettings}
               disabled={isSaving}
             >
               <Save className="h-4 w-4 mr-2" /> 
@@ -512,112 +390,160 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        {/* Sites Management */}
-        <TabsContent value="sites" className="space-y-6">
+        {/* Localization Settings */}
+        <TabsContent value="localization" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Gestion des sites</CardTitle>
-                  <CardDescription>Gérez vos différents établissements</CardDescription>
-                </div>
-                <Button 
-                  className="bg-gradient-to-r from-orange-500 to-red-600"
-                  onClick={() => setIsAddSiteOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" /> Ajouter un site
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {sites.map((site) => (
-                  <div key={site.id} className="flex items-center justify-between p-4 rounded-lg border">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white">
-                        <Building2 className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{site.name}</p>
-                          {site.isMain && (
-                            <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                              Principal
-                            </Badge>
-                          )}
-                          <Badge variant="secondary" className="bg-green-100 text-green-700">
-                            <Check className="h-3 w-3 mr-1" /> Actif
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> {site.address}, {site.city}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" /> {site.phone}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4 mr-1" /> Modifier
-                      </Button>
-                      {!site.isMain && (
-                        <Button variant="outline" size="sm" className="text-red-600" onClick={() => deleteSite(site.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Orders Settings */}
-        <TabsContent value="orders" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres des commandes</CardTitle>
-              <CardDescription>Configurez le workflow des commandes</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Pays et Devise
+              </CardTitle>
+              <CardDescription>Ces paramètres affectent toute l'application</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Acceptation automatique</p>
-                  <p className="text-sm text-muted-foreground">Accepter automatiquement les nouvelles commandes</p>
-                </div>
-                <Switch
-                  checked={orderSettings.autoAccept}
-                  onCheckedChange={(v) => setOrderSettings({ ...orderSettings, autoAccept: v })}
-                />
+              {/* Country Selection */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Pays</Label>
+                <Select value={country} onValueChange={(v) => {
+                  setCountry(v as CountryCode);
+                  // Auto-set currency based on country
+                  const countryCurrency = COUNTRIES[v as CountryCode].currency;
+                  if (countryCurrency in CURRENCIES) {
+                    setCurrency(countryCurrency as CurrencyCode);
+                  }
+                }}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(COUNTRIES).map(([code, info]) => (
+                      <SelectItem key={code} value={code}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{info.flag}</span>
+                          <span>{info.name}</span>
+                          <span className="text-muted-foreground">({info.phoneCode})</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Le pays détermine l'indicatif téléphonique et la devise par défaut
+                </p>
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Temps de préparation (min)</Label>
-                  <Input
-                    type="number"
-                    value={orderSettings.prepTime}
-                    onChange={(e) => setOrderSettings({ ...orderSettings, prepTime: parseInt(e.target.value) })}
-                  />
+
+              {/* Currency Selection */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Devise</Label>
+                <Select value={currency} onValueChange={(v) => setCurrency(v as CurrencyCode)}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CURRENCIES).map(([code, info]) => (
+                      <SelectItem key={code} value={code}>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-orange-600">{info.symbol}</span>
+                          <span>{info.name}</span>
+                          <span className="text-muted-foreground">({code})</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Preview */}
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p className="text-sm font-medium mb-2">Aperçu du formatage</p>
+                <div className="space-y-1 text-sm">
+                  <p>1 article: <span className="font-medium">{formatCurrency(1)}</span></p>
+                  <p>1 000: <span className="font-medium">{formatCurrency(1000)}</span></p>
+                  <p>12 500: <span className="font-medium">{formatCurrency(12500)}</span></p>
+                  <p>1 250 000: <span className="font-medium">{formatCurrency(1250000)}</span></p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Minimum de commande (FCFA)</Label>
-                  <Input
-                    type="number"
-                    value={orderSettings.minOrder}
-                    onChange={(e) => setOrderSettings({ ...orderSettings, minOrder: parseInt(e.target.value) })}
-                  />
-                </div>
+              </div>
+
+              {/* Current Settings Summary */}
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="text-base py-1 px-3 gap-1">
+                  {COUNTRIES[country].flag} {COUNTRIES[country].name}
+                </Badge>
+                <Badge variant="secondary" className="text-base py-1 px-3 gap-1">
+                  <DollarSign className="h-4 w-4" />
+                  {CURRENCIES[currency].symbol} ({currency})
+                </Badge>
+                <Badge variant="secondary" className="text-base py-1 px-3 gap-1">
+                  <Phone className="h-4 w-4" />
+                  {COUNTRIES[country].phoneCode}
+                </Badge>
               </div>
             </CardContent>
           </Card>
+
           <div className="flex justify-end">
             <Button 
               className="bg-gradient-to-r from-orange-500 to-red-600"
-              onClick={saveOrderSettings}
+              onClick={saveLocalizationSettings}
+              disabled={isSaving}
+            >
+              <Save className="h-4 w-4 mr-2" /> 
+              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* Features Settings */}
+        <TabsContent value="features" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <ToggleRight className="h-5 w-5" />
+                  Modules & Fonctionnalités
+                </span>
+                <Badge variant="outline">
+                  {enabledFeaturesCount}/{totalFeaturesCount} actifs
+                </Badge>
+              </CardTitle>
+              <CardDescription>Activez ou désactivez les modules selon vos besoins</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Object.entries(features).map(([key, enabled]) => {
+                const featureInfo = FEATURE_LABELS[key] || { label: key, description: '' };
+                return (
+                  <div key={key} className="flex items-center justify-between p-4 rounded-lg border">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        enabled 
+                          ? 'bg-green-100 dark:bg-green-900/30' 
+                          : 'bg-gray-100 dark:bg-gray-800'
+                      }`}>
+                        {enabled ? (
+                          <ToggleRight className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <ToggleLeft className="h-5 w-5 text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">{featureInfo.label}</p>
+                        <p className="text-sm text-muted-foreground">{featureInfo.description}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={enabled}
+                      onCheckedChange={(v) => updateFeature(key as keyof typeof features, v)}
+                    />
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end">
+            <Button 
+              className="bg-gradient-to-r from-orange-500 to-red-600"
+              onClick={saveFeaturesSettings}
               disabled={isSaving}
             >
               <Save className="h-4 w-4 mr-2" /> 
@@ -631,260 +557,102 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Moyens de paiement</CardTitle>
-              <CardDescription>Activez les moyens de paiement acceptés</CardDescription>
+              <CardDescription>Configurez les options de paiement acceptées</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground mb-4">
-                Moyens de paiement disponibles en {AFRICAN_COUNTRIES.find(c => c.code === selectedCountry)?.name}:
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-lg border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Espèces</p>
-                      <p className="text-sm text-muted-foreground">Paiement en cash à la livraison</p>
-                    </div>
+              <div className="flex items-center justify-between p-4 rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-green-600" />
                   </div>
-                  <Switch
-                    checked={paymentSettings.acceptsCash}
-                    onCheckedChange={(v) => setPaymentSettings({ ...paymentSettings, acceptsCash: v })}
-                  />
-                </div>
-                
-                {(MOBILE_MONEY_PROVIDERS[selectedCountry] || []).map((provider) => (
-                  <div key={provider} className="flex items-center justify-between p-4 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                        <CreditCard className="h-5 w-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{provider}</p>
-                        <p className="text-sm text-muted-foreground">Paiement mobile money</p>
-                      </div>
-                    </div>
-                    <Switch defaultChecked />
+                  <div>
+                    <p className="font-medium">Espèces</p>
+                    <p className="text-sm text-muted-foreground">Paiement en cash à la livraison</p>
                   </div>
-                ))}
-                
-                <div className="flex items-center justify-between p-4 rounded-lg border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <CreditCard className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Carte bancaire</p>
-                      <p className="text-sm text-muted-foreground">Visa, Mastercard</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={paymentSettings.acceptsCard}
-                    onCheckedChange={(v) => setPaymentSettings({ ...paymentSettings, acceptsCard: v })}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <div className="flex justify-end">
-            <Button 
-              className="bg-gradient-to-r from-orange-500 to-red-600"
-              onClick={savePaymentSettings}
-              disabled={isSaving}
-            >
-              <Save className="h-4 w-4 mr-2" /> 
-              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
-            </Button>
-          </div>
-        </TabsContent>
-
-        {/* Delivery Settings */}
-        <TabsContent value="delivery" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres de livraison</CardTitle>
-              <CardDescription>Configurez vos options de livraison</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Frais de livraison (FCFA)</Label>
-                  <Input
-                    type="number"
-                    value={orderSettings.deliveryFee}
-                    onChange={(e) => setOrderSettings({ ...orderSettings, deliveryFee: parseInt(e.target.value) })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Rayon maximum (km)</Label>
-                  <Input
-                    type="number"
-                    value={orderSettings.maxRadius}
-                    onChange={(e) => setOrderSettings({ ...orderSettings, maxRadius: parseInt(e.target.value) })}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Livraison propre</p>
-                  <p className="text-sm text-muted-foreground">Utiliser vos propres drivers</p>
                 </div>
                 <Switch
-                  checked={deliverySettings.selfDelivery}
-                  onCheckedChange={(v) => setDeliverySettings({ ...deliverySettings, selfDelivery: v })}
+                  checked={features.cashPayment}
+                  onCheckedChange={(v) => updateFeature('cashPayment', v)}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Commission driver (%)</Label>
-                <Input
-                  type="number"
-                  value={deliverySettings.driverCommission}
-                  onChange={(e) => setDeliverySettings({ ...deliverySettings, driverCommission: parseInt(e.target.value) })}
+
+              <div className="flex items-center justify-between p-4 rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Mobile Money</p>
+                    <p className="text-sm text-muted-foreground">Orange Money, MTN MoMo, Wave, M-Pesa</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={features.mobileMoney}
+                  onCheckedChange={(v) => updateFeature('mobileMoney', v)}
                 />
-                <p className="text-xs text-muted-foreground">Pourcentage des frais de livraison reversé au driver</p>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Paiement en ligne</p>
+                    <p className="text-sm text-muted-foreground">Carte bancaire (Visa, Mastercard)</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={features.onlinePayment}
+                  onCheckedChange={(v) => updateFeature('onlinePayment', v)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Pourboires</p>
+                    <p className="text-sm text-muted-foreground">Permettre aux clients de laisser un pourboire</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={features.tips}
+                  onCheckedChange={(v) => updateFeature('tips', v)}
+                />
               </div>
             </CardContent>
           </Card>
-          <div className="flex justify-end">
-            <Button 
-              className="bg-gradient-to-r from-orange-500 to-red-600"
-              onClick={saveDeliverySettings}
-              disabled={isSaving}
-            >
-              <Save className="h-4 w-4 mr-2" /> 
-              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
-            </Button>
-          </div>
         </TabsContent>
 
         {/* Notifications Settings */}
         <TabsContent value="notifications" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Notifications</CardTitle>
-              <CardDescription>Configurez vos préférences de notification</CardDescription>
+              <CardTitle>Préférences de notification</CardTitle>
+              <CardDescription>Configurez quand et comment vous êtes notifié</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div>
-                  <p className="font-medium">Nouvelles commandes</p>
-                  <p className="text-sm text-muted-foreground">Être notifié des nouvelles commandes</p>
+              {[
+                { key: 'orders', label: 'Nouvelles commandes', desc: 'Notification à chaque nouvelle commande' },
+                { key: 'deliveries', label: 'Livraisons', desc: 'Mises à jour du statut des livraisons' },
+                { key: 'reservations', label: 'Réservations', desc: 'Nouvelles réservations de tables' },
+                { key: 'reviews', label: 'Avis clients', desc: 'Nouveaux avis et commentaires' },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between p-4 rounded-lg border">
+                  <div>
+                    <p className="font-medium">{item.label}</p>
+                    <p className="text-sm text-muted-foreground">{item.desc}</p>
+                  </div>
+                  <Switch defaultChecked />
                 </div>
-                <Switch
-                  checked={notificationSettings.newOrders}
-                  onCheckedChange={(v) => setNotificationSettings({ ...notificationSettings, newOrders: v })}
-                />
-              </div>
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div>
-                  <p className="font-medium">Réservations</p>
-                  <p className="text-sm text-muted-foreground">Être notifié des nouvelles réservations</p>
-                </div>
-                <Switch
-                  checked={notificationSettings.reservations}
-                  onCheckedChange={(v) => setNotificationSettings({ ...notificationSettings, reservations: v })}
-                />
-              </div>
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div>
-                  <p className="font-medium">Annulations</p>
-                  <p className="text-sm text-muted-foreground">Être notifié des annulations</p>
-                </div>
-                <Switch
-                  checked={notificationSettings.cancellations}
-                  onCheckedChange={(v) => setNotificationSettings({ ...notificationSettings, cancellations: v })}
-                />
-              </div>
-              <div className="flex items-center justify-between p-4 rounded-lg border">
-                <div>
-                  <p className="font-medium">Rapports quotidiens</p>
-                  <p className="text-sm text-muted-foreground">Recevoir un résumé quotidien par email</p>
-                </div>
-                <Switch
-                  checked={notificationSettings.dailyReports}
-                  onCheckedChange={(v) => setNotificationSettings({ ...notificationSettings, dailyReports: v })}
-                />
-              </div>
+              ))}
             </CardContent>
           </Card>
-          <div className="flex justify-end">
-            <Button 
-              className="bg-gradient-to-r from-orange-500 to-red-600"
-              onClick={saveNotificationSettings}
-              disabled={isSaving}
-            >
-              <Save className="h-4 w-4 mr-2" /> 
-              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
-            </Button>
-          </div>
         </TabsContent>
       </Tabs>
-
-      {/* Add Site Dialog */}
-      <Dialog open={isAddSiteOpen} onOpenChange={setIsAddSiteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Ajouter un site</DialogTitle>
-            <DialogDescription>Ajoutez un nouvel établissement à votre restaurant</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="site-name">Nom du site *</Label>
-              <Input
-                id="site-name"
-                placeholder="Restaurant Le Savana - Plateau"
-                value={newSite.name}
-                onChange={(e) => setNewSite({ ...newSite, name: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="site-address">Adresse *</Label>
-              <Input
-                id="site-address"
-                placeholder="Plateau, Avenue 12"
-                value={newSite.address}
-                onChange={(e) => setNewSite({ ...newSite, address: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="site-city">Ville</Label>
-                <Input
-                  id="site-city"
-                  value={newSite.city}
-                  onChange={(e) => setNewSite({ ...newSite, city: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="site-phone">Téléphone *</Label>
-                <Input
-                  id="site-phone"
-                  placeholder="07 00 00 00 00"
-                  value={newSite.phone}
-                  onChange={(e) => setNewSite({ ...newSite, phone: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="site-email">Email</Label>
-              <Input
-                id="site-email"
-                type="email"
-                placeholder="contact@site.com"
-                value={newSite.email}
-                onChange={(e) => setNewSite({ ...newSite, email: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsAddSiteOpen(false)}>Annuler</Button>
-            <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={addSite}>
-              Ajouter
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

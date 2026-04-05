@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KFM DELICE - Logo Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #92400e;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        .logo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(234, 88, 12, 0.15);
+            text-align: center;
+        }
+        .logo-card h2 {
+            color: #ea580c;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        .logo-card img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        .logo-small {
+            width: 100px;
+            height: 100px;
+        }
+        .logo-medium {
+            width: 200px;
+            height: 200px;
+        }
+        .logo-large {
+            width: 300px;
+            height: 300px;
+        }
+        .usage-example {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            box-shadow: 0 10px 40px rgba(234, 88, 12, 0.15);
+        }
+        .usage-example h2 {
+            color: #ea580c;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .example-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            background: #fef3c7;
+            border-radius: 12px;
+        }
+        .example-item span {
+            color: #92400e;
+            font-weight: 500;
+        }
+        .color-palette {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .color-swatch {
+            text-align: center;
+        }
+        .color-swatch .color {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .color-swatch .label {
+            font-size: 12px;
+            color: #666;
+        }
+        .color-swatch .hex {
+            font-size: 11px;
+            color: #999;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ KFM DELICE - Identité Visuelle</h1>
+        
+        <div class="logo-grid">
+            <div class="logo-card">
+                <h2>Logo Principal (400x400)</h2>
+                <img src="logo.svg" alt="KFM DELICE Logo" class="logo-large">
+            </div>
+            
+            <div class="logo-card">
+                <h2>Logo Médium (200x200)</h2>
+                <img src="logo.svg" alt="KFM DELICE Logo" class="logo-medium">
+            </div>
+            
+            <div class="logo-card">
+                <h2>Logo Small / Favicon (100x100)</h2>
+                <img src="icon.svg" alt="KFM DELICE Icon" class="logo-small">
+            </div>
+        </div>
+
+        <div class="usage-example">
+            <h2>Utilisations Recommandées</h2>
+            <div class="examples">
+                <div class="example-item">
+                    <img src="icon.svg" width="32" height="32">
+                    <span>Favicon / App Icon</span>
+                </div>
+                <div class="example-item">
+                    <img src="logo.svg" width="40" height="40">
+                    <span>Navigation Header</span>
+                </div>
+                <div class="example-item">
+                    <img src="logo.svg" width="60" height="60">
+                    <span>Menu Mobile</span>
+                </div>
+                <div class="example-item">
+                    <img src="logo.svg" width="80" height="80">
+                    <span>Factures & Documents</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="usage-example">
+            <h2>Palette de Couleurs</h2>
+            <div class="color-palette">
+                <div class="color-swatch">
+                    <div class="color" style="background: #F97316;"></div>
+                    <div class="label">Orange Principal</div>
+                    <div class="hex">#F97316</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color" style="background: #EA580C;"></div>
+                    <div class="label">Orange Foncé</div>
+                    <div class="hex">#EA580C</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color" style="background: #FCD34D;"></div>
+                    <div class="label">Or Clair</div>
+                    <div class="hex">#FCD34D</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color" style="background: #F59E0B;"></div>
+                    <div class="label">Or Médium</div>
+                    <div class="hex">#F59E0B</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color" style="background: #FEF3C7;"></div>
+                    <div class="label">Crème</div>
+                    <div class="hex">#FEF3C7</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color" style="background: #92400E;"></div>
+                    <div class="label">Brun Texte</div>
+                    <div class="hex">#92400E</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

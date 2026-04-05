@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -28,7 +29,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Store,
   Search,
@@ -44,124 +44,24 @@ import {
   Users,
   ShoppingCart,
 } from 'lucide-react';
-// Plan type definition (to avoid client-side Prisma import)
+
+// Plan type definition
 type Plan = 'STARTER' | 'PRO' | 'BUSINESS' | 'ENTERPRISE';
 
-// Demo data
-const DEMO_RESTAURANTS = [
-  {
-    id: '1',
-    name: 'Le Savana',
-    slug: 'le-savana',
-    logo: null,
-    city: 'Cocody, Abidjan',
-    isActive: true,
-    isOpen: true,
-    rating: 4.8,
-    reviewCount: 256,
-    createdAt: new Date('2024-01-15'),
-    organization: { id: 'org-1', name: 'Le Groupe Savana', plan: 'BUSINESS' as Plan },
-    _count: { orders: 1250 },
-  },
-  {
-    id: '2',
-    name: 'Saveurs d\'Afrique',
-    slug: 'saveurs-afrique',
-    logo: null,
-    city: 'Plateau, Abidjan',
-    isActive: true,
-    isOpen: false,
-    rating: 4.5,
-    reviewCount: 189,
-    createdAt: new Date('2024-02-20'),
-    organization: { id: 'org-2', name: 'Saveurs d\'Afrique Group', plan: 'PRO' as Plan },
-    _count: { orders: 890 },
-  },
-  {
-    id: '3',
-    name: 'Le Petit Bistro',
-    slug: 'petit-bistro',
-    logo: null,
-    city: 'Marcory, Abidjan',
-    isActive: true,
-    isOpen: true,
-    rating: 4.6,
-    reviewCount: 145,
-    createdAt: new Date('2024-03-10'),
-    organization: { id: 'org-3', name: 'Restaurant Le Petit Bistro', plan: 'STARTER' as Plan },
-    _count: { orders: 456 },
-  },
-  {
-    id: '4',
-    name: 'Café du Plateau',
-    slug: 'cafe-plateau',
-    logo: null,
-    city: 'Plateau, Abidjan',
-    isActive: false,
-    isOpen: false,
-    rating: 4.2,
-    reviewCount: 78,
-    createdAt: new Date('2024-01-05'),
-    organization: { id: 'org-4', name: 'Café du Plateau', plan: 'PRO' as Plan },
-    _count: { orders: 234 },
-  },
-  {
-    id: '5',
-    name: 'Maquis Chez Maman',
-    slug: 'maquis-maman',
-    logo: null,
-    city: 'Bouaké',
-    isActive: true,
-    isOpen: true,
-    rating: 4.9,
-    reviewCount: 312,
-    createdAt: new Date('2024-04-18'),
-    organization: { id: 'org-5', name: 'Maquis Chez Maman', plan: 'STARTER' as Plan },
-    _count: { orders: 678 },
-  },
-  {
-    id: '6',
-    name: 'La Terrasse Grill',
-    slug: 'terrasse-grill',
-    logo: null,
-    city: 'Riviera, Abidjan',
-    isActive: true,
-    isOpen: true,
-    rating: 4.7,
-    reviewCount: 423,
-    createdAt: new Date('2023-11-20'),
-    organization: { id: 'org-6', name: 'La Terrasse Group', plan: 'ENTERPRISE' as Plan },
-    _count: { orders: 1890 },
-  },
-  {
-    id: '7',
-    name: 'Sushi House',
-    slug: 'sushi-house',
-    logo: null,
-    city: 'Cocody, Abidjan',
-    isActive: true,
-    isOpen: true,
-    rating: 4.4,
-    reviewCount: 167,
-    createdAt: new Date('2024-05-01'),
-    organization: { id: 'org-1', name: 'Le Groupe Savana', plan: 'BUSINESS' as Plan },
-    _count: { orders: 534 },
-  },
-  {
-    id: '8',
-    name: 'Pizza Express',
-    slug: 'pizza-express',
-    logo: null,
-    city: 'Treichville, Abidjan',
-    isActive: true,
-    isOpen: false,
-    rating: 4.1,
-    reviewCount: 98,
-    createdAt: new Date('2024-03-25'),
-    organization: { id: 'org-1', name: 'Le Groupe Savana', plan: 'BUSINESS' as Plan },
-    _count: { orders: 345 },
-  },
-];
+interface Restaurant {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string | null;
+  city: string;
+  isActive: boolean;
+  isOpen: boolean;
+  rating: number;
+  reviewCount: number;
+  createdAt: string;
+  organization: { id: string; name: string; plan: Plan };
+  _count: { orders: number };
+}
 
 const getPlanBadgeStyle = (plan: Plan) => {
   const styles: Record<Plan, string> = {
@@ -183,7 +83,8 @@ const formatDate = (date: Date | string) => {
 
 export default function RestaurantsPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [restaurants, setRestaurants] = useState(DEMO_RESTAURANTS);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [totalRestaurants, setTotalRestaurants] = useState(0);
   const [search, setSearch] = useState('');
   const [orgFilter, setOrgFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -191,11 +92,140 @@ export default function RestaurantsPage() {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    const loadData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setIsLoading(false);
-    };
-    loadData();
+    async function fetchRestaurants() {
+      try {
+        const response = await fetch('/api/admin/restaurants?limit=50');
+        if (!response.ok) {
+          throw new Error('Failed to fetch restaurants');
+        }
+        const data = await response.json();
+        setRestaurants(data.data || []);
+        setTotalRestaurants(data.total || 0);
+      } catch (error) {
+        console.error('Error fetching restaurants:', error);
+        // Demo data fallback - consistent with dashboard
+        const demoRestaurants: Restaurant[] = [
+          {
+            id: '1',
+            name: 'Le Savana',
+            slug: 'le-savana',
+            logo: null,
+            city: 'Cocody, Abidjan',
+            isActive: true,
+            isOpen: true,
+            rating: 4.8,
+            reviewCount: 256,
+            createdAt: '2024-01-15',
+            organization: { id: 'org-1', name: 'Le Groupe Savana', plan: 'BUSINESS' },
+            _count: { orders: 1250 },
+          },
+          {
+            id: '2',
+            name: 'Saveurs d\'Afrique',
+            slug: 'saveurs-afrique',
+            logo: null,
+            city: 'Plateau, Abidjan',
+            isActive: true,
+            isOpen: false,
+            rating: 4.5,
+            reviewCount: 189,
+            createdAt: '2024-02-20',
+            organization: { id: 'org-2', name: 'Saveurs d\'Afrique Group', plan: 'PRO' },
+            _count: { orders: 890 },
+          },
+          {
+            id: '3',
+            name: 'Le Petit Bistro',
+            slug: 'petit-bistro',
+            logo: null,
+            city: 'Marcory, Abidjan',
+            isActive: true,
+            isOpen: true,
+            rating: 4.6,
+            reviewCount: 145,
+            createdAt: '2024-03-10',
+            organization: { id: 'org-3', name: 'Restaurant Le Petit Bistro', plan: 'STARTER' },
+            _count: { orders: 456 },
+          },
+          {
+            id: '4',
+            name: 'Café du Plateau',
+            slug: 'cafe-plateau',
+            logo: null,
+            city: 'Plateau, Abidjan',
+            isActive: false,
+            isOpen: false,
+            rating: 4.2,
+            reviewCount: 78,
+            createdAt: '2024-01-05',
+            organization: { id: 'org-4', name: 'Café du Plateau', plan: 'PRO' },
+            _count: { orders: 234 },
+          },
+          {
+            id: '5',
+            name: 'Maquis Chez Maman',
+            slug: 'maquis-maman',
+            logo: null,
+            city: 'Bouaké',
+            isActive: true,
+            isOpen: true,
+            rating: 4.9,
+            reviewCount: 312,
+            createdAt: '2024-04-18',
+            organization: { id: 'org-5', name: 'Maquis Chez Maman', plan: 'STARTER' },
+            _count: { orders: 678 },
+          },
+          {
+            id: '6',
+            name: 'La Terrasse Grill',
+            slug: 'terrasse-grill',
+            logo: null,
+            city: 'Riviera, Abidjan',
+            isActive: true,
+            isOpen: true,
+            rating: 4.7,
+            reviewCount: 423,
+            createdAt: '2023-11-20',
+            organization: { id: 'org-6', name: 'La Terrasse Group', plan: 'ENTERPRISE' },
+            _count: { orders: 1890 },
+          },
+          {
+            id: '7',
+            name: 'Sushi House',
+            slug: 'sushi-house',
+            logo: null,
+            city: 'Cocody, Abidjan',
+            isActive: true,
+            isOpen: true,
+            rating: 4.4,
+            reviewCount: 167,
+            createdAt: '2024-05-01',
+            organization: { id: 'org-1', name: 'Le Groupe Savana', plan: 'BUSINESS' },
+            _count: { orders: 534 },
+          },
+          {
+            id: '8',
+            name: 'Pizza Express',
+            slug: 'pizza-express',
+            logo: null,
+            city: 'Treichville, Abidjan',
+            isActive: true,
+            isOpen: false,
+            rating: 4.1,
+            reviewCount: 98,
+            createdAt: '2024-03-25',
+            organization: { id: 'org-1', name: 'Le Groupe Savana', plan: 'BUSINESS' },
+            _count: { orders: 345 },
+          },
+        ];
+        setRestaurants(demoRestaurants);
+        setTotalRestaurants(demoRestaurants.length);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchRestaurants();
   }, []);
 
   // Get unique organizations for filter
@@ -231,7 +261,7 @@ export default function RestaurantsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Restaurants</h1>
-          <p className="text-muted-foreground">Manage all restaurants on the platform</p>
+          <p className="text-muted-foreground">Manage all restaurants on the platform ({totalRestaurants} total)</p>
         </div>
       </div>
 

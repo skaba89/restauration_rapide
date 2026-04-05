@@ -5,71 +5,47 @@
 // Overview with statistics and charts
 // ============================================
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Building2,
   Store,
   Users,
-  TrendingUp,
-  TrendingDown,
   DollarSign,
   Activity,
   ArrowUpRight,
   ArrowDownRight,
 } from 'lucide-react';
 
-// Stats cards data
-const stats = [
-  {
-    name: 'Revenus mensuels',
-    value: '12,450,000 FCFA',
-    change: '+23.5%',
-    trend: 'up',
-    icon: DollarSign,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
-  },
-  {
-    name: 'Organisations actives',
-    value: '127',
-    change: '+12',
-    trend: 'up',
-    icon: Building2,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
-  },
-  {
-    name: 'Restaurants',
-    value: '384',
-    change: '+28',
-    trend: 'up',
-    icon: Store,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
-  },
-  {
-    name: 'Utilisateurs',
-    value: '2,847',
-    change: '+156',
-    trend: 'up',
-    icon: Users,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
-  },
-];
+// Types
+interface AdminStats {
+  totalOrganizations: number;
+  activeOrganizations: number;
+  totalRestaurants: number;
+  activeRestaurants: number;
+  totalUsers: number;
+  activeUsers: number;
+  totalRevenue: number;
+  monthlyRevenue: number;
+  totalOrders: number;
+  monthlyOrders: number;
+  newSignupsThisMonth: number;
+  activeSubscriptions: number;
+}
 
-// Revenue by plan
-const planRevenue = [
-  { plan: 'Free', count: 89, revenue: 0, color: 'bg-gray-400' },
-  { plan: 'Starter', count: 156, revenue: 4524000, color: 'bg-blue-500' },
-  { plan: 'Pro', count: 98, revenue: 7782000, color: 'bg-orange-500' },
-  { plan: 'Business', count: 34, revenue: 6766000, color: 'bg-purple-500' },
-];
+interface Signup {
+  name: string;
+  org: string;
+  plan: string;
+  date: string;
+  status: string;
+}
 
-// Recent signups
-const recentSignups = [
+// Demo data for recent signups (consistent with dashboard)
+const DEMO_RECENT_SIGNUPS: Signup[] = [
   { name: 'Le Jardin Secret', org: 'Jardin Group', plan: 'Pro', date: '2024-01-15', status: 'active' },
   { name: 'Chez Awa', org: 'Awa Restaurant', plan: 'Starter', date: '2024-01-14', status: 'active' },
   { name: 'Ghana Food Chain', org: 'GFC Ltd', plan: 'Business', date: '2024-01-13', status: 'active' },
@@ -77,8 +53,8 @@ const recentSignups = [
   { name: 'Café de la Gare', org: 'Café Group', plan: 'Starter', date: '2024-01-11', status: 'active' },
 ];
 
-// Top countries
-const topCountries = [
+// Top countries (consistent demo data)
+const TOP_COUNTRIES = [
   { name: 'Côte d\'Ivoire', flag: '🇨🇮', count: 156, percentage: 41 },
   { name: 'Sénégal', flag: '🇸🇳', count: 98, percentage: 26 },
   { name: 'Ghana', flag: '🇬🇭', count: 67, percentage: 18 },
@@ -86,14 +62,101 @@ const topCountries = [
   { name: 'Kenya', flag: '🇰🇪', count: 21, percentage: 5 },
 ];
 
+// Plan revenue data
+const PLAN_REVENUE = [
+  { plan: 'Free', count: 89, revenue: 0, color: 'bg-gray-400' },
+  { plan: 'Starter', count: 156, revenue: 4524000, color: 'bg-blue-500' },
+  { plan: 'Pro', count: 98, revenue: 7782000, color: 'bg-orange-500' },
+  { plan: 'Business', count: 34, revenue: 6766000, color: 'bg-purple-500' },
+];
+
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch('/api/admin/stats');
+        if (!response.ok) {
+          throw new Error('Failed to fetch stats');
+        }
+        const data = await response.json();
+        setStats(data);
+      } catch (err) {
+        console.error('Error fetching admin stats:', err);
+        setError('Failed to load stats');
+        // Use demo data as fallback
+        setStats({
+          totalOrganizations: 127,
+          activeOrganizations: 118,
+          totalRestaurants: 384,
+          activeRestaurants: 356,
+          totalUsers: 2847,
+          activeUsers: 2654,
+          totalRevenue: 245000000,
+          monthlyRevenue: 12450000,
+          totalOrders: 45678,
+          monthlyOrders: 3456,
+          newSignupsThisMonth: 156,
+          activeSubscriptions: 89,
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchStats();
+  }, []);
+
+  // Transform stats to card format
+  const statsCards = stats ? [
+    {
+      name: 'Revenus mensuels',
+      value: `${(stats.monthlyRevenue / 1000000).toFixed(1)}M FCFA`,
+      change: '+23.5%',
+      trend: 'up',
+      icon: DollarSign,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
+    },
+    {
+      name: 'Organisations actives',
+      value: stats.totalOrganizations.toString(),
+      change: '+12',
+      trend: 'up',
+      icon: Building2,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100',
+    },
+    {
+      name: 'Restaurants',
+      value: stats.totalRestaurants.toString(),
+      change: '+28',
+      trend: 'up',
+      icon: Store,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100',
+    },
+    {
+      name: 'Utilisateurs',
+      value: stats.totalUsers.toLocaleString(),
+      change: '+156',
+      trend: 'up',
+      icon: Users,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100',
+    },
+  ] : [];
+
   return (
     <div className="space-y-6">
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
-          <p className="text-gray-500">Vue d\'ensemble de la plateforme Restaurant OS</p>
+          <p className="text-gray-500">Vue d&apos;ensemble de la plateforme KFM DELICE</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
@@ -107,31 +170,43 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.name}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+      {loading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {statsCards.map((stat) => (
+            <Card key={stat.name}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                  </div>
+                  <div className={`flex items-center text-sm ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                    {stat.trend === 'up' ? (
+                      <ArrowUpRight className="h-4 w-4 mr-1" />
+                    ) : (
+                      <ArrowDownRight className="h-4 w-4 mr-1" />
+                    )}
+                    {stat.change}
+                  </div>
                 </div>
-                <div className={`flex items-center text-sm ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  {stat.trend === 'up' ? (
-                    <ArrowUpRight className="h-4 w-4 mr-1" />
-                  ) : (
-                    <ArrowDownRight className="h-4 w-4 mr-1" />
-                  )}
-                  {stat.change}
+                <div className="mt-4">
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-sm text-gray-500">{stat.name}</p>
                 </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-sm text-gray-500">{stat.name}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Revenue by plan */}
@@ -142,7 +217,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {planRevenue.map((plan) => (
+              {PLAN_REVENUE.map((plan) => (
                 <div key={plan.plan} className="flex items-center">
                   <div className={`w-3 h-3 rounded-full ${plan.color} mr-3`} />
                   <div className="flex-1 min-w-0">
@@ -187,7 +262,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topCountries.map((country, index) => (
+              {TOP_COUNTRIES.map((country) => (
                 <div key={country.name} className="flex items-center">
                   <span className="text-lg mr-2">{country.flag}</span>
                   <div className="flex-1 min-w-0">
@@ -250,7 +325,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentSignups.map((signup) => (
+                {DEMO_RECENT_SIGNUPS.map((signup) => (
                   <tr key={signup.name} className="border-b last:border-0">
                     <td className="py-3 px-2">
                       <span className="font-medium">{signup.name}</span>

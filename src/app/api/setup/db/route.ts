@@ -62,7 +62,7 @@ export async function GET() {
         update: {
           name: 'KFM DELICE',
           email: 'contact@kfm-delice.com',
-          phone: '+224622000000',
+          phone: '+224623217240',
           city: 'Conakry',
           countryId: guinea.id,
           currencyId: gnf.id,
@@ -73,7 +73,7 @@ export async function GET() {
           name: 'KFM DELICE',
           slug: 'kfm-delice-org',
           email: 'contact@kfm-delice.com',
-          phone: '+224622000000',
+          phone: '+224623217240',
           city: 'Conakry',
           countryId: guinea.id,
           currencyId: gnf.id,
@@ -99,13 +99,13 @@ export async function GET() {
 
       // Create admin user
       const hashedPassword = await bcrypt.hash('KfmDelice2024!', BCRYPT_SALT_ROUNDS);
-      let user = await db.user.findUnique({ where: { email: 'kfm.delice@guinee.com' } });
+      let user = await db.user.findUnique({ where: { email: 'contact@kfm-delice.com' } });
       
       if (!user) {
         user = await db.user.create({
           data: {
-            email: 'kfm.delice@guinee.com',
-            phone: '+224622000001',
+            email: 'contact@kfm-delice.com',
+            phone: '+224623217240',
             passwordHash: hashedPassword,
             firstName: 'KFM',
             lastName: 'DELICE',
@@ -141,10 +141,11 @@ export async function GET() {
           data: {
             name: 'KFM DELICE',
             description: 'Restaurant fast-food guinéen - Saveurs de Guinée, Côte d\'Ivoire et Sénégal',
-            phone: '+224622000000',
-            address: 'Kaloum, Conakry',
+            email: 'contact@kfm-delice.com',
+            phone: '+224623217240',
+            address: 'Nongo',
             city: 'Conakry',
-            district: 'Kaloum',
+            district: 'Ratoma',
             countryId: guinea.id,
             restaurantType: 'restaurant',
             cuisines: JSON.stringify(['Guinéenne', 'Ivoirienne', 'Sénégalaise', 'Fast Food']),
@@ -168,10 +169,11 @@ export async function GET() {
             name: 'KFM DELICE',
             slug: 'kfm-delice',
             description: 'Restaurant fast-food guinéen - Saveurs de Guinée, Côte d\'Ivoire et Sénégal',
-            phone: '+224622000000',
-            address: 'Kaloum, Conakry',
+            email: 'contact@kfm-delice.com',
+            phone: '+224623217240',
+            address: 'Nongo',
             city: 'Conakry',
-            district: 'Kaloum',
+            district: 'Ratoma',
             countryId: guinea.id,
             restaurantType: 'restaurant',
             cuisines: JSON.stringify(['Guinéenne', 'Ivoirienne', 'Sénégalaise', 'Fast Food']),
@@ -284,11 +286,12 @@ export async function GET() {
       }
       result.steps.push(`✓ Menu items (${itemCount} new)`);
 
-      // Create delivery zones
+      // Create delivery zones - Zones de livraison pour Conakry
       const zones = [
+        { name: 'Ratoma', fee: 3000, min: 10000, t1: 15, t2: 30 },
+        { name: 'Nongo', fee: 2000, min: 8000, t1: 10, t2: 25 },
         { name: 'Kaloum', fee: 5000, min: 10000, t1: 20, t2: 45 },
         { name: 'Dixinn', fee: 5000, min: 10000, t1: 25, t2: 50 },
-        { name: 'Ratoma', fee: 5000, min: 10000, t1: 25, t2: 50 },
         { name: 'Matam', fee: 6000, min: 10000, t1: 30, t2: 55 },
         { name: 'Matoto', fee: 6000, min: 10000, t1: 30, t2: 55 },
       ];
@@ -320,7 +323,11 @@ export async function GET() {
       result.steps.push('');
       result.steps.push('🎉 SETUP COMPLETE!');
       result.steps.push('');
-      result.steps.push('📧 Email: kfm.delice@guinee.com');
+      result.steps.push('📍 Restaurant: KFM DELICE');
+      result.steps.push('📍 Adresse: Nongo, Commune de Ratoma, Guinée');
+      result.steps.push('📧 Email: contact@kfm-delice.com');
+      result.steps.push('📱 Tél: +224 623 21 72 40');
+      result.steps.push('');
       result.steps.push('🔑 Password: KfmDelice2024!');
       result.steps.push('');
       result.steps.push('🔗 Try: /menu/kfm-delice');

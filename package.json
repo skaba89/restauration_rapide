@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev -p 3010",
     "dev:clean": "npx kill-port 3010 && next dev -p 3010",
+    "postinstall": "prisma generate",
     "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
+    "start:render": "./scripts/start-render.sh",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",

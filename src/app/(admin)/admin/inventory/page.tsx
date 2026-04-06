@@ -94,50 +94,99 @@ export default function AdminInventoryPage() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [newItem, setNewItem] = useState({
+    name: '',
+    sku: '',
+    category: 'INGREDIENTS',
+    quantity: '',
+    unit: 'kg',
+    minStock: '',
+    maxStock: '',
+    costPerUnit: '',
+    supplier: '',
+  });
+
+  const fetchInventory = async () => {
+    try {
+      const [itemsRes, movementsRes] = await Promise.all([
+        fetch('/api/admin/inventory'),
+        fetch('/api/admin/inventory/movements'),
+      ]);
+      
+      if (itemsRes.ok) {
+        const data = await itemsRes.json();
+        setItems(data.data || []);
+      }
+      if (movementsRes.ok) {
+        const data = await movementsRes.json();
+        setMovements(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
+      setLoading(true);
       try {
-        const [itemsRes, movementsRes] = await Promise.all([
-          fetch('/api/admin/inventory'),
-          fetch('/api/admin/inventory/movements'),
-        ]);
-        
-        if (itemsRes.ok) {
-          const data = await itemsRes.json();
-          setItems(data.data || []);
-        }
-        if (movementsRes.ok) {
-          const data = await movementsRes.json();
-          setMovements(data.data || []);
-        }
+        await fetchInventory();
       } catch (error) {
         console.error('Error fetching inventory:', error);
-        // Demo data
-        setItems([
-          { id: '1', name: 'Riz', sku: 'RIZ-001', category: 'INGREDIENTS', quantity: 500, unit: 'kg', minStock: 100, maxStock: 1000, costPerUnit: 2000, totalValue: 1000000, status: 'IN_STOCK', lastRestocked: '2025-01-15', supplier: 'Fournisseur A' },
-          { id: '2', name: 'Poulet', sku: 'POU-001', category: 'PROTEINS', quantity: 80, unit: 'kg', minStock: 50, maxStock: 200, costPerUnit: 8000, totalValue: 640000, status: 'IN_STOCK', lastRestocked: '2025-01-14', supplier: 'Fournisseur B' },
-          { id: '3', name: 'Huile végétale', sku: 'HUI-001', category: 'INGREDIENTS', quantity: 30, unit: 'L', minStock: 50, maxStock: 200, costPerUnit: 5000, totalValue: 150000, status: 'LOW_STOCK', lastRestocked: '2025-01-10', supplier: 'Fournisseur A' },
-          { id: '4', name: 'Poisson frais', sku: 'POI-001', category: 'PROTEINS', quantity: 0, unit: 'kg', minStock: 30, maxStock: 100, costPerUnit: 12000, totalValue: 0, status: 'OUT_OF_STOCK', lastRestocked: '2025-01-05', supplier: 'Pêcheur local' },
-          { id: '5', name: 'Tomates', sku: 'TOM-001', category: 'VEGETABLES', quantity: 150, unit: 'kg', minStock: 30, maxStock: 80, costPerUnit: 2500, totalValue: 375000, status: 'OVERSTOCKED', lastRestocked: '2025-01-16', supplier: 'Marché central' },
-          { id: '6', name: 'Oignons', sku: 'OIG-001', category: 'VEGETABLES', quantity: 60, unit: 'kg', minStock: 20, maxStock: 100, costPerUnit: 1500, totalValue: 90000, status: 'IN_STOCK', lastRestocked: '2025-01-13', supplier: 'Marché central' },
-          { id: '7', name: 'Coca-Cola', sku: 'COC-001', category: 'BEVERAGES', quantity: 20, unit: 'bouteilles', minStock: 50, maxStock: 200, costPerUnit: 1500, totalValue: 30000, status: 'LOW_STOCK', lastRestocked: '2025-01-08', supplier: 'Distributeur' },
-          { id: '8', name: 'Attiéké', sku: 'ATT-001', category: 'INGREDIENTS', quantity: 100, unit: 'kg', minStock: 40, maxStock: 150, costPerUnit: 3000, totalValue: 300000, status: 'IN_STOCK', lastRestocked: '2025-01-15', supplier: 'Fournisseur C' },
-        ]);
-        
-        setMovements([
-          { id: 'm1', item: { name: 'Riz' }, type: 'IN', quantity: 200, reason: 'Réapprovisionnement', date: '2025-01-15', user: 'Admin' },
-          { id: 'm2', item: { name: 'Poulet' }, type: 'OUT', quantity: 20, reason: 'Utilisation cuisine', date: '2025-01-15', user: 'Chef' },
-          { id: 'm3', item: { name: 'Tomates' }, type: 'IN', quantity: 100, reason: 'Achat marché', date: '2025-01-16', user: 'Admin' },
-          { id: 'm4', item: { name: 'Poisson frais' }, type: 'OUT', quantity: 50, reason: 'Utilisation cuisine', date: '2025-01-14', user: 'Chef' },
-          { id: 'm5', item: { name: 'Coca-Cola' }, type: 'OUT', quantity: 30, reason: 'Ventes', date: '2025-01-15', user: 'Caissier' },
-        ]);
       } finally {
         setLoading(false);
       }
     }
     fetchData();
   }, []);
+
+  const handleAddItem = async () => {
+    if (!newItem.name) {
+      alert('Le nom est requis');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const response = await fetch('/api/admin/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newItem,
+          quantity: parseFloat(newItem.quantity) || 0,
+          minStock: parseFloat(newItem.minStock) || 0,
+          maxStock: parseFloat(newItem.maxStock) || 100,
+          costPerUnit: parseFloat(newItem.costPerUnit) || 0,
+          organizationId: 'demo-org-1',
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setItems([data.data || data, ...items]);
+        setShowAddDialog(false);
+        setNewItem({
+          name: '',
+          sku: '',
+          category: 'INGREDIENTS',
+          quantity: '',
+          unit: 'kg',
+          minStock: '',
+          maxStock: '',
+          costPerUnit: '',
+          supplier: '',
+        });
+      } else {
+        alert('Erreur lors de la création');
+      }
+    } catch (error) {
+      console.error('Error creating item:', error);
+      alert('Erreur lors de la création');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const filteredItems = items.filter(item => {
     const matchesSearch = search === '' ||
@@ -402,18 +451,26 @@ export default function AdminInventoryPage() {
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Nom</Label>
-                <Input placeholder="Nom de l'article" />
+                <Label>Nom *</Label>
+                <Input 
+                  placeholder="Nom de l'article" 
+                  value={newItem.name}
+                  onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label>SKU</Label>
-                <Input placeholder="ABC-001" />
+                <Input 
+                  placeholder="ABC-001" 
+                  value={newItem.sku}
+                  onChange={(e) => setNewItem({...newItem, sku: e.target.value})}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Catégorie</Label>
-                <Select>
+                <Select value={newItem.category} onValueChange={(v) => setNewItem({...newItem, category: v})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
@@ -422,36 +479,80 @@ export default function AdminInventoryPage() {
                     <SelectItem value="PROTEINS">Protéines</SelectItem>
                     <SelectItem value="VEGETABLES">Légumes</SelectItem>
                     <SelectItem value="BEVERAGES">Boissons</SelectItem>
+                    <SelectItem value="SUPPLIES">Fournitures</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Unité</Label>
-                <Input placeholder="kg, L, pièces" />
+                <Select value={newItem.unit} onValueChange={(v) => setNewItem({...newItem, unit: v})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kg">Kilogrammes (kg)</SelectItem>
+                    <SelectItem value="L">Litres (L)</SelectItem>
+                    <SelectItem value="pièces">Pièces</SelectItem>
+                    <SelectItem value="bouteilles">Bouteilles</SelectItem>
+                    <SelectItem value="sachets">Sachets</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Quantité initiale</Label>
-                <Input type="number" placeholder="0" />
+                <Input 
+                  type="number" 
+                  placeholder="0" 
+                  value={newItem.quantity}
+                  onChange={(e) => setNewItem({...newItem, quantity: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Stock min</Label>
-                <Input type="number" placeholder="10" />
+                <Input 
+                  type="number" 
+                  placeholder="10" 
+                  value={newItem.minStock}
+                  onChange={(e) => setNewItem({...newItem, minStock: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Stock max</Label>
-                <Input type="number" placeholder="100" />
+                <Input 
+                  type="number" 
+                  placeholder="100" 
+                  value={newItem.maxStock}
+                  onChange={(e) => setNewItem({...newItem, maxStock: e.target.value})}
+                />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Prix unitaire (FCFA)</Label>
-              <Input type="number" placeholder="0" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Prix unitaire (FCFA)</Label>
+                <Input 
+                  type="number" 
+                  placeholder="0" 
+                  value={newItem.costPerUnit}
+                  onChange={(e) => setNewItem({...newItem, costPerUnit: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Fournisseur</Label>
+                <Input 
+                  placeholder="Nom du fournisseur" 
+                  value={newItem.supplier}
+                  onChange={(e) => setNewItem({...newItem, supplier: e.target.value})}
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>Annuler</Button>
-            <Button onClick={() => setShowAddDialog(false)}>Ajouter</Button>
+            <Button onClick={handleAddItem} disabled={saving}>
+              {saving ? 'Création...' : 'Ajouter'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

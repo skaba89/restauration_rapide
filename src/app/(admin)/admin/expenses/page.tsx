@@ -114,6 +114,7 @@ export default function AdminExpensesPage() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [newExpense, setNewExpense] = useState({
     description: '',
     category: 'INVENTORY',
@@ -242,19 +243,61 @@ export default function AdminExpensesPage() {
 
   const COLORS = Object.values(categoryColors);
 
-  const handleAddExpense = () => {
-    const expense: Expense = {
-      id: Date.now().toString(),
-      description: newExpense.description,
-      category: newExpense.category,
-      amount: parseFloat(newExpense.amount),
-      date: new Date().toISOString(),
-      status: 'PENDING',
-      paidBy: 'Admin',
-    };
-    setExpenses([expense, ...expenses]);
-    setShowAddDialog(false);
-    setNewExpense({ description: '', category: 'INVENTORY', amount: '', notes: '' });
+  const handleAddExpense = async () => {
+    if (!newExpense.description || !newExpense.amount) {
+      alert('Veuillez remplir les champs obligatoires');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const response = await fetch('/api/admin/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newExpense,
+          amount: parseFloat(newExpense.amount) || 0,
+          restaurantId: 'demo-restaurant-1',
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setExpenses([data.data || data, ...expenses]);
+        setShowAddDialog(false);
+        setNewExpense({ description: '', category: 'INVENTORY', amount: '', notes: '' });
+      } else {
+        // Add locally if API fails
+        const expense: Expense = {
+          id: Date.now().toString(),
+          description: newExpense.description,
+          category: newExpense.category,
+          amount: parseFloat(newExpense.amount) || 0,
+          date: new Date().toISOString(),
+          status: 'PENDING',
+          paidBy: 'Admin',
+        };
+        setExpenses([expense, ...expenses]);
+        setShowAddDialog(false);
+        setNewExpense({ description: '', category: 'INVENTORY', amount: '', notes: '' });
+      }
+    } catch (error) {
+      console.error('Error creating expense:', error);
+      // Add locally on error
+      const expense: Expense = {
+        id: Date.now().toString(),
+        description: newExpense.description,
+        category: newExpense.category,
+        amount: parseFloat(newExpense.amount) || 0,
+        date: new Date().toISOString(),
+        status: 'PENDING',
+        paidBy: 'Admin',
+      };
+      setExpenses([expense, ...expenses]);
+      setShowAddDialog(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -520,7 +563,9 @@ export default function AdminExpensesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>Annuler</Button>
-            <Button onClick={handleAddExpense}>Enregistrer</Button>
+            <Button onClick={handleAddExpense} disabled={saving}>
+              {saving ? 'Enregistrement...' : 'Enregistrer'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

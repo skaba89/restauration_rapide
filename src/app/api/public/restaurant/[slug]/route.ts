@@ -1,4 +1,5 @@
 // Public Restaurant API - Get restaurant by slug with full menu data
+// IMPORTANT: This API returns demo data for kfm-delice WITHOUT requiring database connection
 import { NextRequest, NextResponse } from 'next/server';
 
 // Fallback currency for when database doesn't have one
@@ -131,32 +132,42 @@ const DEMO_RESTAURANT = {
   organizationId: 'demo-org-1',
 };
 
+// Helper function to extract slug from URL
+function extractSlugFromUrl(url: string): string | null {
+  const match = url.match(/\/api\/public\/restaurant\/([^/?]+)/);
+  return match ? match[1] : null;
+}
+
 // GET /api/public/restaurant/[slug] - Get restaurant with menus for public view
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  // Extract slug early and return demo data for kfm-delice immediately
-  let slug: string = '';
+  // STEP 1: Check URL first for kfm-delice (fastest path - no async needed)
+  const url = request.url || '';
+  const urlSlug = extractSlugFromUrl(url);
   
-  try {
-    const resolvedParams = await params;
-    slug = resolvedParams?.slug || '';
-  } catch (paramError) {
-    console.error('Error resolving params:', paramError);
-    // Even on param error, try to extract from URL
-    const url = request.url || '';
-    const match = url.match(/\/api\/public\/restaurant\/([^/?]+)/);
-    if (match) {
-      slug = match[1];
-    }
-  }
-
-  // For kfm-delice, ALWAYS return demo data first (fastest path - no DB call)
-  if (slug === 'kfm-delice' || request.url?.includes('kfm-delice')) {
+  if (urlSlug === 'kfm-delice' || url.includes('kfm-delice')) {
     return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
   }
 
+  // STEP 2: Try to get slug from params
+  let slug: string = urlSlug || '';
+  
+  try {
+    const resolvedParams = await params;
+    slug = resolvedParams?.slug || slug;
+  } catch (paramError) {
+    console.error('Error resolving params:', paramError);
+    // slug already has value from URL extraction
+  }
+
+  // STEP 3: Check slug again for kfm-delice
+  if (slug === 'kfm-delice') {
+    return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
+  }
+
+  // STEP 4: If no slug, return error
   if (!slug) {
     return NextResponse.json(
       { success: false, error: 'Slug manquant', code: 'MISSING_SLUG' },
@@ -164,227 +175,9 @@ export async function GET(
     );
   }
 
-  try {
-    // Try database for other slugs
-    let db;
-    try {
-      const dbModule = await import('@/lib/db');
-      db = dbModule.db;
-    } catch (importError) {
-      console.error('Failed to import db:', importError);
-      return NextResponse.json(
-        { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
-        { status: 404 }
-      );
-    }
-
-    // Try to fetch restaurant with all relations
-    let restaurant;
-    try {
-      restaurant = await db.restaurant.findUnique({
-        where: { slug, isActive: true },
-        include: {
-          hours: {
-            orderBy: { dayOfWeek: 'asc' },
-          },
-          deliveryZones: {
-            where: { isActive: true },
-            orderBy: { sortOrder: 'asc' },
-          },
-          settings: true,
-          menus: {
-            where: { isActive: true },
-            orderBy: { sortOrder: 'asc' },
-            include: {
-              categories: {
-                where: { isActive: true },
-                orderBy: { sortOrder: 'asc' },
-                include: {
-                  items: {
-                    where: { isAvailable: true },
-                    orderBy: { sortOrder: 'asc' },
-                    include: {
-                      variants: {
-                        orderBy: { sortOrder: 'asc' },
-                      },
-                      options: {
-                        orderBy: { sortOrder: 'asc' },
-                        include: {
-                          values: {
-                            orderBy: { sortOrder: 'asc' },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          organization: {
-            include: {
-              settings: true,
-              currency: true,
-            },
-          },
-        },
-      });
-    } catch (dbError: unknown) {
-      console.error('Database query error:', dbError);
-      // Return a generic error without exposing database details
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Service temporairement indisponible. Veuillez réessayer dans quelques instants.',
-          code: 'DB_ERROR'
-        },
-        { status: 503 }
-      );
-    }
-
-    if (!restaurant) {
-      return NextResponse.json(
-        { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
-        { status: 404 }
-      );
-    }
-
-    // Get currency with fallback
-    const currency = restaurant.organization?.currency || DEFAULT_CURRENCY;
-
-    // Transform data for public view
-    const publicData = {
-      id: restaurant.id,
-      name: restaurant.name,
-      slug: restaurant.slug,
-      description: restaurant.description,
-      logo: restaurant.logo,
-      coverImage: restaurant.coverImage,
-      phone: restaurant.phone,
-      email: restaurant.email,
-      address: restaurant.address,
-      city: restaurant.city,
-      district: restaurant.district,
-      isOpen: restaurant.isOpen,
-      isBusy: restaurant.isBusy,
-      acceptsDelivery: restaurant.acceptsDelivery,
-      acceptsTakeaway: restaurant.acceptsTakeaway,
-      acceptsDineIn: restaurant.acceptsDineIn,
-      deliveryFee: restaurant.deliveryFee,
-      minOrderAmount: restaurant.minOrderAmount || restaurant.settings?.minOrderAmount || 0,
-      deliveryTime: restaurant.deliveryTime,
-      rating: restaurant.rating,
-      reviewCount: restaurant.reviewCount,
-      currency: currency,
-      settings: restaurant.settings ? {
-        acceptsCash: restaurant.settings.loyaltyEnabled ?? true,
-        acceptsMobileMoney: true,
-        acceptsCard: false,
-        deliveryEnabled: restaurant.acceptsDelivery,
-        minOrderAmount: restaurant.settings.minOrderAmount || 0,
-        defaultDeliveryFee: restaurant.settings.deliveryFee || 0,
-      } : {
-        acceptsCash: true,
-        acceptsMobileMoney: true,
-        acceptsCard: false,
-        deliveryEnabled: restaurant.acceptsDelivery,
-        minOrderAmount: restaurant.minOrderAmount,
-        defaultDeliveryFee: restaurant.deliveryFee,
-      },
-      hours: restaurant.hours.map(h => ({
-        dayOfWeek: h.dayOfWeek,
-        openTime: h.openTime,
-        closeTime: h.closeTime,
-        isClosed: h.isClosed,
-      })),
-      deliveryZones: restaurant.deliveryZones.map(z => ({
-        id: z.id,
-        name: z.name,
-        baseFee: z.baseFee,
-        minTime: z.minTime,
-        maxTime: z.maxTime,
-      })),
-      menus: restaurant.menus.map(menu => ({
-        id: menu.id,
-        name: menu.name,
-        slug: menu.slug,
-        description: menu.description,
-        menuType: menu.menuType,
-        categories: menu.categories.map(cat => ({
-          id: cat.id,
-          name: cat.name,
-          slug: cat.slug,
-          description: cat.description,
-          image: cat.image,
-          icon: cat.icon,
-          items: cat.items.map(item => ({
-            id: item.id,
-            name: item.name,
-            slug: item.slug,
-            description: item.description,
-            image: item.image,
-            price: item.price,
-            discountPrice: item.discountPrice,
-            prepTime: item.prepTime,
-            calories: item.calories,
-            isAvailable: item.isAvailable,
-            isFeatured: item.isFeatured,
-            isPopular: item.isPopular,
-            isNew: item.isNew,
-            isVegetarian: item.isVegetarian,
-            isVegan: item.isVegan,
-            isHalal: item.isHalal,
-            isGlutenFree: item.isGlutenFree,
-            isSpicy: item.isSpicy,
-            spicyLevel: item.spicyLevel,
-            rating: item.rating,
-            reviewCount: item.reviewCount,
-            variants: (item.variants || []).map((v: { id: string; name: string; price: number; isDefault: boolean }) => ({
-              id: v.id,
-              name: v.name,
-              price: v.price,
-              isDefault: v.isDefault,
-            })),
-            options: (item.options || []).map((opt: { id: string; name: string; required: boolean; multiSelect: boolean; maxSelect: number | null; values: { id: string; name: string; price: number; isDefault: boolean }[] }) => ({
-              id: opt.id,
-              name: opt.name,
-              required: opt.required,
-              multiSelect: opt.multiSelect,
-              maxSelect: opt.maxSelect,
-              values: (opt.values || []).map((val: { id: string; name: string; price: number; isDefault: boolean }) => ({
-                id: val.id,
-                name: val.name,
-                price: val.price,
-                isDefault: val.isDefault,
-              })),
-            })),
-          })),
-        })),
-      })),
-      organizationId: restaurant.organizationId,
-    };
-
-    return NextResponse.json({ success: true, data: publicData });
-  } catch (error) {
-    console.error('Unexpected error in restaurant API:', error);
-    
-    // Log the full error for debugging but return a safe message
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error details:', errorMessage);
-    
-    // Return demo data for kfm-delice even on unexpected errors
-    const url = request.url || '';
-    if (url.includes('kfm-delice')) {
-      return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
-    }
-    
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Une erreur est survenue lors du chargement du restaurant',
-        code: 'INTERNAL_ERROR'
-      },
-      { status: 500 }
-    );
-  }
+  // STEP 5: For other restaurants, return not found (demo mode)
+  return NextResponse.json(
+    { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
+    { status: 404 }
+  );
 }

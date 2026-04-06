@@ -90,8 +90,19 @@ export default function AdminPOSPage() {
         const response = await fetch('/api/menu?demo=true');
         const data = await response.json();
         
-        if (data.success && data.menu?.categories) {
-          setCategories(data.menu.categories);
+        // API returns { success: true, data: [menus] } or { success: true, data: menu }
+        if (data.success && data.data) {
+          // If data is an array of menus, get categories from first menu
+          if (Array.isArray(data.data) && data.data.length > 0 && data.data[0].categories) {
+            setCategories(data.data[0].categories);
+          } 
+          // If data is a single menu with categories
+          else if (data.data.categories) {
+            setCategories(data.data.categories);
+          } 
+          else {
+            setCategories(getDemoCategories());
+          }
         } else {
           // Use demo data if API fails
           setCategories(getDemoCategories());

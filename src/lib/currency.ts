@@ -209,6 +209,18 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     symbolPosition: 'before',
     countries: ['GB'],
   },
+  // Guinean Franc
+  GNF: {
+    code: 'GNF',
+    name: 'Franc Guinéen',
+    symbol: 'GNF',
+    decimalPlaces: 0,
+    format: '{amount} {symbol}',
+    thousandsSeparator: ' ',
+    decimalSeparator: ',',
+    symbolPosition: 'after',
+    countries: ['GN'],
+  },
 };
 
 // Format currency amount
@@ -287,6 +299,7 @@ export const EXCHANGE_RATES: Record<string, Record<string, number>> = {
   EUR: { USD: 1.08, XOF: 655.96, NGN: 1550 },
   USD: { EUR: 0.93, XOF: 607.5, NGN: 1538 },
   GBP: { USD: 1.27, EUR: 1.17 },
+  GNF: { USD: 0.000115, EUR: 0.000106, XOF: 0.07 },
 };
 
 // Convert between currencies

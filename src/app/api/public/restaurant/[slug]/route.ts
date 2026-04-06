@@ -1,7 +1,12 @@
 // Public Restaurant API - Get restaurant by slug with full menu data
-import { db } from '@/lib/db';
-import { apiSuccess, apiError } from '@/lib/api-responses';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+
+// Fallback currency for when database doesn't have one
+const DEFAULT_CURRENCY = {
+  code: 'GNF',
+  symbol: 'GNF',
+  name: 'Franc Guinéen',
+};
 
 // GET /api/public/restaurant/[slug] - Get restaurant with menus for public view
 export async function GET(
@@ -11,37 +16,44 @@ export async function GET(
   try {
     const { slug } = await params;
 
-    const restaurant = await db.restaurant.findUnique({
-      where: { slug, isActive: true },
-      include: {
-        hours: {
-          orderBy: { dayOfWeek: 'asc' },
-        },
-        deliveryZones: {
-          where: { isActive: true },
-          orderBy: { sortOrder: 'asc' },
-        },
-        settings: true,
-        menus: {
-          where: { isActive: true },
-          orderBy: { sortOrder: 'asc' },
-          include: {
-            categories: {
-              where: { isActive: true },
-              orderBy: { sortOrder: 'asc' },
-              include: {
-                items: {
-                  where: { isAvailable: true },
-                  orderBy: { sortOrder: 'asc' },
-                  include: {
-                    variants: {
-                      orderBy: { sortOrder: 'asc' },
-                    },
-                    options: {
-                      orderBy: { sortOrder: 'asc' },
-                      include: {
-                        values: {
-                          orderBy: { sortOrder: 'asc' },
+    // Dynamic import to handle potential Prisma initialization issues
+    const { db } = await import('@/lib/db');
+
+    // Try to fetch restaurant with all relations
+    let restaurant;
+    try {
+      restaurant = await db.restaurant.findUnique({
+        where: { slug, isActive: true },
+        include: {
+          hours: {
+            orderBy: { dayOfWeek: 'asc' },
+          },
+          deliveryZones: {
+            where: { isActive: true },
+            orderBy: { sortOrder: 'asc' },
+          },
+          settings: true,
+          menus: {
+            where: { isActive: true },
+            orderBy: { sortOrder: 'asc' },
+            include: {
+              categories: {
+                where: { isActive: true },
+                orderBy: { sortOrder: 'asc' },
+                include: {
+                  items: {
+                    where: { isAvailable: true },
+                    orderBy: { sortOrder: 'asc' },
+                    include: {
+                      variants: {
+                        orderBy: { sortOrder: 'asc' },
+                      },
+                      options: {
+                        orderBy: { sortOrder: 'asc' },
+                        include: {
+                          values: {
+                            orderBy: { sortOrder: 'asc' },
+                          },
                         },
                       },
                     },
@@ -50,26 +62,36 @@ export async function GET(
               },
             },
           },
-        },
-        organization: {
-          include: {
-            settings: true,
-            currency: true,
+          organization: {
+            include: {
+              settings: true,
+              currency: true,
+            },
           },
         },
-      },
-    });
-
-    if (!restaurant) {
-      return apiError('Restaurant non trouvé', 404);
+      });
+    } catch (dbError) {
+      console.error('Database query error:', dbError);
+      // Return a generic error without exposing database details
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Service temporairement indisponible. Veuillez réessayer dans quelques instants.',
+          code: 'DB_ERROR'
+        },
+        { status: 503 }
+      );
     }
 
-    // Get currency
-    const currency = restaurant.organization?.currency || {
-      code: 'GNF',
-      symbol: 'GNF',
-      name: 'Franc Guinéen',
-    };
+    if (!restaurant) {
+      return NextResponse.json(
+        { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
+        { status: 404 }
+      );
+    }
+
+    // Get currency with fallback
+    const currency = restaurant.organization?.currency || DEFAULT_CURRENCY;
 
     // Transform data for public view
     const publicData = {
@@ -158,19 +180,19 @@ export async function GET(
             spicyLevel: item.spicyLevel,
             rating: item.rating,
             reviewCount: item.reviewCount,
-            variants: item.variants.map(v => ({
+            variants: (item.variants || []).map((v: any) => ({
               id: v.id,
               name: v.name,
               price: v.price,
               isDefault: v.isDefault,
             })),
-            options: item.options.map(opt => ({
+            options: (item.options || []).map((opt: any) => ({
               id: opt.id,
               name: opt.name,
               required: opt.required,
               multiSelect: opt.multiSelect,
               maxSelect: opt.maxSelect,
-              values: opt.values.map(val => ({
+              values: (opt.values || []).map((val: any) => ({
                 id: val.id,
                 name: val.name,
                 price: val.price,
@@ -183,9 +205,21 @@ export async function GET(
       organizationId: restaurant.organizationId,
     };
 
-    return apiSuccess(publicData);
+    return NextResponse.json({ success: true, data: publicData });
   } catch (error) {
-    console.error('Error fetching restaurant:', error);
-    return apiError('Erreur lors du chargement du restaurant', 500);
+    console.error('Unexpected error in restaurant API:', error);
+    
+    // Log the full error for debugging but return a safe message
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error details:', errorMessage);
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Une erreur est survenue lors du chargement du restaurant',
+        code: 'INTERNAL_ERROR'
+      },
+      { status: 500 }
+    );
   }
 }

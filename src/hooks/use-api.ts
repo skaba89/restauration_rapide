@@ -28,17 +28,21 @@ import {
 // ============================================
 
 export function useAuth() {
+  // Check if we have a token before trying to fetch session
+  const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+  
   const { data: session, isLoading, error } = useQuery({
     queryKey: ['auth', 'session'],
     queryFn: () => authApi.getSession(),
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!hasToken, // Only fetch if token exists
   });
 
   return {
     user: session?.user,
     isAuthenticated: !!session?.user,
-    isLoading,
+    isLoading: hasToken ? isLoading : false, // Not loading if no token
     error,
   };
 }

@@ -167,8 +167,19 @@ export const authApi = {
   logout: () =>
     apiDelete<{ loggedOut: boolean }>('/auth'),
   
-  getSession: () =>
-    apiGet<AuthResponse>('/auth'),
+  getSession: async () => {
+    const token = getAuthToken();
+    if (!token) {
+      return null; // Return null instead of making API call
+    }
+    try {
+      return await apiGet<AuthResponse>('/auth');
+    } catch (error) {
+      // If 401, clear token and return null
+      setAuthToken(null);
+      return null;
+    }
+  },
   
   requestOtp: (phone: string, type = 'LOGIN') =>
     apiPost('/auth', { action: 'request-otp', phone, type }),

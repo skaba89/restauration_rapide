@@ -54,3 +54,7 @@ server.log
 /db/
 *.db
 *.db-journal
+
+# System config files (JuiceFS, etc.)
+.config
+.juicefs-config

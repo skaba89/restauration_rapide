@@ -136,32 +136,35 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  // Extract slug early and return demo data for kfm-delice immediately
+  let slug: string = '';
+  
   try {
-    // Safely extract slug from params
-    let slug: string;
-    try {
-      const resolvedParams = await params;
-      slug = resolvedParams?.slug || '';
-    } catch (paramError) {
-      console.error('Error resolving params:', paramError);
-      return NextResponse.json(
-        { success: false, error: 'Paramètres invalides', code: 'INVALID_PARAMS' },
-        { status: 400 }
-      );
+    const resolvedParams = await params;
+    slug = resolvedParams?.slug || '';
+  } catch (paramError) {
+    console.error('Error resolving params:', paramError);
+    // Even on param error, try to extract from URL
+    const url = request.url || '';
+    const match = url.match(/\/api\/public\/restaurant\/([^/?]+)/);
+    if (match) {
+      slug = match[1];
     }
+  }
 
-    if (!slug) {
-      return NextResponse.json(
-        { success: false, error: 'Slug manquant', code: 'MISSING_SLUG' },
-        { status: 400 }
-      );
-    }
+  // For kfm-delice, ALWAYS return demo data first (fastest path - no DB call)
+  if (slug === 'kfm-delice' || request.url?.includes('kfm-delice')) {
+    return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
+  }
 
-    // For kfm-delice, always return demo data first (fastest path)
-    if (slug === 'kfm-delice') {
-      return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
-    }
+  if (!slug) {
+    return NextResponse.json(
+      { success: false, error: 'Slug manquant', code: 'MISSING_SLUG' },
+      { status: 400 }
+    );
+  }
 
+  try {
     // Try database for other slugs
     let db;
     try {

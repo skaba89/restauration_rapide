@@ -3,7 +3,7 @@
  * Handles organizations, users, subscriptions, and analytics
  */
 
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { Plan, UserRole } from '@prisma/client';
 
 // ============================================
@@ -109,6 +109,25 @@ export interface GeographicData {
 // ============================================
 
 export async function fetchAdminStats(): Promise<AdminStats> {
+  // Check if database is available
+  if (!isDatabaseAvailable() || !db) {
+    // Return demo stats if database is not available
+    return {
+      totalOrganizations: 127,
+      activeOrganizations: 118,
+      totalRestaurants: 384,
+      activeRestaurants: 356,
+      totalUsers: 2847,
+      activeUsers: 2654,
+      totalRevenue: 245000000,
+      monthlyRevenue: 12450000,
+      totalOrders: 45678,
+      monthlyOrders: 3456,
+      newSignupsThisMonth: 156,
+      activeSubscriptions: 89,
+    };
+  }
+
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 

@@ -24,7 +24,7 @@ export async function GET() {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
 
-    // Try to import and use the admin service
+    // Try to import and use the admin service dynamically
     try {
       const { fetchAdminStats } = await import('@/lib/admin/service');
       const stats = await fetchAdminStats();

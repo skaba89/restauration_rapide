@@ -41,9 +41,11 @@ import {
   Globe,
   Loader2,
   ChevronLeft,
+  Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 // Types
 interface MenuItem {
@@ -162,6 +164,11 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
   
   // Carousel autoplay state
   const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Item detail modal state
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+  const [itemNotes, setItemNotes] = useState('');
 
   // Banner images computed with useMemo - before any conditional returns
   const bannerImages = useMemo(() => {
@@ -380,6 +387,30 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
     // Navigate to checkout page
     router.push(`/menu/${slug}/checkout`);
   }, [canOrder, minOrder, formatPrice, router, slug]);
+
+  // Open item detail modal
+  const handleOpenItemDetail = useCallback((item: MenuItem) => {
+    setSelectedItem(item);
+    setItemNotes('');
+    setIsItemModalOpen(true);
+  }, []);
+
+  // Add from modal with notes
+  const handleAddFromModal = useCallback(() => {
+    if (!selectedItem) return;
+    addItem({
+      id: selectedItem.id,
+      name: selectedItem.name,
+      price: selectedItem.discountPrice ?? selectedItem.price,
+      image: selectedItem.image || undefined,
+      quantity: 1,
+      notes: itemNotes || undefined,
+    });
+    toast.success(`${selectedItem.name} ajouté au panier`);
+    setIsItemModalOpen(false);
+    setSelectedItem(null);
+    setItemNotes('');
+  }, [selectedItem, itemNotes, addItem]);
 
   // Loading state
   if (loading) {
@@ -657,7 +688,8 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
               return (
                 <Card
                   key={item.id}
-                  className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all group"
+                  className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                  onClick={() => handleOpenItemDetail(item)}
                 >
                   <CardContent className="p-0">
                     {/* Image on top for grid layout */}
@@ -748,7 +780,7 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
                       {/* Add to cart button */}
                       <div className="flex items-center justify-end mt-3">
                         {quantity > 0 ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => handleDecrease(item.id)}
                               className="w-8 h-8 rounded-full border-2 border-orange-500 text-orange-500 flex items-center justify-center hover:bg-orange-50 active:scale-95 transition-all"
@@ -765,7 +797,10 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
                           </div>
                         ) : (
                           <button
-                            onClick={() => handleAddToCart(item)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToCart(item);
+                            }}
                             disabled={!item.isAvailable}
                             className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold transition-all active:scale-95 ${
                               item.isAvailable
@@ -872,6 +907,122 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
           </div>
         </div>
       )}
+
+      {/* Item Detail Modal */}
+      <Dialog open={isItemModalOpen} onOpenChange={setIsItemModalOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          {selectedItem && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedItem.name}</DialogTitle>
+                {selectedItem.description && (
+                  <DialogDescription>{selectedItem.description}</DialogDescription>
+                )}
+              </DialogHeader>
+              
+              {/* Item Image */}
+              {selectedItem.image && (
+                <div className="w-full h-48 relative rounded-lg overflow-hidden">
+                  <Image
+                    src={selectedItem.image}
+                    alt={selectedItem.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              
+              {/* Item Info */}
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                {selectedItem.prepTime && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {selectedItem.prepTime} min
+                  </span>
+                )}
+                {selectedItem.calories && (
+                  <span>{selectedItem.calories} cal</span>
+                )}
+              </div>
+              
+              {/* Badges */}
+              <div className="flex flex-wrap gap-2">
+                {selectedItem.isVegetarian && (
+                  <Badge variant="outline" className="text-green-600 border-green-600">
+                    <Leaf className="w-3 h-3 mr-1" /> Végétarien
+                  </Badge>
+                )}
+                {selectedItem.isVegan && (
+                  <Badge variant="outline" className="text-green-600 border-green-600">
+                    Végan
+                  </Badge>
+                )}
+                {selectedItem.isHalal && (
+                  <Badge variant="outline" className="text-blue-600 border-blue-600">
+                    Halal
+                  </Badge>
+                )}
+                {selectedItem.isSpicy && (
+                  <Badge variant="outline" className="text-red-600 border-red-600">
+                    <Flame className="w-3 h-3 mr-1" /> Épicé {selectedItem.spicyLevel > 0 && `(${selectedItem.spicyLevel})`}
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Variants */}
+              {selectedItem.variants && selectedItem.variants.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Options disponibles</h4>
+                  <div className="space-y-1">
+                    {selectedItem.variants.map((variant) => (
+                      <div key={variant.id} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                        <span>{variant.name}</span>
+                        <span className="font-medium text-orange-600">
+                          {formatPrice(variant.price)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Notes */}
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Instructions spéciales</h4>
+                <textarea
+                  value={itemNotes}
+                  onChange={(e) => setItemNotes(e.target.value)}
+                  placeholder="Allergies, préférences..."
+                  className="w-full p-3 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  rows={2}
+                />
+              </div>
+              
+              {/* Add to Cart Button */}
+              <div className="flex items-center gap-4 pt-4 border-t">
+                <div className="flex-1">
+                  <span className="font-bold text-lg text-orange-600">
+                    {formatPrice(selectedItem.discountPrice ?? selectedItem.price)}
+                  </span>
+                  {selectedItem.discountPrice && (
+                    <span className="text-sm text-gray-400 line-through ml-2">
+                      {formatPrice(selectedItem.price)}
+                    </span>
+                  )}
+                </div>
+                <Button
+                  className="bg-orange-500 hover:bg-orange-600"
+                  onClick={handleAddFromModal}
+                  disabled={!selectedItem.isAvailable}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Ajouter au panier
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

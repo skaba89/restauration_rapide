@@ -522,14 +522,26 @@ export default function CheckoutPage() {
         </Card>
 
         {/* Submit button */}
-        <Button
+        <button
+          type="button"
           onClick={handleSubmit}
           disabled={submitting}
-          className="w-full h-14 text-lg font-semibold bg-orange-500 hover:bg-orange-600"
+          onTouchEnd={(e) => {
+            if (!submitting) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          className={`w-full h-14 text-lg font-semibold rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+            submitting
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-orange-500 hover:bg-orange-600 text-white active:bg-orange-700'
+          }`}
+          style={{ touchAction: 'manipulation' }}
         >
           {submitting ? (
             <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
               Envoi en cours...
             </>
           ) : (
@@ -537,7 +549,7 @@ export default function CheckoutPage() {
               Confirmer la commande • {formatPrice(total)}
             </>
           )}
-        </Button>
+        </button>
 
         {/* Warning */}
         {!restaurant.isOpen && (

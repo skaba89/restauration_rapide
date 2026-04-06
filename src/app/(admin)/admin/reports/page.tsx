@@ -31,7 +31,7 @@ import {
   Calendar,
   Printer,
   BarChart3,
-  PieChart,
+  PieChart as PieChartIcon,
   Activity,
 } from 'lucide-react';
 

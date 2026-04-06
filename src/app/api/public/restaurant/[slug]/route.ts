@@ -1,8 +1,9 @@
 // Public Restaurant API - Get restaurant by slug with full menu data
-// This API returns demo data for kfm-delice WITHOUT requiring database connection
-import { NextResponse } from 'next/server';
+// This API fetches from the database for real-time menu synchronization
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 
-// Demo restaurant data for KFM DELICE
+// Demo restaurant data for fallback when database is not available
 const DEMO_RESTAURANT = {
   id: 'demo-restaurant-1',
   name: 'KFM DELICE',
@@ -67,7 +68,7 @@ const DEMO_RESTAURANT = {
           slug: 'plats-ivoiriens',
           description: 'Spécialités ivoiriennes',
           image: null,
-          icon: null,
+          icon: '🍽️',
           items: [
             { id: 'item-1', name: 'Attieké Poisson', slug: 'attieke-poisson', description: 'Semoule de manioc avec poisson grillé', image: null, price: 45000, discountPrice: null, prepTime: 20, calories: 450, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.8, reviewCount: 45, variants: [], options: [] },
             { id: 'item-2', name: 'Alloco Sauce Graine', slug: 'alloco-sauce-graine', description: 'Bananes plantains frites sauce graine', image: null, price: 25000, discountPrice: null, prepTime: 15, calories: 380, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.5, reviewCount: 32, variants: [], options: [] },
@@ -80,11 +81,10 @@ const DEMO_RESTAURANT = {
           slug: 'plats-senegalais',
           description: 'Spécialités sénégalaises',
           image: null,
-          icon: null,
+          icon: '🍚',
           items: [
             { id: 'item-4', name: 'Thiéboudienne', slug: 'thieboudienne', description: 'Riz au poisson et légumes', image: null, price: 45000, discountPrice: null, prepTime: 45, calories: 520, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.9, reviewCount: 89, variants: [], options: [] },
             { id: 'item-5', name: 'Yassa Poulet', slug: 'yassa-poulet', description: 'Poulet mariné au citron', image: null, price: 40000, discountPrice: null, prepTime: 30, calories: 480, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.6, reviewCount: 54, variants: [], options: [] },
-            { id: 'item-6', name: 'Mafé', slug: 'mafe', description: 'Ragoût sauce arachide', image: null, price: 40000, discountPrice: null, prepTime: 35, calories: 550, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.4, reviewCount: 28, variants: [], options: [] },
           ],
         },
         {
@@ -93,10 +93,10 @@ const DEMO_RESTAURANT = {
           slug: 'grillades',
           description: 'Grillades maison',
           image: null,
-          icon: null,
+          icon: '🍖',
           items: [
-            { id: 'item-7', name: 'Mix Grill', slug: 'mix-grill', description: 'Assortiment de grillades', image: null, price: 65000, discountPrice: null, prepTime: 30, calories: 680, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.8, reviewCount: 42, variants: [], options: [] },
-            { id: 'item-8', name: 'Poulet Braisé', slug: 'poulet-braise', description: 'Demi-poulet grillé', image: null, price: 35000, discountPrice: null, prepTime: 30, calories: 420, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.5, reviewCount: 67, variants: [], options: [] },
+            { id: 'item-6', name: 'Mix Grill', slug: 'mix-grill', description: 'Assortiment de grillades', image: null, price: 65000, discountPrice: null, prepTime: 30, calories: 680, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.8, reviewCount: 42, variants: [], options: [] },
+            { id: 'item-7', name: 'Poulet Braisé', slug: 'poulet-braise', description: 'Demi-poulet grillé', image: null, price: 35000, discountPrice: null, prepTime: 30, calories: 420, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.5, reviewCount: 67, variants: [], options: [] },
           ],
         },
         {
@@ -105,10 +105,10 @@ const DEMO_RESTAURANT = {
           slug: 'fast-food',
           description: 'Burgers et wraps',
           image: null,
-          icon: null,
+          icon: '🍔',
           items: [
-            { id: 'item-9', name: 'Burger KFM', slug: 'burger-kfm', description: 'Burger maison spécial', image: null, price: 25000, discountPrice: null, prepTime: 15, calories: 520, isAvailable: true, isFeatured: true, isPopular: true, isNew: true, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, rating: 4.6, reviewCount: 38, variants: [], options: [] },
-            { id: 'item-10', name: 'Chawarma Poulet', slug: 'chawarma-poulet', description: 'Chawarma au poulet', image: null, price: 20000, discountPrice: null, prepTime: 10, calories: 380, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, rating: 4.4, reviewCount: 52, variants: [], options: [] },
+            { id: 'item-8', name: 'Burger KFM', slug: 'burger-kfm', description: 'Burger maison spécial', image: null, price: 25000, discountPrice: null, prepTime: 15, calories: 520, isAvailable: true, isFeatured: true, isPopular: true, isNew: true, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, rating: 4.6, reviewCount: 38, variants: [], options: [] },
+            { id: 'item-9', name: 'Chawarma Poulet', slug: 'chawarma-poulet', description: 'Chawarma au poulet', image: null, price: 20000, discountPrice: null, prepTime: 10, calories: 380, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, rating: 4.4, reviewCount: 52, variants: [], options: [] },
           ],
         },
         {
@@ -117,10 +117,10 @@ const DEMO_RESTAURANT = {
           slug: 'boissons',
           description: 'Jus frais et boissons',
           image: null,
-          icon: null,
+          icon: '🥤',
           items: [
-            { id: 'item-11', name: 'Jus de Bissap', slug: 'jus-bissap', description: 'Jus naturel d\'hibiscus', image: null, price: 4000, discountPrice: null, prepTime: 3, calories: 80, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.7, reviewCount: 89, variants: [], options: [] },
-            { id: 'item-12', name: 'Jus de Gingembre', slug: 'jus-gingembre', description: 'Jus de gingembre frais', image: null, price: 4000, discountPrice: null, prepTime: 3, calories: 60, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true, isSpicy: true, spicyLevel: 1, rating: 4.5, reviewCount: 45, variants: [], options: [] },
+            { id: 'item-10', name: 'Jus de Bissap', slug: 'jus-bissap', description: 'Jus naturel d\'hibiscus', image: null, price: 4000, discountPrice: null, prepTime: 3, calories: 80, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.7, reviewCount: 89, variants: [], options: [] },
+            { id: 'item-11', name: 'Jus de Gingembre', slug: 'jus-gingembre', description: 'Jus de gingembre frais', image: null, price: 4000, discountPrice: null, prepTime: 3, calories: 60, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true, isSpicy: true, spicyLevel: 1, rating: 4.5, reviewCount: 45, variants: [], options: [] },
           ],
         },
       ],
@@ -131,7 +131,7 @@ const DEMO_RESTAURANT = {
 
 // GET /api/public/restaurant/[slug] - Get restaurant with menus for public view
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
@@ -139,7 +139,179 @@ export async function GET(
     const resolvedParams = await params;
     const slug = resolvedParams?.slug;
 
-    // For kfm-delice, return demo data immediately
+    if (!slug) {
+      return NextResponse.json(
+        { success: false, error: 'Slug requis', code: 'MISSING_SLUG' },
+        { status: 400 }
+      );
+    }
+
+    // Try to fetch from database
+    try {
+      const restaurant = await db.restaurant.findUnique({
+        where: { 
+          slug,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          logo: true,
+          coverImage: true,
+          phone: true,
+          email: true,
+          address: true,
+          city: true,
+          district: true,
+          isOpen: true,
+          isBusy: true,
+          acceptsDelivery: true,
+          acceptsTakeaway: true,
+          acceptsDineIn: true,
+          deliveryFee: true,
+          minOrderAmount: true,
+          deliveryTime: true,
+          rating: true,
+          reviewCount: true,
+          currency: true,
+          organizationId: true,
+          settings: true,
+          hours: {
+            orderBy: { dayOfWeek: 'asc' },
+          },
+          deliveryZones: {
+            where: { isActive: true },
+            orderBy: { name: 'asc' },
+          },
+          menus: {
+            where: { isActive: true },
+            orderBy: { sortOrder: 'asc' },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              description: true,
+              menuType: true,
+              categories: {
+                where: { isActive: true },
+                orderBy: { sortOrder: 'asc' },
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  description: true,
+                  image: true,
+                  icon: true,
+                  items: {
+                    where: { isAvailable: true },
+                    orderBy: { sortOrder: 'asc' },
+                    select: {
+                      id: true,
+                      name: true,
+                      slug: true,
+                      description: true,
+                      image: true,
+                      price: true,
+                      discountPrice: true,
+                      prepTime: true,
+                      calories: true,
+                      isAvailable: true,
+                      isFeatured: true,
+                      isPopular: true,
+                      isNew: true,
+                      isVegetarian: true,
+                      isVegan: true,
+                      isHalal: true,
+                      isGlutenFree: true,
+                      isSpicy: true,
+                      spicyLevel: true,
+                      rating: true,
+                      reviewCount: true,
+                      variants: {
+                        where: { isAvailable: true },
+                        orderBy: { sortOrder: 'asc' },
+                        select: {
+                          id: true,
+                          name: true,
+                          price: true,
+                          isDefault: true,
+                        },
+                      },
+                      options: {
+                        orderBy: { sortOrder: 'asc' },
+                        select: {
+                          id: true,
+                          name: true,
+                          required: true,
+                          multiSelect: true,
+                          maxSelect: true,
+                          values: {
+                            where: { isAvailable: true },
+                            orderBy: { sortOrder: 'asc' },
+                            select: {
+                              id: true,
+                              name: true,
+                              price: true,
+                              isDefault: true,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (restaurant) {
+        // Transform database result to match expected format
+        const formattedRestaurant = {
+          ...restaurant,
+          currency: typeof restaurant.currency === 'string' 
+            ? { code: restaurant.currency, symbol: restaurant.currency, name: restaurant.currency }
+            : restaurant.currency,
+          settings: restaurant.settings as any,
+          hours: restaurant.hours.map((h: any) => ({
+            dayOfWeek: h.dayOfWeek,
+            openTime: h.openTime,
+            closeTime: h.closeTime,
+            isClosed: h.isClosed,
+          })),
+          deliveryZones: restaurant.deliveryZones.map((z: any) => ({
+            id: z.id,
+            name: z.name,
+            baseFee: z.baseFee,
+            minTime: z.minTime,
+            maxTime: z.maxTime,
+          })),
+          menus: restaurant.menus.map((menu: any) => ({
+            ...menu,
+            categories: menu.categories.map((cat: any) => ({
+              ...cat,
+              items: cat.items.map((item: any) => ({
+                ...item,
+                variants: item.variants || [],
+                options: item.options || [],
+              })),
+            })),
+          })),
+        };
+
+        return NextResponse.json({ 
+          success: true, 
+          data: formattedRestaurant 
+        });
+      }
+    } catch (dbError) {
+      console.warn('Database not available, using demo data:', dbError);
+    }
+
+    // Fallback to demo data for kfm-delice
     if (slug === 'kfm-delice') {
       return NextResponse.json({ 
         success: true, 
@@ -147,7 +319,7 @@ export async function GET(
       });
     }
 
-    // For other slugs, return not found
+    // Restaurant not found
     return NextResponse.json(
       { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
       { status: 404 }
@@ -155,9 +327,16 @@ export async function GET(
   } catch (error) {
     console.error('Error in public restaurant API:', error);
     // Even on error, return demo data for kfm-delice to ensure the page works
-    return NextResponse.json({ 
-      success: true, 
-      data: DEMO_RESTAURANT 
-    });
+    const resolvedParams = await params;
+    if (resolvedParams?.slug === 'kfm-delice') {
+      return NextResponse.json({ 
+        success: true, 
+        data: DEMO_RESTAURANT 
+      });
+    }
+    return NextResponse.json(
+      { success: false, error: 'Erreur serveur', code: 'SERVER_ERROR' },
+      { status: 500 }
+    );
   }
 }

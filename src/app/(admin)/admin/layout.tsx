@@ -31,6 +31,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Organisations', href: '/admin/organizations', icon: Building2, badge: '5' },
   { name: 'Restaurants', href: '/admin/restaurants', icon: Store, badge: '12' },
+  { name: 'Menus', href: '/admin/menus', icon: Menu },
   { name: 'Utilisateurs', href: '/admin/users', icon: Users, badge: '47' },
   { name: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },

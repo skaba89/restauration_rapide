@@ -137,19 +137,38 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params;
+    // Safely extract slug from params
+    let slug: string;
+    try {
+      const resolvedParams = await params;
+      slug = resolvedParams?.slug || '';
+    } catch (paramError) {
+      console.error('Error resolving params:', paramError);
+      return NextResponse.json(
+        { success: false, error: 'Paramètres invalides', code: 'INVALID_PARAMS' },
+        { status: 400 }
+      );
+    }
 
-    // Dynamic import to handle potential Prisma initialization issues
+    if (!slug) {
+      return NextResponse.json(
+        { success: false, error: 'Slug manquant', code: 'MISSING_SLUG' },
+        { status: 400 }
+      );
+    }
+
+    // For kfm-delice, always return demo data first (fastest path)
+    if (slug === 'kfm-delice') {
+      return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
+    }
+
+    // Try database for other slugs
     let db;
     try {
       const dbModule = await import('@/lib/db');
       db = dbModule.db;
     } catch (importError) {
       console.error('Failed to import db:', importError);
-      // Return demo data if db import fails
-      if (slug === 'kfm-delice') {
-        return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
-      }
       return NextResponse.json(
         { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
         { status: 404 }
@@ -209,10 +228,6 @@ export async function GET(
       });
     } catch (dbError: unknown) {
       console.error('Database query error:', dbError);
-      // Return demo data if database query fails
-      if (slug === 'kfm-delice') {
-        return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
-      }
       // Return a generic error without exposing database details
       return NextResponse.json(
         { 
@@ -225,10 +240,6 @@ export async function GET(
     }
 
     if (!restaurant) {
-      // Return demo data for kfm-delice if not found in database
-      if (slug === 'kfm-delice') {
-        return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
-      }
       return NextResponse.json(
         { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
         { status: 404 }
@@ -325,19 +336,19 @@ export async function GET(
             spicyLevel: item.spicyLevel,
             rating: item.rating,
             reviewCount: item.reviewCount,
-            variants: (item.variants || []).map((v: any) => ({
+            variants: (item.variants || []).map((v: { id: string; name: string; price: number; isDefault: boolean }) => ({
               id: v.id,
               name: v.name,
               price: v.price,
               isDefault: v.isDefault,
             })),
-            options: (item.options || []).map((opt: any) => ({
+            options: (item.options || []).map((opt: { id: string; name: string; required: boolean; multiSelect: boolean; maxSelect: number | null; values: { id: string; name: string; price: number; isDefault: boolean }[] }) => ({
               id: opt.id,
               name: opt.name,
               required: opt.required,
               multiSelect: opt.multiSelect,
               maxSelect: opt.maxSelect,
-              values: (opt.values || []).map((val: any) => ({
+              values: (opt.values || []).map((val: { id: string; name: string; price: number; isDefault: boolean }) => ({
                 id: val.id,
                 name: val.name,
                 price: val.price,
@@ -357,6 +368,12 @@ export async function GET(
     // Log the full error for debugging but return a safe message
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error details:', errorMessage);
+    
+    // Return demo data for kfm-delice even on unexpected errors
+    const url = request.url || '';
+    if (url.includes('kfm-delice')) {
+      return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
+    }
     
     return NextResponse.json(
       { 

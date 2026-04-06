@@ -360,6 +360,17 @@ const AFRICAN_RESTAURANTS = {
   // Guinée
   GN: [
     {
+      name: "KFM DELICE",
+      slug: "kfm-delice",
+      slogan: "Restaurant fast-food guinéen - Saveurs de Guinée, Côte d'Ivoire et Sénégal",
+      type: "fastfood",
+      cuisine: ["Guinéenne", "Ivoirienne", "Sénégalaise", "Fast Food"],
+      priceRange: 2,
+      color: "#FF6B00", // Orange
+      city: "Conakry",
+      district: "Nongo, Ratoma",
+    },
+    {
       name: "Le Jardin de Conakry",
       slug: "jardin-conakry",
       slogan: "Saveurs de Guinée",
@@ -779,6 +790,164 @@ async function main() {
     }
   }
 
+  // 6. Create KFM DELICE Organization and Restaurant
+  console.log('\n🍽️ Creating KFM DELICE restaurant...');
+  
+  const gnCountry = await db.country.findUnique({ where: { code: 'GN' } });
+  const gnfCurrency = await db.currency.findUnique({ where: { code: 'GNF' } });
+  
+  if (gnCountry && gnfCurrency) {
+    // Create KFM DELICE organization
+    const kfmOrg = await db.organization.upsert({
+      where: { slug: 'kfm-delice-org' },
+      update: {},
+      create: {
+        name: 'KFM DELICE',
+        slug: 'kfm-delice-org',
+        email: 'contact@kfm-delice.com',
+        phone: '+224623217240',
+        city: 'Conakry',
+        countryId: gnCountry.id,
+        currencyId: gnfCurrency.id,
+        plan: 'BUSINESS',
+        isActive: true,
+      },
+    });
+    
+    // Create organization settings
+    await db.organizationSettings.upsert({
+      where: { organizationId: kfmOrg.id },
+      update: {},
+      create: {
+        organizationId: kfmOrg.id,
+        minOrderAmount: 10000,
+        maxDeliveryRadius: 15,
+        defaultDeliveryFee: 5000,
+        orderPrepTime: 20,
+        reservationEnabled: true,
+        autoConfirmReservations: true,
+        defaultTableTime: 120,
+        noShowFee: 5000,
+        acceptsCash: true,
+        acceptsMobileMoney: true,
+        acceptsCard: false,
+        deliveryEnabled: true,
+        loyaltyEnabled: true,
+        pointsPerAmount: 1,
+        pointValue: 10,
+      },
+    });
+    
+    // Create KFM DELICE admin user
+    const kfmPassword = 'KfmDelice2024!';
+    const kfmHashedPassword = await bcrypt.hash(kfmPassword, BCRYPT_SALT_ROUNDS);
+    
+    let kfmUser = await db.user.findUnique({ where: { email: 'contact@kfm-delice.com' } });
+    
+    if (!kfmUser) {
+      kfmUser = await db.user.create({
+        data: {
+          email: 'contact@kfm-delice.com',
+          phone: '+224623217240',
+          passwordHash: kfmHashedPassword,
+          firstName: 'KFM',
+          lastName: 'DELICE',
+          role: 'ORG_ADMIN',
+          isActive: true,
+        },
+      });
+      console.log('  ✓ KFM DELICE user created');
+    }
+    
+    // Link user to organization
+    await db.organizationUser.upsert({
+      where: { organizationId_userId: { organizationId: kfmOrg.id, userId: kfmUser.id } },
+      update: {},
+      create: {
+        organizationId: kfmOrg.id,
+        userId: kfmUser.id,
+        role: 'admin',
+      },
+    });
+    
+    // Create KFM DELICE restaurant
+    const existingKfm = await db.restaurant.findFirst({
+      where: { slug: 'kfm-delice' },
+    });
+    
+    if (!existingKfm) {
+      const kfmRestaurant = await db.restaurant.create({
+        data: {
+          organizationId: kfmOrg.id,
+          name: 'KFM DELICE',
+          slug: 'kfm-delice',
+          description: 'Restaurant fast-food guinéen - Saveurs de Guinée, Côte d\'Ivoire et Sénégal',
+          phone: '+224623217240',
+          email: 'contact@kfm-delice.com',
+          address: 'Nongo',
+          city: 'Conakry',
+          district: 'Ratoma',
+          countryId: gnCountry.id,
+          restaurantType: 'fastfood',
+          cuisines: JSON.stringify(['Guinéenne', 'Ivoirienne', 'Sénégalaise', 'Fast Food']),
+          priceRange: 2,
+          acceptsReservations: true,
+          acceptsDelivery: true,
+          acceptsTakeaway: true,
+          acceptsDineIn: true,
+          deliveryFee: 5000,
+          minOrderAmount: 10000,
+          maxDeliveryRadius: 15,
+          deliveryTime: 30,
+          isActive: true,
+          isOpen: true,
+        },
+      });
+      
+      // Create restaurant settings
+      await db.restaurantSettings.create({
+        data: {
+          restaurantId: kfmRestaurant.id,
+          minOrderAmount: 10000,
+          deliveryFee: 5000,
+          orderPrepTime: 20,
+          loyaltyEnabled: true,
+        },
+      });
+      
+      // Create delivery zones
+      await db.deliveryZone.createMany({
+        data: [
+          { restaurantId: kfmRestaurant.id, name: 'Nongo', baseFee: 2000, minTime: 10, maxTime: 25, isActive: true },
+          { restaurantId: kfmRestaurant.id, name: 'Ratoma', baseFee: 3000, minTime: 15, maxTime: 30, isActive: true },
+          { restaurantId: kfmRestaurant.id, name: 'Kaloum', baseFee: 5000, minTime: 20, maxTime: 45, isActive: true },
+          { restaurantId: kfmRestaurant.id, name: 'Dixinn', baseFee: 5000, minTime: 25, maxTime: 50, isActive: true },
+        ],
+        skipDuplicates: true,
+      });
+      
+      // Create restaurant hours
+      await db.restaurantHour.createMany({
+        data: [
+          { restaurantId: kfmRestaurant.id, dayOfWeek: 0, openTime: '10:00', closeTime: '22:00', isClosed: false },
+          { restaurantId: kfmRestaurant.id, dayOfWeek: 1, openTime: '10:00', closeTime: '22:00', isClosed: false },
+          { restaurantId: kfmRestaurant.id, dayOfWeek: 2, openTime: '10:00', closeTime: '22:00', isClosed: false },
+          { restaurantId: kfmRestaurant.id, dayOfWeek: 3, openTime: '10:00', closeTime: '22:00', isClosed: false },
+          { restaurantId: kfmRestaurant.id, dayOfWeek: 4, openTime: '10:00', closeTime: '22:00', isClosed: false },
+          { restaurantId: kfmRestaurant.id, dayOfWeek: 5, openTime: '10:00', closeTime: '23:00', isClosed: false },
+          { restaurantId: kfmRestaurant.id, dayOfWeek: 6, openTime: '10:00', closeTime: '23:00', isClosed: false },
+        ],
+        skipDuplicates: true,
+      });
+      
+      console.log('  ✓ KFM DELICE restaurant created with delivery zones and hours');
+    } else {
+      console.log('  ✓ KFM DELICE restaurant already exists');
+    }
+  } else {
+    console.log('  ⚠️ Skipping KFM DELICE - Guinea country or GNF currency not found');
+  }
+
   console.log('\n✅ Seed completed successfully!');
   console.log('\n📊 Summary:');
   console.log(`  - ${currencyData.length} currencies`);
@@ -786,6 +955,9 @@ async function main() {
   console.log(`  - Demo organization created`);
   console.log(`  - Demo admin user: admin@demo.com`);
   console.log(`  - Demo password: ${demoPassword}`);
+  console.log(`  - KFM DELICE organization created`);
+  console.log(`  - KFM DELICE admin: contact@kfm-delice.com`);
+  console.log(`  - KFM DELICE password: KfmDelice2024!`);
   console.log(`  - Multiple restaurants across Africa`);
 }
 

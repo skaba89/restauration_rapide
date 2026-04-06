@@ -21,6 +21,15 @@ import {
   ChevronRight,
   Bell,
   LogOut,
+  ShoppingCart,
+  Truck,
+  Calendar,
+  FileText,
+  Users2,
+  Receipt,
+  Wallet,
+  Package,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,12 +38,20 @@ import { NotificationBell } from '@/components/notifications/notification-bell';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Organisations', href: '/admin/organizations', icon: Building2, badge: '5' },
-  { name: 'Restaurants', href: '/admin/restaurants', icon: Store, badge: '12' },
+  { name: 'Commandes', href: '/admin/orders', icon: ShoppingCart, badge: '24' },
+  { name: 'Livraisons', href: '/admin/deliveries', icon: Truck, badge: '8' },
+  { name: 'Réservations', href: '/admin/reservations', icon: Calendar },
+  { name: 'Organisations', href: '/admin/organizations', icon: Building2 },
+  { name: 'Restaurants', href: '/admin/restaurants', icon: Store },
   { name: 'Menus', href: '/admin/menus', icon: Menu },
-  { name: 'Utilisateurs', href: '/admin/users', icon: Users, badge: '47' },
+  { name: 'Utilisateurs', href: '/admin/users', icon: Users },
+  { name: 'RH', href: '/admin/hr', icon: Users2 },
+  { name: 'Factures', href: '/admin/invoices', icon: FileText },
+  { name: 'Dépenses', href: '/admin/expenses', icon: Wallet },
+  { name: 'Inventaire', href: '/admin/inventory', icon: Package },
   { name: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { name: 'Rapports', href: '/admin/reports', icon: Receipt },
   { name: 'Paramètres', href: '/admin/settings', icon: Settings },
 ];
 

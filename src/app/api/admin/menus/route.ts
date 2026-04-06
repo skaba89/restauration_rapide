@@ -1,63 +1,72 @@
 // Admin Menus API - Get all restaurants with menus
-import { db } from '@/lib/db';
-import { apiSuccess, apiError } from '@/lib/api-responses';
+import { db, isDatabaseAvailable } from '@/lib/db';
+import { apiSuccess, apiError, getPaginationParams } from '@/lib/api-responses';
 import { NextRequest } from 'next/server';
 
 // GET /api/admin/menus - Get all restaurants with their menus
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const restaurants = await db.restaurant.findMany({
-      where: { isActive: true },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        menus: {
-          orderBy: { sortOrder: 'asc' },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            description: true,
-            isActive: true,
-            menuType: true,
-            sortOrder: true,
-            categories: {
-              orderBy: { sortOrder: 'asc' },
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-                description: true,
-                image: true,
-                icon: true,
-                isActive: true,
-                sortOrder: true,
-                items: {
-                  orderBy: { sortOrder: 'asc' },
-                  select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    description: true,
-                    image: true,
-                    price: true,
-                    discountPrice: true,
-                    prepTime: true,
-                    isAvailable: true,
-                    isFeatured: true,
-                    isPopular: true,
-                    isNew: true,
-                    sortOrder: true,
-                  },
-                },
+    const { searchParams } = new URL(request.url);
+    const restaurantId = searchParams.get('restaurantId');
+    const isActive = searchParams.get('isActive');
+
+    // Try to use database
+    if (isDatabaseAvailable() && db) {
+      const where: any = {};
+      
+      if (restaurantId) {
+        where.restaurantId = restaurantId;
+      }
+      if (isActive !== null && isActive !== undefined) {
+        where.isActive = isActive === 'true';
+      }
+
+      const menus = await db.menu.findMany({
+        where,
+        orderBy: { sortOrder: 'asc' },
+        include: {
+          restaurant: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          categories: {
+            where: { isActive: true },
+            orderBy: { sortOrder: 'asc' },
+            include: {
+              _count: {
+                select: { items: true },
               },
             },
           },
+          _count: {
+            select: { categories: true },
+          },
         },
-      },
-      orderBy: { name: 'asc' },
-    });
+      });
+
+      return apiSuccess({ menus, total: menus.length });
+    }
+
+    // Fallback: Return demo data structure
+    const restaurants = [{
+      id: 'demo-restaurant-1',
+      name: 'KFM DELICE',
+      slug: 'kfm-delice',
+      menus: [{
+        id: 'menu-1',
+        name: 'Menu Principal',
+        slug: 'menu-principal',
+        description: 'Menu complet KFM DELICE',
+        isActive: true,
+        menuType: 'main',
+        sortOrder: 1,
+        categories: [],
+        _count: { categories: 5 },
+      }],
+    }];
 
     return apiSuccess({ restaurants });
   } catch (error) {

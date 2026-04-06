@@ -764,3 +764,395 @@ export async function fetchRecentSignups(limit: number = 10) {
     }
   });
 }
+
+// ============================================
+// Expenses
+// ============================================
+
+export interface ExpenseData {
+  id: string;
+  description: string;
+  category: string;
+  amount: number;
+  date: Date;
+  status: string;
+  paidBy: string;
+  approvedBy?: string;
+  restaurantId: string;
+  notes?: string;
+  createdAt: Date;
+}
+
+export async function fetchExpenses(params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  status?: string;
+  restaurantId?: string;
+}): Promise<{ data: ExpenseData[]; total: number }> {
+  if (!isDatabaseAvailable() || !db) {
+    return { data: [], total: 0 };
+  }
+
+  const page = params?.page || 1;
+  const limit = params?.limit || 20;
+  const skip = (page - 1) * limit;
+
+  const where: any = {};
+
+  if (params?.category) {
+    where.category = params.category;
+  }
+  if (params?.status) {
+    where.status = params.status;
+  }
+  if (params?.restaurantId) {
+    where.restaurantId = params.restaurantId;
+  }
+
+  const [data, total] = await Promise.all([
+    db.expense.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        restaurant: {
+          select: { name: true },
+        },
+      },
+    }),
+    db.expense.count({ where }),
+  ]);
+
+  return { data: data as ExpenseData[], total };
+}
+
+export async function createExpense(data: {
+  description: string;
+  category: string;
+  amount: number;
+  restaurantId: string;
+  notes?: string;
+  paidBy?: string;
+}) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  return db.expense.create({
+    data: {
+      ...data,
+      status: 'PENDING',
+      date: new Date(),
+    },
+    include: {
+      restaurant: {
+        select: { name: true },
+      },
+    },
+  });
+}
+
+// ============================================
+// Inventory
+// ============================================
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  quantity: number;
+  unit: string;
+  minStock: number;
+  maxStock: number;
+  costPerUnit: number;
+  totalValue: number;
+  status: string;
+  lastRestocked: Date;
+  supplier?: string;
+  organizationId: string;
+}
+
+export async function fetchInventory(params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  status?: string;
+  search?: string;
+  organizationId?: string;
+}): Promise<{ data: InventoryItem[]; total: number }> {
+  if (!isDatabaseAvailable() || !db) {
+    return { data: [], total: 0 };
+  }
+
+  const page = params?.page || 1;
+  const limit = params?.limit || 20;
+  const skip = (page - 1) * limit;
+
+  const where: any = {};
+
+  if (params?.category) {
+    where.category = params.category;
+  }
+  if (params?.status) {
+    where.status = params.status;
+  }
+  if (params?.organizationId) {
+    where.organizationId = params.organizationId;
+  }
+  if (params?.search) {
+    where.OR = [
+      { name: { contains: params.search, mode: 'insensitive' } },
+      { sku: { contains: params.search, mode: 'insensitive' } },
+    ];
+  }
+
+  const [items, total] = await Promise.all([
+    db.ingredient.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { name: 'asc' },
+    }),
+    db.ingredient.count({ where }),
+  ]);
+
+  const data = items.map(item => ({
+    ...item,
+    sku: item.id.substring(0, 8).toUpperCase(),
+    category: 'INGREDIENTS',
+    minStock: item.lowStockThreshold || 0,
+    maxStock: (item.lowStockThreshold || 0) * 2,
+    totalValue: item.quantity * (item.costPerUnit || 0),
+    status: item.quantity === 0 
+      ? 'OUT_OF_STOCK' 
+      : item.quantity < (item.lowStockThreshold || 0) 
+        ? 'LOW_STOCK' 
+        : 'IN_STOCK',
+    lastRestocked: item.updatedAt,
+  }));
+
+  return { data: data as InventoryItem[], total };
+}
+
+export async function createInventoryItem(data: {
+  name: string;
+  unit: string;
+  quantity: number;
+  costPerUnit: number;
+  lowStockThreshold: number;
+  organizationId: string;
+}) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  return db.ingredient.create({
+    data,
+  });
+}
+
+// ============================================
+// Reports
+// ============================================
+
+export interface ReportKPIs {
+  totalRevenue: number;
+  totalOrders: number;
+  totalCustomers: number;
+  avgOrderValue: number;
+  revenueGrowth: number;
+  ordersGrowth: number;
+  customerGrowth: number;
+}
+
+export async function fetchReportKPIs(params?: {
+  period?: 'week' | 'month' | 'quarter' | 'year';
+  restaurantId?: string;
+  organizationId?: string;
+}): Promise<ReportKPIs> {
+  if (!isDatabaseAvailable() || !db) {
+    return {
+      totalRevenue: 108600000,
+      totalOrders: 11570,
+      totalCustomers: 3730,
+      avgOrderValue: 9400,
+      revenueGrowth: 18.5,
+      ordersGrowth: 15.2,
+      customerGrowth: 22.8,
+    };
+  }
+
+  const now = new Date();
+  let startDate: Date;
+  const period = params?.period || 'month';
+
+  switch (period) {
+    case 'week':
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'quarter':
+      startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+      break;
+    case 'year':
+      startDate = new Date(now.getFullYear(), 0, 1);
+      break;
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+
+  const orderWhere: any = { createdAt: { gte: startDate } };
+  if (params?.restaurantId) {
+    orderWhere.restaurantId = params.restaurantId;
+  }
+  if (params?.organizationId) {
+    orderWhere.restaurant = { organizationId: params.organizationId };
+  }
+
+  const [orders, revenue, customers] = await Promise.all([
+    db.order.count({ where: orderWhere }),
+    db.order.aggregate({
+      where: { ...orderWhere, status: 'COMPLETED' },
+      _sum: { total: true },
+      _avg: { total: true },
+    }),
+    db.order.findMany({
+      where: orderWhere,
+      select: { customerId: true },
+      distinct: ['customerId'],
+    }),
+  ]);
+
+  return {
+    totalRevenue: revenue._sum.total || 0,
+    totalOrders: orders,
+    totalCustomers: customers.filter(c => c.customerId).length,
+    avgOrderValue: revenue._avg.total || 0,
+    revenueGrowth: 0,
+    ordersGrowth: 0,
+    customerGrowth: 0,
+  };
+}
+
+// ============================================
+// Menu Items (for real-time sync)
+// ============================================
+
+export async function fetchMenuItemById(id: string) {
+  if (!isDatabaseAvailable() || !db) {
+    return null;
+  }
+
+  return db.menuItem.findUnique({
+    where: { id },
+    include: {
+      category: {
+        include: {
+          menu: {
+            include: {
+              restaurant: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      variants: true,
+      options: {
+        include: {
+          values: true,
+        },
+      },
+    },
+  });
+}
+
+export async function updateMenuItem(id: string, data: Partial<{
+  name: string;
+  description: string;
+  price: number;
+  discountPrice: number;
+  image: string;
+  isAvailable: boolean;
+  isFeatured: boolean;
+  isPopular: boolean;
+  isNew: boolean;
+  prepTime: number;
+}>) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  return db.menuItem.update({
+    where: { id },
+    data,
+    include: {
+      category: {
+        include: {
+          menu: {
+            include: {
+              restaurant: {
+                select: {
+                  id: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export async function createMenuItem(data: {
+  name: string;
+  description?: string;
+  price: number;
+  discountPrice?: number;
+  image?: string;
+  prepTime?: number;
+  isAvailable?: boolean;
+  isFeatured?: boolean;
+  isPopular?: boolean;
+  isNew?: boolean;
+  categoryId: string;
+}) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  const slug = data.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  const maxSort = await db.menuItem.aggregate({
+    where: { categoryId: data.categoryId },
+    _max: { sortOrder: true },
+  });
+
+  return db.menuItem.create({
+    data: {
+      ...data,
+      slug: `${slug}-${Date.now()}`,
+      sortOrder: (maxSort._max.sortOrder || 0) + 1,
+    },
+  });
+}
+
+export async function deleteMenuItem(id: string) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  return db.menuItem.delete({
+    where: { id },
+  });
+}

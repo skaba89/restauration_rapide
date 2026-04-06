@@ -1,7 +1,79 @@
-// Admin Items API - Create item
-import { db } from '@/lib/db';
-import { apiSuccess, apiError } from '@/lib/api-responses';
+// Admin Items API - List and Create items
+import { db, isDatabaseAvailable } from '@/lib/db';
+import { apiSuccess, apiError, getPaginationParams } from '@/lib/api-responses';
 import { NextRequest } from 'next/server';
+
+// GET /api/admin/items - List all menu items
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const { page, limit, skip } = getPaginationParams(searchParams);
+    const categoryId = searchParams.get('categoryId');
+    const menuId = searchParams.get('menuId');
+    const isAvailable = searchParams.get('isAvailable');
+    const search = searchParams.get('search');
+
+    if (!isDatabaseAvailable() || !db) {
+      return apiSuccess({ data: [], total: 0, page, limit });
+    }
+
+    const where: any = {};
+
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+    if (menuId) {
+      where.category = { menuId };
+    }
+    if (isAvailable !== null && isAvailable !== undefined) {
+      where.isAvailable = isAvailable === 'true';
+    }
+    if (search) {
+      where.name = { contains: search, mode: 'insensitive' };
+    }
+
+    const [items, total] = await Promise.all([
+      db.menuItem.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              menu: {
+                select: {
+                  id: true,
+                  name: true,
+                  restaurantId: true,
+                },
+              },
+            },
+          },
+          variants: {
+            orderBy: { sortOrder: 'asc' },
+          },
+          options: {
+            include: {
+              values: {
+                orderBy: { sortOrder: 'asc' },
+              },
+            },
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      }),
+      db.menuItem.count({ where }),
+    ]);
+
+    return apiSuccess({ data: items, total, page, limit });
+  } catch (error) {
+    console.error('Error fetching items:', error);
+    return apiError('Erreur lors du chargement des plats', 500);
+  }
+}
 
 // POST /api/admin/items - Create a new menu item
 export async function POST(request: NextRequest) {

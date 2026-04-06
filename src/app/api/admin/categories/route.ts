@@ -1,7 +1,57 @@
-// Admin Categories API - Create category
-import { db } from '@/lib/db';
-import { apiSuccess, apiError } from '@/lib/api-responses';
+// Admin Categories API - List and Create categories
+import { db, isDatabaseAvailable } from '@/lib/db';
+import { apiSuccess, apiError, getPaginationParams } from '@/lib/api-responses';
 import { NextRequest } from 'next/server';
+
+// GET /api/admin/categories - List categories
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const { page, limit, skip } = getPaginationParams(searchParams);
+    const menuId = searchParams.get('menuId');
+    const isActive = searchParams.get('isActive');
+
+    if (!isDatabaseAvailable() || !db) {
+      return apiSuccess({ data: [], total: 0, page, limit });
+    }
+
+    const where: any = {};
+
+    if (menuId) {
+      where.menuId = menuId;
+    }
+    if (isActive !== null && isActive !== undefined) {
+      where.isActive = isActive === 'true';
+    }
+
+    const [categories, total] = await Promise.all([
+      db.menuCategory.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        include: {
+          menu: {
+            select: {
+              id: true,
+              name: true,
+              restaurantId: true,
+            },
+          },
+          _count: {
+            select: { items: true },
+          },
+        },
+      }),
+      db.menuCategory.count({ where }),
+    ]);
+
+    return apiSuccess({ data: categories, total, page, limit });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return apiError('Erreur lors du chargement des catégories', 500);
+  }
+}
 
 // POST /api/admin/categories - Create a new category
 export async function POST(request: NextRequest) {

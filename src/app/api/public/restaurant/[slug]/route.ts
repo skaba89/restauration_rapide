@@ -302,9 +302,17 @@ export async function GET(
           })),
         };
 
+        // Return with no-cache headers for real-time menu sync
         return NextResponse.json({ 
           success: true, 
-          data: formattedRestaurant 
+          data: formattedRestaurant,
+          timestamp: new Date().toISOString(),
+        }, {
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          },
         });
       }
     } catch (dbError) {

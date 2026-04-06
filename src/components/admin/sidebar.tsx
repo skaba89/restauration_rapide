@@ -29,6 +29,14 @@ import {
   Activity,
   ShoppingCart,
   UtensilsCrossed,
+  Receipt,
+  UsersRound,
+  Wallet,
+  Package,
+  Truck,
+  ClipboardList,
+  PieChart,
+  CalendarDays,
 } from 'lucide-react';
 
 interface NavItem {
@@ -40,23 +48,31 @@ interface NavItem {
 }
 
 const ADMIN_NAV_ITEMS: NavItem[] = [
-  { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { title: 'Organizations', href: '/admin/organizations', icon: Building2 },
+  { title: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
+  { title: 'Analyses', href: '/admin/analytics', icon: BarChart3 },
+  { title: 'Rapports', href: '/admin/reports', icon: PieChart },
+  { title: 'Organisations', href: '/admin/organizations', icon: Building2 },
   { title: 'Restaurants', href: '/admin/restaurants', icon: Store },
+  { title: 'Utilisateurs', href: '/admin/users', icon: Users },
   { title: 'Menus', href: '/admin/menus', icon: UtensilsCrossed },
-  { title: 'POS', href: '/admin/pos', icon: ShoppingCart },
-  { title: 'Users', href: '/admin/users', icon: Users },
-  { title: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
-  { title: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { title: 'Commandes', href: '/admin/orders', icon: ClipboardList },
+  { title: 'Réservations', href: '/admin/reservations', icon: CalendarDays },
+  { title: 'Livraisons', href: '/admin/deliveries', icon: Truck },
+  { title: 'Point de vente', href: '/admin/pos', icon: ShoppingCart },
+  { title: 'Factures', href: '/admin/invoices', icon: Receipt },
+  { title: 'Dépenses', href: '/admin/expenses', icon: Wallet },
+  { title: 'Inventaire', href: '/admin/inventory', icon: Package },
+  { title: 'Ressources Humaines', href: '/admin/hr', icon: UsersRound },
+  { title: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
   {
-    title: 'Settings',
+    title: 'Paramètres',
     href: '/admin/settings',
     icon: Settings,
     children: [
-      { title: 'General', href: '/admin/settings', icon: Settings },
+      { title: 'Général', href: '/admin/settings', icon: Settings },
       { title: 'Notifications', href: '/admin/settings/notifications', icon: Bell },
-      { title: 'Security', href: '/admin/settings/security', icon: Shield },
-      { title: 'Audit Logs', href: '/admin/settings/audit-logs', icon: FileText },
+      { title: 'Sécurité', href: '/admin/settings/security', icon: Shield },
+      { title: 'Logs d\'audit', href: '/admin/settings/audit-logs', icon: FileText },
     ]
   },
 ];
@@ -161,9 +177,9 @@ export function AdminSidebarContent({ pathname, onNavigate }: AdminSidebarConten
       <div className="px-4 py-3 border-b">
         <div className="flex items-center gap-2 text-sm">
           <Activity className="h-4 w-4 text-green-500" />
-          <span className="text-green-600 dark:text-green-400 font-medium">Platform Healthy</span>
+          <span className="text-green-600 dark:text-green-400 font-medium">Plateforme opérationnelle</span>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">All systems operational</p>
+        <p className="text-xs text-muted-foreground mt-1">Tous les systèmes fonctionnent</p>
       </div>
 
       {/* Navigation */}
@@ -185,9 +201,9 @@ export function AdminSidebarContent({ pathname, onNavigate }: AdminSidebarConten
         <div className="p-3 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20">
           <div className="flex items-center gap-2">
             <Database className="h-4 w-4 text-purple-600" />
-            <span className="font-semibold text-sm">Multi-Tenant SaaS</span>
+            <span className="font-semibold text-sm">SaaS Multi-Tenant</span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">Africa-First Platform</p>
+          <p className="text-xs text-muted-foreground mt-1">Plateforme Africa-First</p>
           <div className="flex items-center gap-1 mt-2">
             <Globe className="h-3 w-3 text-purple-500" />
             <span className="text-xs text-purple-600 dark:text-purple-400">v2.0.0</span>

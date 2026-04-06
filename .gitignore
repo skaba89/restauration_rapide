@@ -58,3 +58,6 @@ server.log
 # System config files (JuiceFS, etc.)
 .config
 .juicefs-config
+
+# Uploads (local images)
+/upload/

@@ -98,6 +98,12 @@ interface Menu {
   categories: MenuCategory[];
 }
 
+interface Currency {
+  code: string;
+  symbol: string;
+  name: string;
+}
+
 interface RestaurantData {
   id: string;
   name: string;
@@ -119,7 +125,7 @@ interface RestaurantData {
   acceptsDelivery: boolean;
   acceptsTakeaway: boolean;
   acceptsDineIn: boolean;
-  currency: string;
+  currency: Currency | string;
   menus: Menu[];
   hours: Array<{
     dayOfWeek: number;
@@ -192,7 +198,10 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
 
   // Currency formatting
   const formatPrice = (price: number) => {
-    return formatCurrency(price, restaurant?.currency || 'GNF');
+    const currencyCode = typeof restaurant?.currency === 'string' 
+      ? restaurant.currency 
+      : restaurant?.currency?.code || 'GNF';
+    return formatCurrency(price, currencyCode);
   };
 
   // Handle add to cart

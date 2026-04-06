@@ -27,6 +27,8 @@ import {
   Bell,
   FileText,
   Activity,
+  ShoppingCart,
+  UtensilsCrossed,
 } from 'lucide-react';
 
 interface NavItem {
@@ -41,6 +43,8 @@ const ADMIN_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { title: 'Organizations', href: '/admin/organizations', icon: Building2 },
   { title: 'Restaurants', href: '/admin/restaurants', icon: Store },
+  { title: 'Menus', href: '/admin/menus', icon: UtensilsCrossed },
+  { title: 'POS', href: '/admin/pos', icon: ShoppingCart },
   { title: 'Users', href: '/admin/users', icon: Users },
   { title: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
   { title: 'Analytics', href: '/admin/analytics', icon: BarChart3 },

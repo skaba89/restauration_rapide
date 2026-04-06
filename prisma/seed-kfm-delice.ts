@@ -105,7 +105,7 @@ async function main() {
     where: {
       organizationId_slug: {
         organizationId: organization.id,
-        slug: 'kfm-delice-conakry',
+        slug: 'kfm-delice',
       }
     },
     update: {},
@@ -113,7 +113,7 @@ async function main() {
       organizationId: organization.id,
       brandId: brand.id,
       name: 'KFM DELICE - Conakry',
-      slug: 'kfm-delice-conakry',
+      slug: 'kfm-delice',
       description: 'Fast food moderne proposant des burgers, poulet frit, pizzas et plats guinéens authentiques',
       email: 'conakry@kfm-delice.com',
       phone: '+224622000001',

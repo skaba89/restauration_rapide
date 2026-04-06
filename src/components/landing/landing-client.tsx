@@ -21,22 +21,7 @@ import {
   MapPin,
   Globe
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { LandingPageJsonLd } from '@/components/seo/json-ld';
-
-// Animation variants
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
 
 // Feature data
 const features = [
@@ -203,28 +188,23 @@ export default function LandingPageClient() {
       <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-orange-50 via-white to-amber-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
-              className="text-center lg:text-left"
-            >
-              <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium mb-6">
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium mb-6">
                 <Globe className="w-4 h-4" />
                 #1 Solution Restaurant en Afrique
-              </motion.div>
+              </div>
 
-              <motion.h1 variants={fadeInUp} className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
                 Le <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">OS Restaurateur</span>
-                <br />Pensé pour l'Afrique
-              </motion.h1>
+                <br />Pensé pour l&apos;Afrique
+              </h1>
 
-              <motion.p variants={fadeInUp} className="text-lg md:text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0">
+              <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0">
                 Gérez votre restaurant avec une solution tout-en-un : commandes, livraisons moto, Mobile Money, et analytics.
                 Adapté aux réalités du marché africain.
-              </motion.p>
+              </p>
 
-              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   href="/login"
                   className="inline-flex items-center justify-center px-6 py-3 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700 transition-all hover:shadow-lg hover:shadow-orange-200"
@@ -236,9 +216,9 @@ export default function LandingPageClient() {
                   <Play className="mr-2 w-5 h-5 text-orange-600" />
                   Voir la Démo
                 </Link>
-              </motion.div>
+              </div>
 
-              <motion.div variants={fadeInUp} className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-gray-500">
+              <div className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-gray-500">
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-green-500" />
                   Pas de carte de crédit
@@ -247,15 +227,10 @@ export default function LandingPageClient() {
                   <Check className="w-5 h-5 text-green-500" />
                   Configuration en 5 min
                 </div>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
 
-            <motion.div
-              initial={mounted ? { opacity: 0, scale: 0.9 } : false}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
-            >
+            <div className="relative">
               <div className="relative bg-gradient-to-br from-orange-500 to-amber-400 rounded-3xl p-1 shadow-2xl shadow-orange-200">
                 <div className="bg-gray-900 rounded-[20px] p-4 overflow-hidden">
                   <div className="flex items-center gap-2 mb-4">
@@ -300,38 +275,34 @@ export default function LandingPageClient() {
               </div>
 
               {/* Floating elements */}
-              <motion.div
-                animate={mounted ? { y: [0, -10, 0] } : {}}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                className="absolute -right-4 top-1/4 bg-white rounded-xl shadow-xl p-3 border border-gray-100"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <Check className="w-5 h-5 text-green-600" />
+              {mounted && (
+                <>
+                  <div className="absolute -right-4 top-1/4 bg-white rounded-xl shadow-xl p-3 border border-gray-100 animate-bounce">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <Check className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Nouvelle commande</p>
+                        <p className="text-sm font-semibold">#ORD-2847</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Nouvelle commande</p>
-                    <p className="text-sm font-semibold">#ORD-2847</p>
-                  </div>
-                </div>
-              </motion.div>
 
-              <motion.div
-                animate={mounted ? { y: [0, 10, 0] } : {}}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                className="absolute -left-4 bottom-1/4 bg-white rounded-xl shadow-xl p-3 border border-gray-100"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                    <Truck className="w-5 h-5 text-orange-600" />
+                  <div className="absolute -left-4 bottom-1/4 bg-white rounded-xl shadow-xl p-3 border border-gray-100 animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                        <Truck className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Livraison en cours</p>
+                        <p className="text-sm font-semibold">12 min restantes</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Livraison en cours</p>
-                    <p className="text-sm font-semibold">12 min restantes</p>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -358,33 +329,18 @@ export default function LandingPageClient() {
       <section id="features" className="py-20 md:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-            >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Tout ce dont vous avez besoin
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-lg text-gray-600"
-            >
+            </h2>
+            <p className="text-lg text-gray-600">
               Une solution complète conçue pour les réalités du marché africain
-            </motion.p>
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
+            {features.map((feature) => (
+              <div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
                 className="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-50 transition-all duration-300"
               >
                 <div className="flex items-start justify-between mb-4">
@@ -397,7 +353,7 @@ export default function LandingPageClient() {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600">{feature.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -426,32 +382,18 @@ export default function LandingPageClient() {
       <section id="pricing" className="py-20 md:py-28 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-            >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Des tarifs adaptés à votre croissance
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-lg text-gray-600"
-            >
+            </h2>
+            <p className="text-lg text-gray-600">
               Commencez gratuitement, évoluez selon vos besoins
-            </motion.p>
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map((plan) => (
-              <motion.div
+              <div
                 key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
                 className={`relative p-6 rounded-2xl ${
                   plan.popular
                     ? 'bg-orange-600 text-white shadow-xl shadow-orange-200 scale-105'
@@ -503,7 +445,7 @@ export default function LandingPageClient() {
                 >
                   {plan.cta}
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -513,33 +455,18 @@ export default function LandingPageClient() {
       <section id="testimonials" className="py-20 md:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-            >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Ils nous font confiance
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-lg text-gray-600"
-            >
+            </h2>
+            <p className="text-lg text-gray-600">
               Des restaurateurs africains satisfaits
-            </motion.p>
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
+            {testimonials.map((testimonial) => (
+              <div
                 key={testimonial.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
                 className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
               >
                 <div className="flex gap-1 mb-4">
@@ -548,7 +475,7 @@ export default function LandingPageClient() {
                   ))}
                 </div>
 
-                <p className="text-gray-600 mb-6 italic">"{testimonial.content}"</p>
+                <p className="text-gray-600 mb-6 italic">&quot;{testimonial.content}&quot;</p>
 
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-amber-300 rounded-full flex items-center justify-center text-white font-semibold">
@@ -563,7 +490,7 @@ export default function LandingPageClient() {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -572,34 +499,28 @@ export default function LandingPageClient() {
       {/* CTA Section */}
       <section className="py-20 bg-gray-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Prêt à digitaliser votre restaurant ?
-            </h2>
-            <p className="text-lg text-gray-300 mb-8">
-              Rejoignez des centaines de restaurateurs africains qui ont transformé leur business
-            </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Prêt à digitaliser votre restaurant ?
+          </h2>
+          <p className="text-lg text-gray-300 mb-8">
+            Rejoignez des centaines de restaurateurs africains qui ont transformé leur business
+          </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center px-8 py-4 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-500 transition-colors"
-              >
-                Démarrer Gratuitement
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-              <a
-                href="mailto:contact@restaurant-os.com"
-                className="inline-flex items-center justify-center px-8 py-4 bg-gray-800 text-white rounded-xl font-semibold border border-gray-700 hover:border-gray-600 transition-colors"
-              >
-                Nous Contacter
-              </a>
-            </div>
-          </motion.div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center px-8 py-4 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-500 transition-colors"
+            >
+              Démarrer Gratuitement
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+            <a
+              href="mailto:contact@restaurant-os.com"
+              className="inline-flex items-center justify-center px-8 py-4 bg-gray-800 text-white rounded-xl font-semibold border border-gray-700 hover:border-gray-600 transition-colors"
+            >
+              Nous Contacter
+            </a>
+          </div>
         </div>
       </section>
 
@@ -615,7 +536,7 @@ export default function LandingPageClient() {
                 <span className="font-bold text-xl text-white">Restaurant OS</span>
               </div>
               <p className="text-sm">
-                La solution de gestion restauratrice pensée pour l'Afrique.
+                La solution de gestion restauratrice pensée pour l&apos;Afrique.
               </p>
             </div>
 
@@ -625,7 +546,7 @@ export default function LandingPageClient() {
                 <li><a href="#features" className="hover:text-white transition-colors">Fonctionnalités</a></li>
                 <li><a href="#pricing" className="hover:text-white transition-colors">Tarifs</a></li>
                 <li><Link href="/api/docs" className="hover:text-white transition-colors">API Docs</Link></li>
-                <li><a href="https://github.com/skaba89/restauration_rapide" target="_blank" className="hover:text-white transition-colors">Changelog</a></li>
+                <li><a href="https://github.com/skaba89/restauration_rapide" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Changelog</a></li>
               </ul>
             </div>
 
@@ -633,7 +554,7 @@ export default function LandingPageClient() {
               <h4 className="font-semibold text-white mb-4">Entreprise</h4>
               <ul className="space-y-2 text-sm">
                 <li><a href="mailto:contact@restaurant-os.app" className="hover:text-white transition-colors">À propos</a></li>
-                <li><a href="https://twitter.com/restaurantos" target="_blank" className="hover:text-white transition-colors">Blog</a></li>
+                <li><a href="https://twitter.com/restaurantos" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a></li>
                 <li><a href="mailto:jobs@restaurant-os.app" className="hover:text-white transition-colors">Carrières</a></li>
                 <li><a href="mailto:partners@restaurant-os.app" className="hover:text-white transition-colors">Partenaires</a></li>
               </ul>
@@ -642,9 +563,9 @@ export default function LandingPageClient() {
             <div>
               <h4 className="font-semibold text-white mb-4">Support</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="mailto:support@restaurant-os.app" className="hover:text-white transition-colors">Centre d'aide</a></li>
+                <li><a href="mailto:support@restaurant-os.app" className="hover:text-white transition-colors">Centre d&apos;aide</a></li>
                 <li><a href="mailto:contact@restaurant-os.app" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="https://status.restaurant-os.app" target="_blank" className="hover:text-white transition-colors">Status</a></li>
+                <li><a href="https://status.restaurant-os.app" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Status</a></li>
                 <li><a href="mailto:privacy@restaurant-os.app" className="hover:text-white transition-colors">Confidentialité</a></li>
               </ul>
             </div>

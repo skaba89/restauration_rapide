@@ -1,13 +1,6 @@
 // Public Restaurant API - Get restaurant by slug with full menu data
-// IMPORTANT: This API returns demo data for kfm-delice WITHOUT requiring database connection
-import { NextRequest, NextResponse } from 'next/server';
-
-// Fallback currency for when database doesn't have one
-const DEFAULT_CURRENCY = {
-  code: 'GNF',
-  symbol: 'GNF',
-  name: 'Franc Guinéen',
-};
+// This API returns demo data for kfm-delice WITHOUT requiring database connection
+import { NextResponse } from 'next/server';
 
 // Demo restaurant data for KFM DELICE
 const DEMO_RESTAURANT = {
@@ -32,7 +25,11 @@ const DEMO_RESTAURANT = {
   deliveryTime: 30,
   rating: 4.5,
   reviewCount: 127,
-  currency: DEFAULT_CURRENCY,
+  currency: {
+    code: 'GNF',
+    symbol: 'GNF',
+    name: 'Franc Guinéen',
+  },
   settings: {
     acceptsCash: true,
     acceptsMobileMoney: true,
@@ -132,52 +129,35 @@ const DEMO_RESTAURANT = {
   organizationId: 'demo-org-1',
 };
 
-// Helper function to extract slug from URL
-function extractSlugFromUrl(url: string): string | null {
-  const match = url.match(/\/api\/public\/restaurant\/([^/?]+)/);
-  return match ? match[1] : null;
-}
-
 // GET /api/public/restaurant/[slug] - Get restaurant with menus for public view
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  // STEP 1: Check URL first for kfm-delice (fastest path - no async needed)
-  const url = request.url || '';
-  const urlSlug = extractSlugFromUrl(url);
-  
-  if (urlSlug === 'kfm-delice' || url.includes('kfm-delice')) {
-    return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
-  }
-
-  // STEP 2: Try to get slug from params
-  let slug: string = urlSlug || '';
-  
   try {
+    // Resolve params
     const resolvedParams = await params;
-    slug = resolvedParams?.slug || slug;
-  } catch (paramError) {
-    console.error('Error resolving params:', paramError);
-    // slug already has value from URL extraction
-  }
+    const slug = resolvedParams?.slug;
 
-  // STEP 3: Check slug again for kfm-delice
-  if (slug === 'kfm-delice') {
-    return NextResponse.json({ success: true, data: DEMO_RESTAURANT });
-  }
+    // For kfm-delice, return demo data immediately
+    if (slug === 'kfm-delice') {
+      return NextResponse.json({ 
+        success: true, 
+        data: DEMO_RESTAURANT 
+      });
+    }
 
-  // STEP 4: If no slug, return error
-  if (!slug) {
+    // For other slugs, return not found
     return NextResponse.json(
-      { success: false, error: 'Slug manquant', code: 'MISSING_SLUG' },
-      { status: 400 }
+      { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
+      { status: 404 }
     );
+  } catch (error) {
+    console.error('Error in public restaurant API:', error);
+    // Even on error, return demo data for kfm-delice to ensure the page works
+    return NextResponse.json({ 
+      success: true, 
+      data: DEMO_RESTAURANT 
+    });
   }
-
-  // STEP 5: For other restaurants, return not found (demo mode)
-  return NextResponse.json(
-    { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
-    { status: 404 }
-  );
 }

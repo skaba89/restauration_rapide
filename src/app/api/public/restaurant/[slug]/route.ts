@@ -148,7 +148,7 @@ export async function GET(
 
     // Try to fetch from database
     try {
-      const restaurant = await db.restaurant.findUnique({
+      const restaurant = await db.restaurant.findFirst({
         where: { 
           slug,
           isActive: true,
@@ -175,8 +175,18 @@ export async function GET(
           deliveryTime: true,
           rating: true,
           reviewCount: true,
-          currency: true,
           organizationId: true,
+          organization: {
+            select: {
+              currency: {
+                select: {
+                  code: true,
+                  symbol: true,
+                  name: true,
+                }
+              }
+            }
+          },
           settings: true,
           hours: {
             orderBy: { dayOfWeek: 'asc' },
@@ -230,7 +240,6 @@ export async function GET(
                       rating: true,
                       reviewCount: true,
                       variants: {
-                        where: { isAvailable: true },
                         orderBy: { sortOrder: 'asc' },
                         select: {
                           id: true,
@@ -248,7 +257,6 @@ export async function GET(
                           multiSelect: true,
                           maxSelect: true,
                           values: {
-                            where: { isAvailable: true },
                             orderBy: { sortOrder: 'asc' },
                             select: {
                               id: true,
@@ -272,9 +280,8 @@ export async function GET(
         // Transform database result to match expected format
         const formattedRestaurant = {
           ...restaurant,
-          currency: typeof restaurant.currency === 'string' 
-            ? { code: restaurant.currency, symbol: restaurant.currency, name: restaurant.currency }
-            : restaurant.currency,
+          currency: restaurant.organization?.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+          organization: undefined,
           settings: restaurant.settings as any,
           hours: restaurant.hours.map((h: any) => ({
             dayOfWeek: h.dayOfWeek,

@@ -1,9 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -12,7 +13,7 @@ model User {
   email             String             @unique
   phone             String?            @unique
   passwordHash      String
-  role              UserRole           @default(CUSTOMER)
+  role              String             @default("CUSTOMER")
   firstName         String?
   lastName          String?
   avatar            String?
@@ -75,7 +76,7 @@ model OtpCode {
   phone      String?
   email      String?
   code       String
-  type       OtpType
+  type       String
   attempts   Int       @default(0)
   verifiedAt DateTime?
   expiresAt  DateTime
@@ -101,15 +102,15 @@ model Organization {
   taxId            String?
   businessType     String?
   currencyId       String
-  plan             Plan                  @default(STARTER)
+  plan             String                @default("STARTER")
   planExpiresAt    DateTime?
   stripeCustomerId String?
   isActive         Boolean               @default(true)
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
   brands           Brand[]
-  currency         Currency              @relation(fields: [currencyId], references: [id])
   country          Country               @relation(fields: [countryId], references: [id])
+  currency         Currency              @relation(fields: [currencyId], references: [id])
   settings         OrganizationSettings?
   users            OrganizationUser[]
   restaurants      Restaurant[]
@@ -157,8 +158,8 @@ model OrganizationUser {
   acceptedAt     DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, userId])
 }
@@ -236,9 +237,9 @@ model Restaurant {
   menus               Menu[]
   orders              Order[]
   reservations        Reservation[]
-  country             Country                 @relation(fields: [countryId], references: [id])
-  brand               Brand?                  @relation(fields: [brandId], references: [id])
   organization        Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brand               Brand?                  @relation(fields: [brandId], references: [id])
+  country             Country                 @relation(fields: [countryId], references: [id])
   hours               RestaurantHour[]
   settings            RestaurantSettings?
   specialHours        RestaurantSpecialHour[]
@@ -326,7 +327,7 @@ model Table {
   width                Float?
   height               Float?
   rotation             Float?
-  status               TableStatus        @default(AVAILABLE)
+  status               String             @default("AVAILABLE")
   currentPartySize     Int?
   currentReservationId String?
   serverId             String?
@@ -338,9 +339,9 @@ model Table {
   updatedAt            DateTime           @updatedAt
   qrSessions           QrSession[]
   reservations         ReservationTable[]
-  server               StaffProfile?      @relation(fields: [serverId], references: [id])
-  diningRoom           DiningRoom?        @relation(fields: [diningRoomId], references: [id])
   restaurant           Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  diningRoom           DiningRoom?        @relation(fields: [diningRoomId], references: [id])
+  server               StaffProfile?      @relation(fields: [serverId], references: [id])
 
   @@unique([restaurantId, number])
 }
@@ -476,8 +477,8 @@ model MenuItemAllergen {
   id         String   @id @default(cuid())
   menuItemId String
   allergenId String
-  allergen   Allergen @relation(fields: [allergenId], references: [id])
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  allergen   Allergen @relation(fields: [allergenId], references: [id])
 
   @@unique([menuItemId, allergenId])
 }
@@ -496,8 +497,8 @@ model MenuItemIngredient {
   ingredientId String
   quantity     Float?
   unit         String?
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
   menuItem     MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
 
   @@unique([menuItemId, ingredientId])
 }
@@ -527,7 +528,7 @@ model Reservation {
   date               DateTime
   time               String
   duration           Int                @default(120)
-  status             ReservationStatus  @default(PENDING)
+  status             String             @default("PENDING")
   source             String             @default("web")
   occasion           String?
   specialRequests    String?
@@ -548,8 +549,8 @@ model Reservation {
   noShowCharged      Boolean            @default(false)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
-  customer           CustomerProfile?   @relation(fields: [customerId], references: [id])
   restaurant         Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  customer           CustomerProfile?   @relation(fields: [customerId], references: [id])
   tables             ReservationTable[]
 
   @@index([restaurantId, date])
@@ -561,8 +562,8 @@ model ReservationTable {
   id            String      @id @default(cuid())
   reservationId String
   tableId       String
-  table         Table       @relation(fields: [tableId], references: [id], onDelete: Cascade)
   reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  table         Table       @relation(fields: [tableId], references: [id], onDelete: Cascade)
 
   @@unique([reservationId, tableId])
 }
@@ -576,7 +577,7 @@ model WaitlistEntry {
   partySize                Int
   preferredArea            String?
   specialRequests          String?
-  status                   WaitlistStatus   @default(WAITING)
+  status                   String           @default("WAITING")
   priority                 Int              @default(0)
   estimatedWait            Int?
   quotedWait               Int?
@@ -588,8 +589,8 @@ model WaitlistEntry {
   internalNotes            String?
   createdAt                DateTime         @default(now())
   updatedAt                DateTime         @updatedAt
-  customer                 CustomerProfile? @relation(fields: [customerId], references: [id])
   restaurant               Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  customer                 CustomerProfile? @relation(fields: [customerId], references: [id])
 
   @@index([restaurantId, status])
 }
@@ -602,11 +603,11 @@ model Order {
   customerName        String
   customerPhone       String
   customerEmail       String?
-  orderType           OrderType            @default(DINE_IN)
+  orderType           String               @default("DINE_IN")
   source              String               @default("web")
   channelId           String?
-  status              OrderStatus          @default(PENDING)
-  paymentStatus       PaymentStatus        @default(PENDING)
+  status              String               @default("PENDING")
+  paymentStatus       String               @default("PENDING")
   tableId             String?
   tableNumber         String?
   deliveryAddress     String?
@@ -647,10 +648,10 @@ model Order {
   updatedAt           DateTime             @updatedAt
   qrSessionId         String?
   delivery            Delivery?
-  qrSession           QrSession?           @relation(fields: [qrSessionId], references: [id])
-  server              StaffProfile?        @relation(fields: [serverId], references: [id])
-  customer            CustomerProfile?     @relation(fields: [customerId], references: [id])
   restaurant          Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  customer            CustomerProfile?     @relation(fields: [customerId], references: [id])
+  server              StaffProfile?        @relation(fields: [serverId], references: [id])
+  qrSession           QrSession?           @relation(fields: [qrSessionId], references: [id])
   items               OrderItem[]
   statusHistory       OrderStatusHistory[]
   payments            Payment[]
@@ -678,8 +679,8 @@ model OrderItem {
   startedAt   DateTime?
   completedAt DateTime?
   createdAt   DateTime  @default(now())
-  menuItem    MenuItem? @relation(fields: [menuItemId], references: [id])
   order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem    MenuItem? @relation(fields: [menuItemId], references: [id])
 
   @@index([orderId])
   @@index([menuItemId])
@@ -739,8 +740,8 @@ model CartItem {
   notes      String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   cart       Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
 
   @@index([cartId])
 }
@@ -755,8 +756,8 @@ model QrSession {
   openedAt     DateTime         @default(now())
   closedAt     DateTime?
   orders       Order[]
-  customer     CustomerProfile? @relation(fields: [customerId], references: [id])
   table        Table?           @relation(fields: [tableId], references: [id])
+  customer     CustomerProfile? @relation(fields: [customerId], references: [id])
 
   @@index([code])
   @@index([restaurantId, isActive])
@@ -797,7 +798,7 @@ model Delivery {
   dropoffNotes    String?
   dropoffLandmark String?
   driverId        String?
-  status          DeliveryStatus          @default(PENDING)
+  status          String                  @default("PENDING")
   dispatchType    String                  @default("auto")
   deliveryFee     Float
   driverEarning   Float
@@ -820,8 +821,8 @@ model Delivery {
   notes           String?
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
-  driver          Driver?                 @relation(fields: [driverId], references: [id])
   order           Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  driver          Driver?                 @relation(fields: [driverId], references: [id])
   trackingEvents  DeliveryTrackingEvent[]
 
   @@index([driverId, status])
@@ -986,9 +987,9 @@ model Payment {
   orderId       String
   amount        Float
   currencyId    String
-  method        PaymentMethod
+  method        String
   provider      String?
-  status        PaymentStatus @default(PENDING)
+  status        String        @default("PENDING")
   phoneNumber   String?
   providerRef   String?
   transactionId String?
@@ -1248,8 +1249,8 @@ model Review {
   isPublished    Boolean          @default(true)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  customer       CustomerProfile? @relation(fields: [customerId], references: [id])
   restaurant     Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  customer       CustomerProfile? @relation(fields: [customerId], references: [id])
 
   @@index([restaurantId, createdAt])
   @@index([customerId])
@@ -1275,8 +1276,8 @@ model StaffProfile {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   orders          Order[]
-  restaurant      Restaurant? @relation(fields: [restaurantId], references: [id])
   user            User?       @relation(fields: [userId], references: [id])
+  restaurant      Restaurant? @relation(fields: [restaurantId], references: [id])
   tables          Table[]
 
   @@unique([organizationId, phone])
@@ -1411,8 +1412,8 @@ model Currency {
   decimalPlaces     Int            @default(0)
   isActive          Boolean        @default(true)
   countries         Country[]
-  exchangeRatesTo   ExchangeRate[] @relation("ToCurrency")
   exchangeRatesFrom ExchangeRate[] @relation("FromCurrency")
+  exchangeRatesTo   ExchangeRate[] @relation("ToCurrency")
   organizations     Organization[]
 
   @@index([code])
@@ -1426,8 +1427,8 @@ model ExchangeRate {
   validFrom      DateTime
   validUntil     DateTime?
   createdAt      DateTime  @default(now())
-  toCurrency     Currency  @relation("ToCurrency", fields: [toCurrencyId], references: [id])
   fromCurrency   Currency  @relation("FromCurrency", fields: [fromCurrencyId], references: [id])
+  toCurrency     Currency  @relation("ToCurrency", fields: [toCurrencyId], references: [id])
 
   @@index([fromCurrencyId, toCurrencyId])
 }
@@ -1466,8 +1467,8 @@ model PaymentProviderCountry {
   fees          Float           @default(0)
   feeType       String          @default("percentage")
   isActive      Boolean         @default(true)
-  country       Country         @relation(fields: [countryId], references: [id])
   provider      PaymentProvider @relation(fields: [providerId], references: [id])
+  country       Country         @relation(fields: [countryId], references: [id])
 
   @@unique([providerId, countryId])
 }
@@ -1619,112 +1620,115 @@ model PushSubscription {
   @@index([endpoint])
 }
 
-enum UserRole {
-  SUPER_ADMIN
-  ORG_ADMIN
-  ORG_MANAGER
-  RESTAURANT_ADMIN
-  RESTAURANT_MANAGER
-  STAFF
-  KITCHEN
-  DRIVER
-  CUSTOMER
-  SUPPORT
-}
+// Enums are commented out for SQLite compatibility (SQLite doesn't support native enums)
+// Values are stored as strings in the database
 
-enum OtpType {
-  LOGIN
-  REGISTER
-  VERIFY_PHONE
-  VERIFY_EMAIL
-  RESET_PASSWORD
-  VERIFY_PAYMENT
-}
+// enum UserRole {
+//   SUPER_ADMIN
+//   ORG_ADMIN
+//   ORG_MANAGER
+//   RESTAURANT_ADMIN
+//   RESTAURANT_MANAGER
+//   STAFF
+//   KITCHEN
+//   DRIVER
+//   CUSTOMER
+//   SUPPORT
+// }
 
-enum Plan {
-  STARTER
-  PRO
-  BUSINESS
-  ENTERPRISE
-}
+// enum OtpType {
+//   LOGIN
+//   REGISTER
+//   VERIFY_PHONE
+//   VERIFY_EMAIL
+//   RESET_PASSWORD
+//   VERIFY_PAYMENT
+// }
 
-enum TableStatus {
-  AVAILABLE
-  OCCUPIED
-  RESERVED
-  DIRTY
-  OUT_OF_SERVICE
-}
+// enum Plan {
+//   STARTER
+//   PRO
+//   BUSINESS
+//   ENTERPRISE
+// }
 
-enum ReservationStatus {
-  PENDING
-  CONFIRMED
-  SEATED
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
+// enum TableStatus {
+//   AVAILABLE
+//   OCCUPIED
+//   RESERVED
+//   DIRTY
+//   OUT_OF_SERVICE
+// }
 
-enum WaitlistStatus {
-  WAITING
-  NOTIFIED
-  SEATED
-  CANCELLED
-  EXPIRED
-  CONVERTED
-}
+// enum ReservationStatus {
+//   PENDING
+//   CONFIRMED
+//   SEATED
+//   COMPLETED
+//   CANCELLED
+//   NO_SHOW
+// }
 
-enum OrderType {
-  DINE_IN
-  TAKEAWAY
-  DELIVERY
-  DRIVE_THRU
-}
+// enum WaitlistStatus {
+//   WAITING
+//   NOTIFIED
+//   SEATED
+//   CANCELLED
+//   EXPIRED
+//   CONVERTED
+// }
 
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PREPARING
-  READY
-  OUT_FOR_DELIVERY
-  DELIVERED
-  COMPLETED
-  CANCELLED
-  REFUNDED
-}
+// enum OrderType {
+//   DINE_IN
+//   TAKEAWAY
+//   DELIVERY
+//   DRIVE_THRU
+// }
 
-enum PaymentStatus {
-  PENDING
-  PARTIAL
-  PAID
-  REFUNDED
-  FAILED
-}
+// enum OrderStatus {
+//   PENDING
+//   CONFIRMED
+//   PREPARING
+//   READY
+//   OUT_FOR_DELIVERY
+//   DELIVERED
+//   COMPLETED
+//   CANCELLED
+//   REFUNDED
+// }
 
-enum DeliveryStatus {
-  PENDING
-  SEARCHING_DRIVER
-  DRIVER_ASSIGNED
-  DRIVER_ARRIVED_PICKUP
-  PICKED_UP
-  DRIVER_ARRIVED_DROPOFF
-  DELIVERED
-  FAILED
-  CANCELLED
-  RETURNED
-}
+// enum PaymentStatus {
+//   PENDING
+//   PARTIAL
+//   PAID
+//   REFUNDED
+//   FAILED
+// }
 
-enum PaymentMethod {
-  CASH
-  MOBILE_MONEY_ORANGE
-  MOBILE_MONEY_MTN
-  MOBILE_MONEY_WAVE
-  MOBILE_MONEY_MPESA
-  MOBILE_MONEY_MOOV
-  CARD
-  WALLET
-  BANK_TRANSFER
-  APPLE_PAY
-  GOOGLE_PAY
-  GIFT_CARD
-}
+// enum DeliveryStatus {
+//   PENDING
+//   SEARCHING_DRIVER
+//   DRIVER_ASSIGNED
+//   DRIVER_ARRIVED_PICKUP
+//   PICKED_UP
+//   DRIVER_ARRIVED_DROPOFF
+//   DELIVERED
+//   FAILED
+//   CANCELLED
+//   RETURNED
+// }
+
+// enum PaymentMethod {
+//   CASH
+//   MOBILE_MONEY_ORANGE
+//   MOBILE_MONEY_MTN
+//   MOBILE_MONEY_WAVE
+//   MOBILE_MONEY_MPESA
+//   MOBILE_MONEY_MOOV
+//   CARD
+//   WALLET
+//   BANK_TRANSFER
+//   APPLE_PAY
+//   GOOGLE_PAY
+//   GIFT_CARD
+// }

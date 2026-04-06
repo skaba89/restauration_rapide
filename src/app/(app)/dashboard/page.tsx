@@ -24,17 +24,7 @@ import {
   Utensils,
   CreditCard,
 } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from 'recharts';
+import { SalesChart } from '@/components/dashboard/sales-chart';
 import { dashboardApi } from '@/lib/api-client';
 
 // Demo data for charts (fallback)
@@ -430,36 +420,7 @@ export default function DashboardPage() {
                   <Skeleton className="h-[250px] w-full" />
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={salesData}>
-                    <defs>
-                      <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="name" className="text-xs" />
-                    <YAxis className="text-xs" tickFormatter={(v) => `${v / 1000}k`} />
-                    <Tooltip
-                      formatter={(value: number) => formatCurrency(value)}
-                      labelStyle={{ color: '#000' }}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="ventes"
-                      stroke="#f97316"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorVentes)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <SalesChart data={salesData} formatCurrency={formatCurrency} />
               )}
             </div>
           </CardContent>

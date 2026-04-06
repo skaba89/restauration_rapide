@@ -24,7 +24,7 @@ echo ""
 echo "📦 Generating Prisma Client..."
 npx prisma generate --schema=./prisma/schema.prisma 2>&1 || echo "⚠️ Prisma generate warning (may already exist)"
 
-# Run Prisma migrations
+# Run Prisma migrations - push schema to database
 echo ""
 echo "📦 Running Prisma db push..."
 npx prisma db push --accept-data-loss --skip-generate 2>&1 || {
@@ -34,7 +34,17 @@ npx prisma db push --accept-data-loss --skip-generate 2>&1 || {
 # Wait a moment for database to be ready
 echo ""
 echo "⏳ Waiting for database to stabilize..."
-sleep 3
+sleep 2
+
+# Seed the database if needed (create initial admin user, etc.)
+echo ""
+echo "📦 Checking if database needs seeding..."
+# Check if we have any users
+HAS_USERS=$(npx prisma db execute --stdin <<< "SELECT COUNT(*) FROM User;" 2>/dev/null || echo "0")
+if [[ "$HAS_USERS" == *"0"* ]] || [[ -z "$HAS_USERS" ]]; then
+    echo "No users found, running seed..."
+    npm run seed 2>&1 || echo "⚠️ Seed had issues, but continuing..."
+fi
 
 # Start the Next.js server
 echo ""

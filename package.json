@@ -6,7 +6,7 @@
     "dev": "next dev -p 3010",
     "dev:clean": "npx kill-port 3010 && next dev -p 3010",
     "postinstall": "prisma generate",
-    "build": "prisma generate && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && mkdir -p .next/standalone/node_modules/.prisma && mkdir -p .next/standalone/node_modules/@prisma && cp -r node_modules/.prisma/client .next/standalone/node_modules/.prisma/ 2>/dev/null || true && cp -r node_modules/@prisma/client .next/standalone/node_modules/@prisma/ 2>/dev/null || true && cp prisma/schema.prisma .next/standalone/prisma/ 2>/dev/null || mkdir -p .next/standalone/prisma && cp prisma/schema.prisma .next/standalone/prisma/",
+    "build": "node scripts/build.js",
     "start": "node server.js",
     "start:render": "./scripts/start-render.sh",
     "lint": "eslint .",

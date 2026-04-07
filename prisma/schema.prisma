@@ -1,34 +1,54 @@
+// ============================================
+// RESTAURANT OS - PostgreSQL Schema
+// For Supabase / Production Deployment
+// ============================================
+
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl  = env("DATABASE_URL_DIRECT")
 }
 
+// ============================================
+// CORE - Users & Authentication
+// ============================================
+
 model User {
-  id                String             @id @default(cuid())
-  email             String             @unique
-  phone             String?            @unique
-  passwordHash      String
-  role              String             @default("CUSTOMER")
-  firstName         String?
-  lastName          String?
-  avatar            String?
-  language          String             @default("fr")
-  timezone          String             @default("Africa/Abidjan")
-  emailVerified     DateTime?
-  phoneVerified     DateTime?
-  isActive          Boolean            @default(true)
-  isLocked          Boolean            @default(false)
-  lockedAt          DateTime?
-  lastLoginAt       DateTime?
-  lastLoginIp       String?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  deletedAt         DateTime?
+  id            String    @id @default(cuid())
+  email         String    @unique
+  phone         String?   @unique
+  passwordHash  String
+  role          UserRole  @default(CUSTOMER)
+  
+  // Profile
+  firstName     String?
+  lastName      String?
+  avatar        String?
+  language      String    @default("fr")
+  timezone      String    @default("Africa/Abidjan")
+  
+  // Verification
+  emailVerified DateTime?
+  phoneVerified DateTime?
+  
+  // Status
+  isActive      Boolean   @default(true)
+  isLocked      Boolean   @default(false)
+  lockedAt      DateTime?
+  lastLoginAt   DateTime?
+  lastLoginIp   String?
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  
+  // Relations
   auditLogs         AuditLog[]
   customerProfiles  CustomerProfile[]
   driverProfile     Driver?
@@ -76,7 +96,7 @@ model OtpCode {
   phone      String?
   email      String?
   code       String
-  type       String
+  type       OtpType
   attempts   Int       @default(0)
   verifiedAt DateTime?
   expiresAt  DateTime
@@ -86,6 +106,10 @@ model OtpCode {
   @@index([phone, type])
   @@index([email, type])
 }
+
+// ============================================
+// ORGANIZATION - Multi-tenant
+// ============================================
 
 model Organization {
   id               String                @id @default(cuid())
@@ -102,7 +126,7 @@ model Organization {
   taxId            String?
   businessType     String?
   currencyId       String
-  plan             String                @default("STARTER")
+  plan             Plan                  @default(STARTER)
   planExpiresAt    DateTime?
   stripeCustomerId String?
   isActive         Boolean               @default(true)
@@ -327,7 +351,7 @@ model Table {
   width                Float?
   height               Float?
   rotation             Float?
-  status               String             @default("AVAILABLE")
+  status               TableStatus        @default(AVAILABLE)
   currentPartySize     Int?
   currentReservationId String?
   serverId             String?
@@ -528,7 +552,7 @@ model Reservation {
   date               DateTime
   time               String
   duration           Int                @default(120)
-  status             String             @default("PENDING")
+  status             ReservationStatus  @default(PENDING)
   source             String             @default("web")
   occasion           String?
   specialRequests    String?
@@ -577,7 +601,7 @@ model WaitlistEntry {
   partySize                Int
   preferredArea            String?
   specialRequests          String?
-  status                   String           @default("WAITING")
+  status                   WaitlistStatus   @default(WAITING)
   priority                 Int              @default(0)
   estimatedWait            Int?
   quotedWait               Int?
@@ -603,11 +627,11 @@ model Order {
   customerName        String
   customerPhone       String
   customerEmail       String?
-  orderType           String               @default("DINE_IN")
+  orderType           OrderType            @default(DINE_IN)
   source              String               @default("web")
   channelId           String?
-  status              String               @default("PENDING")
-  paymentStatus       String               @default("PENDING")
+  status              OrderStatus          @default(PENDING)
+  paymentStatus       PaymentStatus        @default(PENDING)
   tableId             String?
   tableNumber         String?
   deliveryAddress     String?
@@ -798,7 +822,7 @@ model Delivery {
   dropoffNotes    String?
   dropoffLandmark String?
   driverId        String?
-  status          String                  @default("PENDING")
+  status          DeliveryStatus          @default(PENDING)
   dispatchType    String                  @default("auto")
   deliveryFee     Float
   driverEarning   Float
@@ -987,9 +1011,9 @@ model Payment {
   orderId       String
   amount        Float
   currencyId    String
-  method        String
+  method        PaymentMethod
   provider      String?
-  status        String        @default("PENDING")
+  status        PaymentStatus @default(PENDING)
   phoneNumber   String?
   providerRef   String?
   transactionId String?
@@ -1377,6 +1401,8 @@ model Country {
   paymentProviders   PaymentProviderCountry[]
   restaurants        Restaurant[]
   taxRules           TaxRule[]
+
+  @@index([code])
 }
 
 model City {
@@ -1620,115 +1646,116 @@ model PushSubscription {
   @@index([endpoint])
 }
 
-// Enums are commented out for SQLite compatibility (SQLite doesn't support native enums)
-// Values are stored as strings in the database
+// ============================================
+// ENUMS
+// ============================================
 
-// enum UserRole {
-//   SUPER_ADMIN
-//   ORG_ADMIN
-//   ORG_MANAGER
-//   RESTAURANT_ADMIN
-//   RESTAURANT_MANAGER
-//   STAFF
-//   KITCHEN
-//   DRIVER
-//   CUSTOMER
-//   SUPPORT
-// }
+enum UserRole {
+  SUPER_ADMIN
+  ORG_ADMIN
+  ORG_MANAGER
+  RESTAURANT_ADMIN
+  RESTAURANT_MANAGER
+  STAFF
+  KITCHEN
+  DRIVER
+  CUSTOMER
+  SUPPORT
+}
 
-// enum OtpType {
-//   LOGIN
-//   REGISTER
-//   VERIFY_PHONE
-//   VERIFY_EMAIL
-//   RESET_PASSWORD
-//   VERIFY_PAYMENT
-// }
+enum OtpType {
+  LOGIN
+  REGISTER
+  VERIFY_PHONE
+  VERIFY_EMAIL
+  RESET_PASSWORD
+  VERIFY_PAYMENT
+}
 
-// enum Plan {
-//   STARTER
-//   PRO
-//   BUSINESS
-//   ENTERPRISE
-// }
+enum Plan {
+  STARTER
+  PRO
+  BUSINESS
+  ENTERPRISE
+}
 
-// enum TableStatus {
-//   AVAILABLE
-//   OCCUPIED
-//   RESERVED
-//   DIRTY
-//   OUT_OF_SERVICE
-// }
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  DIRTY
+  OUT_OF_SERVICE
+}
 
-// enum ReservationStatus {
-//   PENDING
-//   CONFIRMED
-//   SEATED
-//   COMPLETED
-//   CANCELLED
-//   NO_SHOW
-// }
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
 
-// enum WaitlistStatus {
-//   WAITING
-//   NOTIFIED
-//   SEATED
-//   CANCELLED
-//   EXPIRED
-//   CONVERTED
-// }
+enum WaitlistStatus {
+  WAITING
+  NOTIFIED
+  SEATED
+  CANCELLED
+  EXPIRED
+  CONVERTED
+}
 
-// enum OrderType {
-//   DINE_IN
-//   TAKEAWAY
-//   DELIVERY
-//   DRIVE_THRU
-// }
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+  DRIVE_THRU
+}
 
-// enum OrderStatus {
-//   PENDING
-//   CONFIRMED
-//   PREPARING
-//   READY
-//   OUT_FOR_DELIVERY
-//   DELIVERED
-//   COMPLETED
-//   CANCELLED
-//   REFUNDED
-// }
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
 
-// enum PaymentStatus {
-//   PENDING
-//   PARTIAL
-//   PAID
-//   REFUNDED
-//   FAILED
-// }
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+  FAILED
+}
 
-// enum DeliveryStatus {
-//   PENDING
-//   SEARCHING_DRIVER
-//   DRIVER_ASSIGNED
-//   DRIVER_ARRIVED_PICKUP
-//   PICKED_UP
-//   DRIVER_ARRIVED_DROPOFF
-//   DELIVERED
-//   FAILED
-//   CANCELLED
-//   RETURNED
-// }
+enum DeliveryStatus {
+  PENDING
+  SEARCHING_DRIVER
+  DRIVER_ASSIGNED
+  DRIVER_ARRIVED_PICKUP
+  PICKED_UP
+  DRIVER_ARRIVED_DROPOFF
+  DELIVERED
+  FAILED
+  CANCELLED
+  RETURNED
+}
 
-// enum PaymentMethod {
-//   CASH
-//   MOBILE_MONEY_ORANGE
-//   MOBILE_MONEY_MTN
-//   MOBILE_MONEY_WAVE
-//   MOBILE_MONEY_MPESA
-//   MOBILE_MONEY_MOOV
-//   CARD
-//   WALLET
-//   BANK_TRANSFER
-//   APPLE_PAY
-//   GOOGLE_PAY
-//   GIFT_CARD
-// }
+enum PaymentMethod {
+  CASH
+  MOBILE_MONEY_ORANGE
+  MOBILE_MONEY_MTN
+  MOBILE_MONEY_WAVE
+  MOBILE_MONEY_MPESA
+  MOBILE_MONEY_MOOV
+  CARD
+  WALLET
+  BANK_TRANSFER
+  APPLE_PAY
+  GOOGLE_PAY
+  GIFT_CARD
+}

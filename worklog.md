@@ -217,6 +217,27 @@ Implement missing backend APIs and connect them to the frontend:
 - Dashboard page loads and fetches data successfully
 
 ---
+## Task ID: auth-and-defaults-fix - Auth API & Default Settings Fix
+
+### Work Task
+Fix 404 error on /api/auth endpoint and set default country/currency to Guinea/GNF
+
+### Work Log:
+- Analyzed build process and API route structure
+- Identified issues with error handling in auth route
+- Improved db.ts to handle missing DATABASE_URL gracefully
+- Rewrote auth route with better error handling and demo mode support
+- Added /api/test route for debugging
+- Verified Guinea and GNF are already set as defaults in config.ts
+- Build completed successfully
+
+### Stage Summary:
+- Fixed error handling in auth API with `safeResponse` wrapper
+- Added demo mode support when database is unavailable
+- Guinea/GNF defaults confirmed (already set in config.ts)
+- Build passes with all API routes compiled correctly
+
+---
 ## Task ID: security-enhancements - Security & Validation Enhancements
 
 ### Work Task

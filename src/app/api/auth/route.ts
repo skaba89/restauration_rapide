@@ -1,6 +1,6 @@
 // Authentication API
+import { NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
-import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import {
   hashPassword,
   verifyPassword,
@@ -39,77 +39,99 @@ function generateDemoToken(): string {
   return `demo-token-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// Safe error handler
+function safeResponse(handler: () => Promise<NextResponse>): Promise<NextResponse> {
+  return handler().catch((error) => {
+    console.error('Auth API Error:', error);
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Une erreur est survenue',
+    }, { status: 500 });
+  });
+}
+
+// Helper for JSON responses
+function jsonResponse(success: boolean, data: any, status = 200): NextResponse {
+  return NextResponse.json({ success, ...data }, { status });
+}
+
 // GET /api/auth - Get current session
 export async function GET(request: Request) {
-  return withErrorHandler(async () => {
+  return safeResponse(async () => {
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      return apiError('Non autorisé', 401);
+      return jsonResponse(false, { error: 'Non autorisé' }, 401);
     }
 
     // Check for demo mode
-    if (!isDatabaseAvailable() || !db) {
+    const databaseAvailable = isDatabaseAvailable();
+    
+    if (!databaseAvailable || !db) {
       // In demo mode, accept any demo-token-* as valid
       if (token.startsWith('demo-token-')) {
-        return apiSuccess({
-          user: {
-            id: DEMO_USER.id,
-            email: DEMO_USER.email,
-            phone: DEMO_USER.phone,
-            role: DEMO_USER.role,
-            firstName: DEMO_USER.firstName,
-            lastName: DEMO_USER.lastName,
-            avatar: DEMO_USER.avatar,
-            language: 'fr',
-            isActive: true,
-            organizations: DEMO_USER.organizations,
-          },
-          session: {
-            id: 'demo-session-1',
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          },
+        return jsonResponse(true, {
+          data: {
+            user: {
+              id: DEMO_USER.id,
+              email: DEMO_USER.email,
+              phone: DEMO_USER.phone,
+              role: DEMO_USER.role,
+              firstName: DEMO_USER.firstName,
+              lastName: DEMO_USER.lastName,
+              avatar: DEMO_USER.avatar,
+              language: 'fr',
+              isActive: true,
+              organizations: DEMO_USER.organizations,
+            },
+            session: {
+              id: 'demo-session-1',
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+          }
         });
       }
-      return apiError('Session invalide ou expirée', 401);
+      return jsonResponse(false, { error: 'Session invalide ou expirée' }, 401);
     }
 
     const session = await validateSession(token);
 
     if (!session) {
-      return apiError('Session invalide ou expirée', 401);
+      return jsonResponse(false, { error: 'Session invalide ou expirée' }, 401);
     }
 
-    return apiSuccess({
-      user: {
-        id: session.user.id,
-        email: session.user.email,
-        phone: session.user.phone,
-        role: session.user.role,
-        firstName: session.user.firstName,
-        lastName: session.user.lastName,
-        avatar: session.user.avatar,
-        language: session.user.language,
-        isActive: session.user.isActive,
-        organizations: session.user.organizationUsers.map(ou => ({
-          id: ou.organization.id,
-          name: ou.organization.name,
-          slug: ou.organization.slug,
-          role: ou.role,
-        })),
-      },
-      session: {
-        id: session.id,
-        expiresAt: session.expiresAt,
-      },
+    return jsonResponse(true, {
+      data: {
+        user: {
+          id: session.user.id,
+          email: session.user.email,
+          phone: session.user.phone,
+          role: session.user.role,
+          firstName: session.user.firstName,
+          lastName: session.user.lastName,
+          avatar: session.user.avatar,
+          language: session.user.language,
+          isActive: session.user.isActive,
+          organizations: session.user.organizationUsers.map(ou => ({
+            id: ou.organization.id,
+            name: ou.organization.name,
+            slug: ou.organization.slug,
+            role: ou.role,
+          })),
+        },
+        session: {
+          id: session.id,
+          expiresAt: session.expiresAt,
+        },
+      }
     });
   });
 }
 
 // POST /api/auth - Login, Register, or OTP verification
 export async function POST(request: Request) {
-  return withErrorHandler(async () => {
+  return safeResponse(async () => {
     const body = await request.json();
     const { action, email, phone, password, otpCode, firstName, lastName, role = 'CUSTOMER' } = body;
 
@@ -120,45 +142,47 @@ export async function POST(request: Request) {
     if (action === 'login') {
       const identifier = email || phone;
       if (!identifier || !password) {
-        return apiError('Email/téléphone et mot de passe sont requis');
+        return jsonResponse(false, { error: 'Email/téléphone et mot de passe sont requis' }, 400);
       }
 
       // Demo mode login
       if (isDemoMode) {
-        // Accept demo@kfm-delice.com with password demo123
         if (identifier === 'demo@kfm-delice.com' && password === 'demo123') {
           const demoToken = generateDemoToken();
-          return apiSuccess({
-            user: {
-              id: DEMO_USER.id,
-              email: DEMO_USER.email,
-              phone: DEMO_USER.phone,
-              role: DEMO_USER.role,
-              firstName: DEMO_USER.firstName,
-              lastName: DEMO_USER.lastName,
-              avatar: DEMO_USER.avatar,
+          return jsonResponse(true, {
+            data: {
+              user: {
+                id: DEMO_USER.id,
+                email: DEMO_USER.email,
+                phone: DEMO_USER.phone,
+                role: DEMO_USER.role,
+                firstName: DEMO_USER.firstName,
+                lastName: DEMO_USER.lastName,
+                avatar: DEMO_USER.avatar,
+              },
+              token: demoToken,
+              refreshToken: `demo-refresh-${Date.now()}`,
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
             },
-            token: demoToken,
-            refreshToken: `demo-refresh-${Date.now()}`,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          }, 'Connexion réussie (mode démo)');
+            message: 'Connexion réussie (mode démo)'
+          });
         }
-        return apiError('Identifiants incorrects (mode démo - utilisez demo@kfm-delice.com / demo123)', 401);
+        return jsonResponse(false, { error: 'Identifiants incorrects (mode démo - utilisez demo@kfm-delice.com / demo123)' }, 401);
       }
 
       const user = await getUserByEmailOrPhone(identifier);
 
       if (!user) {
-        return apiError('Utilisateur non trouvé', 404);
+        return jsonResponse(false, { error: 'Utilisateur non trouvé' }, 404);
       }
 
       if (!user.isActive || user.isLocked) {
-        return apiError('Compte désactivé ou verrouillé', 403);
+        return jsonResponse(false, { error: 'Compte désactivé ou verrouillé' }, 403);
       }
 
       const isValidPasswordResult = await verifyPassword(password, user.passwordHash);
       if (!isValidPasswordResult) {
-        return apiError('Mot de passe incorrect', 401);
+        return jsonResponse(false, { error: 'Mot de passe incorrect' }, 401);
       }
 
       const { ipAddress, userAgent } = getClientInfo(request);
@@ -171,46 +195,49 @@ export async function POST(request: Request) {
         data: { lastLoginAt: new Date(), lastLoginIp: ipAddress },
       });
 
-      return apiSuccess({
-        user: {
-          id: user.id,
-          email: user.email,
-          phone: user.phone,
-          role: user.role,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          avatar: user.avatar,
+      return jsonResponse(true, {
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatar: user.avatar,
+          },
+          token: session.token,
+          refreshToken: refreshToken.token,
+          expiresAt: session.expiresAt,
         },
-        token: session.token,
-        refreshToken: refreshToken.token,
-        expiresAt: session.expiresAt,
-      }, 'Connexion réussie');
+        message: 'Connexion réussie'
+      });
     }
 
     // Register new user
     if (action === 'register') {
       if (!email || !password) {
-        return apiError('Email et mot de passe sont requis');
+        return jsonResponse(false, { error: 'Email et mot de passe sont requis' }, 400);
       }
 
       if (!isValidEmail(email)) {
-        return apiError('Email invalide');
+        return jsonResponse(false, { error: 'Email invalide' }, 400);
       }
 
       const passwordValidation = isValidPassword(password);
       if (!passwordValidation.valid) {
-        return apiError(passwordValidation.message || 'Mot de passe invalide');
+        return jsonResponse(false, { error: passwordValidation.message || 'Mot de passe invalide' }, 400);
       }
 
       // Demo mode registration
       if (isDemoMode) {
-        return apiError('L\'inscription n\'est pas disponible en mode démo. Utilisez demo@kfm-delice.com / demo123 pour vous connecter.', 400);
+        return jsonResponse(false, { error: 'L\'inscription n\'est pas disponible en mode démo. Utilisez demo@kfm-delice.com / demo123 pour vous connecter.' }, 400);
       }
 
       // Check if user exists
       const existingUser = await db.user.findUnique({ where: { email } });
       if (existingUser) {
-        return apiError('Un compte avec cet email existe déjà', 409);
+        return jsonResponse(false, { error: 'Un compte avec cet email existe déjà' }, 409);
       }
 
       // Create user
@@ -233,111 +260,8 @@ export async function POST(request: Request) {
       // Send verification OTP (mock - in production, send actual email/SMS)
       await createOtpCode('VERIFY_EMAIL', undefined, email, user.id);
 
-      return apiSuccess({
-        user: {
-          id: user.id,
-          email: user.email,
-          phone: user.phone,
-          role: user.role,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        },
-        token: session.token,
-        refreshToken: refreshToken.token,
-        expiresAt: session.expiresAt,
-      }, 'Compte créé avec succès', 201);
-    }
-
-    // Request OTP
-    if (action === 'request-otp') {
-      const type = body.type || 'LOGIN';
-      
-      if (!phone && !email) {
-        return apiError('Téléphone ou email est requis');
-      }
-
-      // Demo mode OTP
-      if (isDemoMode) {
-        return apiSuccess({
-          message: 'Code OTP envoyé (mode démo)',
-          otpCode: '123456',
-        });
-      }
-
-      // Check if user exists for login OTP
-      if (type === 'LOGIN') {
-        const user = await getUserByEmailOrPhone(phone || email);
-        if (!user) {
-          return apiError('Utilisateur non trouvé', 404);
-        }
-
-        const otp = await createOtpCode(type, phone, email, user.id);
-
-        // In production, send actual SMS/Email
-        return apiSuccess({
-          message: 'Code OTP envoyé',
-          // Only for demo - remove in production
-          otpCode: otp.code,
-        });
-      }
-
-      // For registration, verify, etc.
-      const otp = await createOtpCode(type, phone, email);
-
-      return apiSuccess({
-        message: 'Code OTP envoyé',
-        // Only for demo - remove in production
-        otpCode: otp.code,
-      });
-    }
-
-    // Verify OTP
-    if (action === 'verify-otp') {
-      const type = body.type || 'LOGIN';
-      
-      if (!otpCode || (!phone && !email)) {
-        return apiError('Code OTP et téléphone/email sont requis');
-      }
-
-      // Demo mode OTP verification
-      if (isDemoMode) {
-        if (otpCode === '123456') {
-          return apiSuccess({
-            user: {
-              id: DEMO_USER.id,
-              email: DEMO_USER.email,
-              phone: DEMO_USER.phone,
-              role: DEMO_USER.role,
-              firstName: DEMO_USER.firstName,
-              lastName: DEMO_USER.lastName,
-            },
-            token: generateDemoToken(),
-            refreshToken: `demo-refresh-${Date.now()}`,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          }, 'Connexion réussie (mode démo)');
-        }
-        return apiError('Code OTP invalide (mode démo - utilisez 123456)', 400);
-      }
-
-      const otp = await verifyOtpCode(type, otpCode, phone, email);
-
-      if (!otp) {
-        return apiError('Code OTP invalide ou expiré', 400);
-      }
-
-      // For login, create session
-      if (type === 'LOGIN' && otp.userId) {
-        const user = await db.user.findUnique({ where: { id: otp.userId } });
-        
-        if (!user || !user.isActive) {
-          return apiError('Compte non trouvé ou désactivé', 404);
-        }
-
-        const { ipAddress, userAgent } = getClientInfo(request);
-        const session = await createSession(user.id, ipAddress, userAgent);
-        const refreshToken = await createRefreshToken(user.id);
-
-        return apiSuccess({
+      return jsonResponse(true, {
+        data: {
           user: {
             id: user.id,
             email: user.email,
@@ -349,10 +273,125 @@ export async function POST(request: Request) {
           token: session.token,
           refreshToken: refreshToken.token,
           expiresAt: session.expiresAt,
-        }, 'Connexion réussie');
+        },
+        message: 'Compte créé avec succès'
+      }, 201);
+    }
+
+    // Request OTP
+    if (action === 'request-otp') {
+      const type = body.type || 'LOGIN';
+      
+      if (!phone && !email) {
+        return jsonResponse(false, { error: 'Téléphone ou email est requis' }, 400);
       }
 
-      return apiSuccess({ verified: true }, 'Code OTP vérifié');
+      // Demo mode OTP
+      if (isDemoMode) {
+        return jsonResponse(true, {
+          data: {
+            message: 'Code OTP envoyé (mode démo)',
+            otpCode: '123456',
+          }
+        });
+      }
+
+      // Check if user exists for login OTP
+      if (type === 'LOGIN') {
+        const user = await getUserByEmailOrPhone(phone || email);
+        if (!user) {
+          return jsonResponse(false, { error: 'Utilisateur non trouvé' }, 404);
+        }
+
+        const otp = await createOtpCode(type, phone, email, user.id);
+
+        return jsonResponse(true, {
+          data: {
+            message: 'Code OTP envoyé',
+            otpCode: otp.code,
+          }
+        });
+      }
+
+      // For registration, verify, etc.
+      const otp = await createOtpCode(type, phone, email);
+
+      return jsonResponse(true, {
+        data: {
+          message: 'Code OTP envoyé',
+          otpCode: otp.code,
+        }
+      });
+    }
+
+    // Verify OTP
+    if (action === 'verify-otp') {
+      const type = body.type || 'LOGIN';
+      
+      if (!otpCode || (!phone && !email)) {
+        return jsonResponse(false, { error: 'Code OTP et téléphone/email sont requis' }, 400);
+      }
+
+      // Demo mode OTP verification
+      if (isDemoMode) {
+        if (otpCode === '123456') {
+          return jsonResponse(true, {
+            data: {
+              user: {
+                id: DEMO_USER.id,
+                email: DEMO_USER.email,
+                phone: DEMO_USER.phone,
+                role: DEMO_USER.role,
+                firstName: DEMO_USER.firstName,
+                lastName: DEMO_USER.lastName,
+              },
+              token: generateDemoToken(),
+              refreshToken: `demo-refresh-${Date.now()}`,
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+            message: 'Connexion réussie (mode démo)'
+          });
+        }
+        return jsonResponse(false, { error: 'Code OTP invalide (mode démo - utilisez 123456)' }, 400);
+      }
+
+      const otp = await verifyOtpCode(type, otpCode, phone, email);
+
+      if (!otp) {
+        return jsonResponse(false, { error: 'Code OTP invalide ou expiré' }, 400);
+      }
+
+      // For login, create session
+      if (type === 'LOGIN' && otp.userId) {
+        const user = await db.user.findUnique({ where: { id: otp.userId } });
+        
+        if (!user || !user.isActive) {
+          return jsonResponse(false, { error: 'Compte non trouvé ou désactivé' }, 404);
+        }
+
+        const { ipAddress, userAgent } = getClientInfo(request);
+        const session = await createSession(user.id, ipAddress, userAgent);
+        const refreshToken = await createRefreshToken(user.id);
+
+        return jsonResponse(true, {
+          data: {
+            user: {
+              id: user.id,
+              email: user.email,
+              phone: user.phone,
+              role: user.role,
+              firstName: user.firstName,
+              lastName: user.lastName,
+            },
+            token: session.token,
+            refreshToken: refreshToken.token,
+            expiresAt: session.expiresAt,
+          },
+          message: 'Connexion réussie'
+        });
+      }
+
+      return jsonResponse(true, { data: { verified: true }, message: 'Code OTP vérifié' });
     }
 
     // Refresh token
@@ -360,19 +399,22 @@ export async function POST(request: Request) {
       const { refreshToken } = body;
 
       if (!refreshToken) {
-        return apiError('Refresh token est requis');
+        return jsonResponse(false, { error: 'Refresh token est requis' }, 400);
       }
 
       // Demo mode refresh
       if (isDemoMode) {
         if (refreshToken.startsWith('demo-refresh-')) {
-          return apiSuccess({
-            token: generateDemoToken(),
-            refreshToken: `demo-refresh-${Date.now()}`,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          }, 'Token rafraîchi (mode démo)');
+          return jsonResponse(true, {
+            data: {
+              token: generateDemoToken(),
+              refreshToken: `demo-refresh-${Date.now()}`,
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+            message: 'Token rafraîchi (mode démo)'
+          });
         }
-        return apiError('Refresh token invalide ou expiré', 401);
+        return jsonResponse(false, { error: 'Refresh token invalide ou expiré' }, 401);
       }
 
       const storedToken = await db.refreshToken.findUnique({
@@ -381,7 +423,7 @@ export async function POST(request: Request) {
       });
 
       if (!storedToken || storedToken.revokedAt || storedToken.expiresAt < new Date()) {
-        return apiError('Refresh token invalide ou expiré', 401);
+        return jsonResponse(false, { error: 'Refresh token invalide ou expiré' }, 401);
       }
 
       const { ipAddress, userAgent } = getClientInfo(request);
@@ -394,96 +436,99 @@ export async function POST(request: Request) {
         data: { revokedAt: new Date() },
       });
 
-      return apiSuccess({
-        token: session.token,
-        refreshToken: newRefreshToken.token,
-        expiresAt: session.expiresAt,
-      }, 'Token rafraîchi');
+      return jsonResponse(true, {
+        data: {
+          token: session.token,
+          refreshToken: newRefreshToken.token,
+          expiresAt: session.expiresAt,
+        },
+        message: 'Token rafraîchi'
+      });
     }
 
-    return apiError('Action non reconnue', 400);
+    return jsonResponse(false, { error: 'Action non reconnue' }, 400);
   });
 }
 
 // DELETE /api/auth - Logout
 export async function DELETE(request: Request) {
-  return withErrorHandler(async () => {
+  return safeResponse(async () => {
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      return apiError('Token requis', 401);
+      return jsonResponse(false, { error: 'Token requis' }, 401);
     }
 
     // Demo mode logout
     if (!isDatabaseAvailable() || !db) {
-      return apiSuccess({ loggedOut: true }, 'Déconnexion réussie (mode démo)');
+      return jsonResponse(true, { data: { loggedOut: true }, message: 'Déconnexion réussie (mode démo)' });
     }
 
     const success = await invalidateSession(token);
 
     if (!success) {
-      return apiError('Erreur lors de la déconnexion', 500);
+      return jsonResponse(false, { error: 'Erreur lors de la déconnexion' }, 500);
     }
 
-    return apiSuccess({ loggedOut: true }, 'Déconnexion réussie');
+    return jsonResponse(true, { data: { loggedOut: true }, message: 'Déconnexion réussie' });
   });
 }
 
 // PATCH /api/auth - Update password
 export async function PATCH(request: Request) {
-  return withErrorHandler(async () => {
+  return safeResponse(async () => {
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      return apiError('Non autorisé', 401);
+      return jsonResponse(false, { error: 'Non autorisé' }, 401);
     }
 
     // Demo mode password update
     if (!isDatabaseAvailable() || !db) {
-      return apiError('La modification du mot de passe n\'est pas disponible en mode démo', 400);
+      return jsonResponse(false, { error: 'La modification du mot de passe n\'est pas disponible en mode démo' }, 400);
     }
 
     const session = await validateSession(token);
-    if (!session) {
-      return apiError('Session invalide', 401);
+    if (!session || !session.user) {
+      return jsonResponse(false, { error: 'Session invalide' }, 401);
     }
 
     const body = await request.json();
     const { currentPassword, newPassword } = body;
 
     if (!currentPassword || !newPassword) {
-      return apiError('Mot de passe actuel et nouveau mot de passe sont requis');
+      return jsonResponse(false, { error: 'Mot de passe actuel et nouveau mot de passe sont requis' }, 400);
     }
 
     const passwordValidation = isValidPassword(newPassword);
     if (!passwordValidation.valid) {
-      return apiError(passwordValidation.message || 'Nouveau mot de passe invalide');
+      return jsonResponse(false, { error: passwordValidation.message || 'Nouveau mot de passe invalide' }, 400);
     }
 
-    const user = await db.user.findUnique({ where: { id: session.userId } });
-    if (!user) {
-      return apiError('Utilisateur non trouvé', 404);
-    }
-    const isPasswordValid = await verifyPassword(currentPassword, user.passwordHash);
+    const isPasswordValid = await verifyPassword(currentPassword, session.user.passwordHash);
     if (!isPasswordValid) {
-      return apiError('Mot de passe actuel incorrect', 401);
+      return jsonResponse(false, { error: 'Mot de passe actuel incorrect' }, 401);
     }
 
     await db.user.update({
-      where: { id: session.userId },
+      where: { id: session.user.id },
       data: { passwordHash: await hashPassword(newPassword) },
     });
 
     // Invalidate all other sessions
-    await db.session.deleteMany({
-      where: {
-        userId: session.userId,
-        id: { not: session.id },
-      },
-    });
+    try {
+      await db.session.deleteMany({
+        where: {
+          userId: session.user.id,
+          id: { not: session.id },
+        },
+      });
+    } catch (e) {
+      // Ignore session cleanup errors
+    }
 
-    return apiSuccess({ updated: true }, 'Mot de passe mis à jour');
+    return jsonResponse(true, { data: { updated: true }, message: 'Mot de passe mis à jour' });
   });
 }

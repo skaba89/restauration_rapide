@@ -113,13 +113,14 @@ export default function AdminInventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      const [itemsData, movementsData] = await Promise.all([
-        apiFetch<{ data: InventoryItem[] }>('/admin/inventory').catch(() => ({ data: [] })),
-        apiFetch<{ data: StockMovement[] }>('/admin/inventory/movements').catch(() => ({ data: [] })),
+      const [itemsResponse, movementsResponse] = await Promise.all([
+        apiFetch<{ data: InventoryItem[]; total: number }>('/admin/inventory').catch(() => ({ data: [], total: 0 })),
+        apiFetch<{ data: StockMovement[]; total: number }>('/admin/inventory/movements').catch(() => ({ data: [], total: 0 })),
       ]);
       
-      setItems(itemsData.data || []);
-      setMovements(movementsData.data || []);
+      // apiFetch returns { data: [...], total, page, limit } for paginated responses
+      setItems(itemsResponse?.data || []);
+      setMovements(movementsResponse?.data || []);
     } catch (error) {
       console.error('Error fetching inventory:', error);
       toast({
@@ -168,24 +169,27 @@ export default function AdminInventoryPage() {
         }),
       });
       
-      setItems([data, ...items]);
-      setShowAddDialog(false);
-      setNewItem({
-        name: '',
-        sku: '',
-        category: 'INGREDIENTS',
-        quantity: '',
-        unit: 'kg',
-        minStock: '',
-        maxStock: '',
-        costPerUnit: '',
-        supplier: '',
-      });
-      
-      toast({
-        title: 'Succès',
-        description: 'Article ajouté avec succès',
-      });
+      // apiFetch returns the created item directly
+      if (data && data.id) {
+        setItems([data, ...items]);
+        setShowAddDialog(false);
+        setNewItem({
+          name: '',
+          sku: '',
+          category: 'INGREDIENTS',
+          quantity: '',
+          unit: 'kg',
+          minStock: '',
+          maxStock: '',
+          costPerUnit: '',
+          supplier: '',
+        });
+        
+        toast({
+          title: 'Succès',
+          description: 'Article ajouté avec succès',
+        });
+      }
     } catch (error) {
       console.error('Error creating item:', error);
       toast({

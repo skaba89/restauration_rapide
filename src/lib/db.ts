@@ -7,9 +7,17 @@ const globalForPrisma = globalThis as unknown as {
 // Track database connection status
 let dbConnectionStatus: 'unknown' | 'connected' | 'error' = 'unknown'
 let connectionCheckPromise: Promise<boolean> | null = null
+let dbInstance: PrismaClient | null = null
 
 // Create Prisma client with error handling
-function createPrismaClient() {
+function createPrismaClient(): PrismaClient | null {
+  // Check if DATABASE_URL is set
+  if (!process.env.DATABASE_URL) {
+    console.log('ℹ️ No DATABASE_URL set - running in demo mode')
+    dbConnectionStatus = 'error'
+    return null
+  }
+
   try {
     const client = new PrismaClient({
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
@@ -21,8 +29,10 @@ function createPrismaClient() {
       },
     })
     
-    // Test connection asynchronously
-    testConnection(client)
+    // Test connection asynchronously (non-blocking)
+    testConnection(client).catch(err => {
+      console.error('Database connection test failed:', err)
+    })
     
     return client
   } catch (error) {

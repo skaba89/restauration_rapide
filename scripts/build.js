@@ -52,6 +52,13 @@ try {
   execSync('cp -r node_modules/.prisma/client .next/standalone/node_modules/.prisma/', { stdio: 'inherit' });
   execSync('cp -r node_modules/@prisma/client .next/standalone/node_modules/@prisma/', { stdio: 'inherit' });
 
+  // Copy bcryptjs to standalone (required for auth)
+  console.log('\n📦 Copying bcryptjs to standalone...');
+  execSync('mkdir -p .next/standalone/node_modules/bcryptjs', { stdio: 'inherit' });
+  if (fs.existsSync('node_modules/bcryptjs')) {
+    execSync('cp -r node_modules/bcryptjs/* .next/standalone/node_modules/bcryptjs/', { stdio: 'inherit' });
+  }
+
   // Copy schema to standalone
   execSync('mkdir -p .next/standalone/prisma', { stdio: 'inherit' });
   execSync(`cp ${targetSchemaPath} .next/standalone/prisma/schema.prisma`, { stdio: 'inherit' });

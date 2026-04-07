@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
-  
+
   // Performance optimizations
   experimental: {
     optimizePackageImports: [
@@ -19,7 +19,11 @@ const nextConfig: NextConfig = {
       '@tanstack/react-table',
     ],
   },
-  
+
+  // External dependencies for standalone mode
+  // These packages will not be bundled and must be available in node_modules at runtime
+  serverExternalPackages: ['bcryptjs', '@prisma/client', 'prisma'],
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -30,12 +34,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  
+
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Environment variables exposed to the browser
   env: {
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || 'Restaurant OS',

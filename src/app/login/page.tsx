@@ -133,24 +133,51 @@ export default function LoginPage() {
     }
   };
   
-  // Demo mode - bypass auth for demo (admin demo)
-  const handleDemoLogin = () => {
-    // For demo purposes, set a fake token and redirect
-    // Use the same token format as the auth API expects
-    setAuthToken(`demo-token-${Date.now()}`);
-    router.push('/admin');
+  // Demo login handlers - use real API with demo credentials
+  const handleDemoLogin = async () => {
+    try {
+      const result = await loginMutation.mutateAsync({
+        email: 'demo@kfm-delice.com',
+        password: 'demo123',
+      });
+      setAuthToken(result.token);
+      router.push('/dashboard');
+    } catch (error: any) {
+      // Fallback to fake token if API fails
+      console.log('Demo API login failed, using fallback');
+      setAuthToken(`demo-token-${Date.now()}`);
+      router.push('/dashboard');
+    }
   };
   
   // Demo customer login
-  const handleDemoCustomerLogin = () => {
-    setAuthToken(`demo-token-customer-${Date.now()}`);
-    router.push('/customer');
+  const handleDemoCustomerLogin = async () => {
+    try {
+      const result = await loginMutation.mutateAsync({
+        email: 'demo@kfm-delice.com',
+        password: 'demo123',
+      });
+      setAuthToken(result.token);
+      router.push('/customer');
+    } catch (error: any) {
+      setAuthToken(`demo-token-customer-${Date.now()}`);
+      router.push('/customer');
+    }
   };
 
   // Demo driver login
-  const handleDemoDriverLogin = () => {
-    setAuthToken(`demo-token-driver-${Date.now()}`);
-    router.push('/driver/orders');
+  const handleDemoDriverLogin = async () => {
+    try {
+      const result = await loginMutation.mutateAsync({
+        email: 'demo@kfm-delice.com',
+        password: 'demo123',
+      });
+      setAuthToken(result.token);
+      router.push('/driver/orders');
+    } catch (error: any) {
+      setAuthToken(`demo-token-driver-${Date.now()}`);
+      router.push('/driver/orders');
+    }
   };
 
   return (
@@ -289,31 +316,24 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleDemoLogin}
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Démo Admin
-                </Button>
+                {/* Demo accounts info */}
+                <Alert className="bg-blue-50 border-blue-200">
+                  <AlertCircle className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-xs text-blue-800">
+                    <strong>Comptes de démonstration:</strong><br />
+                    📧 demo@kfm-delice.com / demo123<br />
+                    📧 contact@kfm-delice.com / KfmDelice2024!
+                  </AlertDescription>
+                </Alert>
                 
                 <Button
                   variant="outline"
-                  className="w-full"
-                  onClick={handleDemoCustomerLogin}
+                  className="w-full bg-green-50 hover:bg-green-100 border-green-300"
+                  onClick={handleDemoLogin}
+                  disabled={loginMutation.isPending}
                 >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Démo Client
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleDemoDriverLogin}
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Démo Driver
+                  <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                  Accès Rapide Démo
                 </Button>
               </CardContent>
             </TabsContent>

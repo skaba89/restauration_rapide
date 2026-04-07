@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import {
   CalendarDays,
   Search,
@@ -37,6 +38,7 @@ import {
   MoreVertical,
   Edit,
   Eye,
+  Loader2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -128,22 +130,100 @@ const getStatusLabel = (status: string) => {
 const formatDate = (date: Date) => new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
 export default function ReservationsPage() {
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [reservations, setReservations] = useState(DEMO_RESERVATIONS);
+  const [saving, setSaving] = useState(false);
+  
+  // New reservation form state
+  const [newReservation, setNewReservation] = useState({
+    guestName: '',
+    guestPhone: '',
+    guestEmail: '',
+    partySize: '2',
+    date: new Date().toISOString().split('T')[0],
+    time: '',
+    occasion: '',
+    notes: '',
+  });
 
-  const filteredReservations = DEMO_RESERVATIONS.filter((r) => {
+  const filteredReservations = reservations.filter((r) => {
     if (filterStatus !== 'all' && r.status !== filterStatus) return false;
     if (searchQuery && !r.guestName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
   const stats = {
-    today: DEMO_RESERVATIONS.filter(r => new Date(r.date).toDateString() === new Date().toDateString()).length,
-    pending: DEMO_RESERVATIONS.filter(r => r.status === 'PENDING').length,
-    confirmed: DEMO_RESERVATIONS.filter(r => r.status === 'CONFIRMED').length,
-    totalGuests: DEMO_RESERVATIONS.reduce((sum, r) => sum + r.partySize, 0),
+    today: reservations.filter(r => new Date(r.date).toDateString() === new Date().toDateString()).length,
+    pending: reservations.filter(r => r.status === 'PENDING').length,
+    confirmed: reservations.filter(r => r.status === 'CONFIRMED').length,
+    totalGuests: reservations.reduce((sum, r) => sum + r.partySize, 0),
+  };
+
+  // Create new reservation
+  const createReservation = async () => {
+    if (!newReservation.guestName || !newReservation.guestPhone || !newReservation.time) {
+      toast({
+        title: 'Erreur',
+        description: 'Veuillez remplir le nom, le téléphone et l\'heure',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSaving(true);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const reservation = {
+      id: String(reservations.length + 1),
+      guestName: newReservation.guestName,
+      guestPhone: newReservation.guestPhone,
+      guestEmail: newReservation.guestEmail || null,
+      partySize: parseInt(newReservation.partySize) || 2,
+      date: new Date(newReservation.date),
+      time: newReservation.time,
+      status: 'PENDING' as const,
+      tableNumbers: [],
+      occasion: newReservation.occasion || null,
+      notes: newReservation.notes || null,
+    };
+
+    setReservations([reservation, ...reservations]);
+    
+    // Reset form
+    setNewReservation({
+      guestName: '',
+      guestPhone: '',
+      guestEmail: '',
+      partySize: '2',
+      date: new Date().toISOString().split('T')[0],
+      time: '',
+      occasion: '',
+      notes: '',
+    });
+    setIsAddDialogOpen(false);
+    setSaving(false);
+
+    toast({
+      title: 'Réservation créée',
+      description: `Réservation pour ${reservation.guestName} le ${formatDate(reservation.date)} à ${reservation.time}`,
+    });
+  };
+
+  // Update reservation status
+  const updateReservationStatus = (id: string, status: string) => {
+    setReservations(prev => prev.map(r => 
+      r.id === id ? { ...r, status } : r
+    ));
+    toast({
+      title: 'Statut mis à jour',
+      description: 'Le statut de la réservation a été modifié',
+    });
   };
 
   return (
@@ -317,27 +397,50 @@ export default function ReservationsPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="guestName">Nom du client</Label>
-              <Input id="guestName" placeholder="Nom complet" />
+              <Label htmlFor="guestName">Nom du client *</Label>
+              <Input 
+                id="guestName" 
+                placeholder="Nom complet" 
+                value={newReservation.guestName}
+                onChange={(e) => setNewReservation({...newReservation, guestName: e.target.value})}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input id="phone" placeholder="07 00 00 00 00" />
+                <Label htmlFor="phone">Téléphone *</Label>
+                <Input 
+                  id="phone" 
+                  placeholder="07 00 00 00 00" 
+                  value={newReservation.guestPhone}
+                  onChange={(e) => setNewReservation({...newReservation, guestPhone: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="partySize">Nombre de personnes</Label>
-                <Input id="partySize" type="number" min="1" defaultValue="2" />
+                <Input 
+                  id="partySize" 
+                  type="number" 
+                  min="1" 
+                  value={newReservation.partySize}
+                  onChange={(e) => setNewReservation({...newReservation, partySize: e.target.value})}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Date</Label>
-                <Input type="date" />
+                <Input 
+                  type="date" 
+                  value={newReservation.date}
+                  onChange={(e) => setNewReservation({...newReservation, date: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
-                <Label>Heure</Label>
-                <Select>
+                <Label>Heure *</Label>
+                <Select 
+                  value={newReservation.time} 
+                  onValueChange={(v) => setNewReservation({...newReservation, time: v})}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
@@ -351,7 +454,10 @@ export default function ReservationsPage() {
             </div>
             <div className="space-y-2">
               <Label>Occasion</Label>
-              <Select>
+              <Select 
+                value={newReservation.occasion} 
+                onValueChange={(v) => setNewReservation({...newReservation, occasion: v})}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner (optionnel)" />
                 </SelectTrigger>
@@ -365,13 +471,29 @@ export default function ReservationsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
-              <Input id="notes" placeholder="Demandes spéciales..." />
+              <Input 
+                id="notes" 
+                placeholder="Demandes spéciales..." 
+                value={newReservation.notes}
+                onChange={(e) => setNewReservation({...newReservation, notes: e.target.value})}
+              />
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Annuler</Button>
-            <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={() => setIsAddDialogOpen(false)}>
-              Créer
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={saving}>Annuler</Button>
+            <Button 
+              className="bg-gradient-to-r from-orange-500 to-red-600" 
+              onClick={createReservation}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Création...
+                </>
+              ) : (
+                'Créer'
+              )}
             </Button>
           </div>
         </DialogContent>

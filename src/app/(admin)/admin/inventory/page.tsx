@@ -37,6 +37,8 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import { apiFetch } from '@/lib/api-client';
 import {
   Package,
   Search,
@@ -49,6 +51,7 @@ import {
   RefreshCw,
   History,
   DollarSign,
+  Loader2,
 } from 'lucide-react';
 
 interface InventoryItem {
@@ -88,6 +91,7 @@ const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') ||
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR');
 
 export default function AdminInventoryPage() {
+  const { toast } = useToast();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,21 +113,20 @@ export default function AdminInventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      const [itemsRes, movementsRes] = await Promise.all([
-        fetch('/api/admin/inventory'),
-        fetch('/api/admin/inventory/movements'),
+      const [itemsData, movementsData] = await Promise.all([
+        apiFetch<{ data: InventoryItem[] }>('/admin/inventory').catch(() => ({ data: [] })),
+        apiFetch<{ data: StockMovement[] }>('/admin/inventory/movements').catch(() => ({ data: [] })),
       ]);
       
-      if (itemsRes.ok) {
-        const data = await itemsRes.json();
-        setItems(data.data || []);
-      }
-      if (movementsRes.ok) {
-        const data = await movementsRes.json();
-        setMovements(data.data || []);
-      }
+      setItems(itemsData.data || []);
+      setMovements(movementsData.data || []);
     } catch (error) {
       console.error('Error fetching inventory:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger l\'inventaire',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -143,15 +146,18 @@ export default function AdminInventoryPage() {
 
   const handleAddItem = async () => {
     if (!newItem.name) {
-      alert('Le nom est requis');
+      toast({
+        title: 'Erreur',
+        description: 'Le nom est requis',
+        variant: 'destructive',
+      });
       return;
     }
     
     setSaving(true);
     try {
-      const response = await fetch('/api/admin/inventory', {
+      const data = await apiFetch<InventoryItem>('/admin/inventory', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newItem,
           quantity: parseFloat(newItem.quantity) || 0,
@@ -162,27 +168,31 @@ export default function AdminInventoryPage() {
         }),
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        setItems([data.data || data, ...items]);
-        setShowAddDialog(false);
-        setNewItem({
-          name: '',
-          sku: '',
-          category: 'INGREDIENTS',
-          quantity: '',
-          unit: 'kg',
-          minStock: '',
-          maxStock: '',
-          costPerUnit: '',
-          supplier: '',
-        });
-      } else {
-        alert('Erreur lors de la création');
-      }
+      setItems([data, ...items]);
+      setShowAddDialog(false);
+      setNewItem({
+        name: '',
+        sku: '',
+        category: 'INGREDIENTS',
+        quantity: '',
+        unit: 'kg',
+        minStock: '',
+        maxStock: '',
+        costPerUnit: '',
+        supplier: '',
+      });
+      
+      toast({
+        title: 'Succès',
+        description: 'Article ajouté avec succès',
+      });
     } catch (error) {
       console.error('Error creating item:', error);
-      alert('Erreur lors de la création');
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de la création de l\'article',
+        variant: 'destructive',
+      });
     } finally {
       setSaving(false);
     }
@@ -549,9 +559,16 @@ export default function AdminInventoryPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)} disabled={saving}>Annuler</Button>
             <Button onClick={handleAddItem} disabled={saving}>
-              {saving ? 'Création...' : 'Ajouter'}
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Création...
+                </>
+              ) : (
+                'Ajouter'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

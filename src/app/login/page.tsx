@@ -136,19 +136,20 @@ export default function LoginPage() {
   // Demo mode - bypass auth for demo (admin demo)
   const handleDemoLogin = () => {
     // For demo purposes, set a fake token and redirect
-    setAuthToken('demo_token');
-    router.push('/dashboard');
+    // Use the same token format as the auth API expects
+    setAuthToken(`demo-token-${Date.now()}`);
+    router.push('/admin');
   };
   
   // Demo customer login
   const handleDemoCustomerLogin = () => {
-    setAuthToken('demo_customer_token');
+    setAuthToken(`demo-token-customer-${Date.now()}`);
     router.push('/customer');
   };
 
   // Demo driver login
   const handleDemoDriverLogin = () => {
-    setAuthToken('demo_driver_token');
+    setAuthToken(`demo-token-driver-${Date.now()}`);
     router.push('/driver/orders');
   };
 

@@ -2420,3 +2420,137 @@ const createReservation = async () => {
 - ✅ Notifications toast ajoutées
 - ✅ États de chargement améliorés
 - ✅ Build réussi
+
+---
+## Task ID: fix-malfunctions - Fix ALL Malfunctions in KFM DELICE Application
+
+### Work Task
+Investigate and fix all malfunctions reported in the KFM DELICE multi-tenant restaurant SaaS application, including:
+1. Login/Authentication 404 errors
+2. Create/Add buttons not working
+3. Inventory/Stock Management page issues
+4. Menu management, orders, and dashboard issues
+
+### Issues Found
+
+#### 1. Demo Login Token Format Mismatch
+**Issue:** Demo login buttons used tokens like `demo_token`, `demo_customer_token`, but the auth API expected tokens starting with `demo-token-`.
+
+**Fix:** Updated `/src/app/login/page.tsx` to use consistent token format:
+- Admin: `demo-token-{timestamp}` → redirects to `/admin`
+- Customer: `demo-token-customer-{timestamp}` → redirects to `/customer`
+- Driver: `demo-token-driver-{timestamp}` → redirects to `/driver/orders`
+
+#### 2. Admin API Routes Missing Demo Mode Support
+**Issue:** The `[id]` routes for items, categories, and menus directly used `db` without checking `isDatabaseAvailable()`, causing errors when database is not available.
+
+**Files Fixed:**
+
+1. **`/src/app/api/admin/items/[id]/route.ts`**
+   - Added `isDatabaseAvailable()` check for PUT, PATCH, DELETE
+   - Returns mock updated data in demo mode
+   - Proper error handling for demo mode
+
+2. **`/src/app/api/admin/categories/[id]/route.ts`**
+   - Added `isDatabaseAvailable()` check for PUT, DELETE
+   - Returns mock updated data in demo mode
+
+3. **`/src/app/api/admin/menus/[id]/route.ts`**
+   - Added `isDatabaseAvailable()` check for PUT, DELETE
+   - Returns mock updated data in demo mode
+
+### Files Modified
+
+1. `/src/app/login/page.tsx` - Fixed demo login token format
+2. `/src/app/api/admin/items/[id]/route.ts` - Added demo mode support
+3. `/src/app/api/admin/categories/[id]/route.ts` - Added demo mode support
+4. `/src/app/api/admin/menus/[id]/route.ts` - Added demo mode support
+
+### Already Working Correctly
+
+The following were verified to be working correctly:
+
+1. **Authentication API (`/api/auth/route.ts`)** - Already has proper demo mode support
+2. **Inventory API (`/api/admin/inventory/route.ts`)** - Already has demo data fallback
+3. **Inventory Movements API (`/api/admin/inventory/movements/route.ts`)** - Already has demo data
+4. **Admin Stats API (`/api/admin/stats/route.ts`)** - Already has demo fallback
+5. **Admin Menus API (`/api/admin/menus/route.ts`)** - Already has demo data
+6. **Admin Orders API (`/api/admin/orders/route.ts`)** - Already has demo data
+7. **Admin Items API (`/api/admin/items/route.ts`)** - Already has demo mode
+8. **Admin Categories API (`/api/admin/categories/route.ts`)** - Already has demo mode
+9. **Frontend Pages** - All properly use API calls with error handling
+
+### Testing Notes
+
+1. Lint passes without critical errors (only React hook warnings in other files)
+2. All API routes have consistent demo mode support
+3. Create/Add buttons should now work in demo mode
+
+### Stage Summary:
+- ✅ Fixed demo login token format for consistent authentication
+- ✅ Added demo mode support to item update/delete routes
+- ✅ Added demo mode support to category update/delete routes
+- ✅ Added demo mode support to menu update/delete routes
+- ✅ Verified existing APIs already have proper demo support
+- ✅ Verified frontend pages properly call APIs
+
+
+---
+## Task ID: guinea-default-config - Configuration Guinée par défaut
+### Work Task
+Configurer la Guinée comme pays par défaut et le Franc Guinéen (GNF) comme devise par défaut pour KFM DELICE.
+
+### Work Log:
+- Mis à jour le contexte de devise pour utiliser GNF par défaut
+- Ajouté la Guinée en première position dans les pays configurés
+- Mis à jour les fichiers de configuration pour GNF/Guinée
+- Corrigé le format de devise dans la page inventaire (GNF au lieu de FCFA)
+
+### Files Modified:
+
+#### 1. `/src/lib/currency-context.tsx`
+- Défini GNF comme devise par défaut
+
+#### 2. `/src/lib/config.ts`
+- Ajouté GNF dans DEFAULT_CURRENCIES en première position
+- Ajouté la Guinée (GN) dans DEFAULT_COUNTRIES en première position
+- Mis à jour currentCurrency pour utiliser GNF
+
+#### 3. `/src/app/(admin)/admin/inventory/page.tsx`
+- Changé le format de devise de FCFA à GNF
+
+---
+## Task ID: fix-demo-login-buttons - Correction des boutons de connexion démo
+### Work Task
+Corriger les boutons de connexion démo qui ne fonctionnaient pas à cause d'un format de token incompatible.
+
+### Work Log:
+- Identifié que les boutons démo utilisaient `demo_token` comme format de token
+- L'API d'authentification attendait un token commençant par `demo-token-`
+- Corrigé le format des tokens dans la page de connexion
+
+### Files Modified:
+- `/src/app/login/page.tsx` - Format de token corrigé pour les boutons démo
+
+---
+## Task ID: fix-admin-api-demo-mode - Correction des API admin en mode démo
+### Work Task
+Ajouter le support du mode démo pour les routes API admin qui échouaient sans base de données.
+
+### Work Log:
+- Les routes [id] pour items, catégories et menus n'avaient pas de support pour le mode démo
+- Ajouté des vérifications `isDatabaseAvailable()` avant d'accéder à la base de données
+- Ajouté des réponses mock appropriées pour le mode démo
+
+### Files Modified:
+- `/src/app/api/admin/items/[id]/route.ts` - Support démo pour PUT, PATCH, DELETE
+- `/src/app/api/admin/categories/[id]/route.ts` - Support démo pour PUT, DELETE
+- `/src/app/api/admin/menus/[id]/route.ts` - Support démo pour PUT, DELETE
+
+### Stage Summary:
+- ✅ Devise par défaut changée à GNF (Franc Guinéen)
+- ✅ Pays par défaut changé à Guinée
+- ✅ Boutons de connexion démo corrigés
+- ✅ API admin avec support mode démo
+- ✅ Build réussi sans erreurs critiques
+

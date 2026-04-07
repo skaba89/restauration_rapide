@@ -87,7 +87,7 @@ const statusColors: Record<string, string> = {
   OVERSTOCKED: 'bg-blue-100 text-blue-700',
 };
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
+const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR');
 
 export default function AdminInventoryPage() {
@@ -540,7 +540,7 @@ export default function AdminInventoryPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Prix unitaire (FCFA)</Label>
+                <Label>Prix unitaire (GNF)</Label>
                 <Input 
                   type="number" 
                   placeholder="0" 

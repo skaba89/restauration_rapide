@@ -52,6 +52,16 @@ export interface RestaurantConfig {
 
 // Default currencies
 const DEFAULT_CURRENCIES: Record<string, Currency> = {
+  GNF: {
+    code: 'GNF',
+    name: 'Franc Guinéen',
+    symbol: 'GNF',
+    decimalPlaces: 0,
+    format: '{amount} {symbol}',
+    thousandsSeparator: ' ',
+    decimalSeparator: ',',
+    symbolPosition: 'after',
+  },
   XOF: {
     code: 'XOF',
     name: 'Franc CFA (BCEAO)',
@@ -156,6 +166,7 @@ const DEFAULT_CURRENCIES: Record<string, Currency> = {
 
 // Default countries
 const DEFAULT_COUNTRIES: CountryConfig[] = [
+  { code: 'GN', name: 'Guinée', dialCode: '+224', currencyCode: 'GNF', language: 'fr', timezone: 'Africa/Conakry', taxIncluded: true, mobileMoneyEnabled: true },
   { code: 'CI', name: 'Côte d\'Ivoire', dialCode: '+225', currencyCode: 'XOF', language: 'fr', timezone: 'Africa/Abidjan', taxIncluded: true, mobileMoneyEnabled: true },
   { code: 'SN', name: 'Sénégal', dialCode: '+221', currencyCode: 'XOF', language: 'fr', timezone: 'Africa/Dakar', taxIncluded: true, mobileMoneyEnabled: true },
   { code: 'NG', name: 'Nigeria', dialCode: '+234', currencyCode: 'NGN', language: 'en', timezone: 'Africa/Lagos', taxIncluded: false, mobileMoneyEnabled: true },
@@ -399,7 +410,7 @@ export const useConfig = create<ConfigState>()(
     (set, get) => ({
       // Default state
       currentRestaurant: DEMO_RESTAURANTS[0],
-      currentCurrency: DEFAULT_CURRENCIES.XOF,
+      currentCurrency: DEFAULT_CURRENCIES.GNF,
       currentCountry: DEFAULT_COUNTRIES[0],
       restaurants: DEMO_RESTAURANTS,
       currencies: DEFAULT_CURRENCIES,

@@ -188,12 +188,12 @@ export const cacheHelpers = {
   // Prefetch helper
   prefetch: async <T,>(
     queryClient: QueryClient,
-    queryKey: readonly unknown[],
+    queryKey: unknown[],
     queryFn: () => Promise<T>,
     staleTime?: number
   ) => {
     await queryClient.prefetchQuery({
-      queryKey: queryKey as unknown[],
+      queryKey,
       queryFn,
       staleTime,
     });

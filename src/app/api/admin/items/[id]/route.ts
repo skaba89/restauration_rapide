@@ -1,5 +1,5 @@
 // Admin Item by ID API - Update and Delete
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { apiSuccess, apiError } from '@/lib/api-responses';
 import { NextRequest } from 'next/server';
 
@@ -23,6 +23,27 @@ export async function PUT(
       isPopular,
       isNew,
     } = body;
+
+    // Check for demo mode
+    if (!isDatabaseAvailable() || !db) {
+      // Return mock updated item for demo mode
+      const mockItem = {
+        id,
+        name: name || 'Updated Item',
+        slug: name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'updated-item',
+        description: description || null,
+        price: parseFloat(price) || 0,
+        discountPrice: discountPrice ? parseFloat(discountPrice) : null,
+        prepTime: prepTime ? parseInt(prepTime) : null,
+        image: image || null,
+        isAvailable: isAvailable ?? true,
+        isFeatured: isFeatured ?? false,
+        isPopular: isPopular ?? false,
+        isNew: isNew ?? false,
+        updatedAt: new Date().toISOString(),
+      };
+      return apiSuccess(mockItem, 'Plat mis à jour (mode démo)');
+    }
 
     const item = await db.menuItem.update({
       where: { id },
@@ -56,6 +77,17 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
+    // Check for demo mode
+    if (!isDatabaseAvailable() || !db) {
+      // Return mock updated item for demo mode
+      const mockItem = {
+        id,
+        ...body,
+        updatedAt: new Date().toISOString(),
+      };
+      return apiSuccess(mockItem, 'Plat mis à jour (mode démo)');
+    }
+
     const item = await db.menuItem.update({
       where: { id },
       data: body,
@@ -75,6 +107,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+
+    // Check for demo mode
+    if (!isDatabaseAvailable() || !db) {
+      return apiSuccess({ success: true, id }, 'Plat supprimé (mode démo)');
+    }
 
     await db.menuItem.delete({
       where: { id },

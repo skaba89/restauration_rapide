@@ -69,6 +69,25 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
 
+    // Check if database is available
+    if (!isDatabaseAvailable() || !db) {
+      // Return mock created category for demo mode
+      const mockCategory = {
+        id: `cat-${Date.now()}`,
+        name,
+        slug: `${slug}-${Date.now()}`,
+        description: description || null,
+        icon: icon || '🍽️',
+        image: image || null,
+        isActive: isActive ?? true,
+        sortOrder: 1,
+        menuId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      return apiSuccess(mockCategory, 'Catégorie créée (mode démo)', 201);
+    }
+
     // Get the max sortOrder for this menu
     const maxSort = await db.menuCategory.aggregate({
       where: { menuId },
@@ -88,7 +107,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return apiSuccess(category);
+    return apiSuccess(category, 'Catégorie créée avec succès', 201);
   } catch (error) {
     console.error('Error creating category:', error);
     return apiError('Erreur lors de la création de la catégorie', 500);

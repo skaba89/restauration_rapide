@@ -1,5 +1,5 @@
 // Authentication API
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import {
   hashPassword,
@@ -15,6 +15,30 @@ import {
 } from '@/lib/auth-helpers';
 import { isValidEmail, isValidPassword } from '@/lib/utils-helpers';
 
+// Demo user for fallback mode
+const DEMO_USER = {
+  id: 'demo-user-1',
+  email: 'demo@kfm-delice.com',
+  phone: '+224 622 000 000',
+  role: 'ORG_ADMIN',
+  firstName: 'Admin',
+  lastName: 'Demo',
+  avatar: null,
+  isActive: true,
+  passwordHash: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4wqO.1BoWBPfGK.e', // password: demo123
+  organizations: [{
+    id: 'demo-org-1',
+    name: 'KFM DELICE',
+    slug: 'kfm-delice',
+    role: 'ADMIN',
+  }],
+};
+
+// Generate a demo token
+function generateDemoToken(): string {
+  return `demo-token-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
 // GET /api/auth - Get current session
 export async function GET(request: Request) {
   return withErrorHandler(async () => {
@@ -23,6 +47,32 @@ export async function GET(request: Request) {
 
     if (!token) {
       return apiError('Non autorisé', 401);
+    }
+
+    // Check for demo mode
+    if (!isDatabaseAvailable() || !db) {
+      // In demo mode, accept any demo-token-* as valid
+      if (token.startsWith('demo-token-')) {
+        return apiSuccess({
+          user: {
+            id: DEMO_USER.id,
+            email: DEMO_USER.email,
+            phone: DEMO_USER.phone,
+            role: DEMO_USER.role,
+            firstName: DEMO_USER.firstName,
+            lastName: DEMO_USER.lastName,
+            avatar: DEMO_USER.avatar,
+            language: 'fr',
+            isActive: true,
+            organizations: DEMO_USER.organizations,
+          },
+          session: {
+            id: 'demo-session-1',
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+        });
+      }
+      return apiError('Session invalide ou expirée', 401);
     }
 
     const session = await validateSession(token);
@@ -63,11 +113,37 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { action, email, phone, password, otpCode, firstName, lastName, role = 'CUSTOMER' } = body;
 
+    // Check for demo mode
+    const isDemoMode = !isDatabaseAvailable() || !db;
+
     // Login with password
     if (action === 'login') {
       const identifier = email || phone;
       if (!identifier || !password) {
         return apiError('Email/téléphone et mot de passe sont requis');
+      }
+
+      // Demo mode login
+      if (isDemoMode) {
+        // Accept demo@kfm-delice.com with password demo123
+        if (identifier === 'demo@kfm-delice.com' && password === 'demo123') {
+          const demoToken = generateDemoToken();
+          return apiSuccess({
+            user: {
+              id: DEMO_USER.id,
+              email: DEMO_USER.email,
+              phone: DEMO_USER.phone,
+              role: DEMO_USER.role,
+              firstName: DEMO_USER.firstName,
+              lastName: DEMO_USER.lastName,
+              avatar: DEMO_USER.avatar,
+            },
+            token: demoToken,
+            refreshToken: `demo-refresh-${Date.now()}`,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          }, 'Connexion réussie (mode démo)');
+        }
+        return apiError('Identifiants incorrects (mode démo - utilisez demo@kfm-delice.com / demo123)', 401);
       }
 
       const user = await getUserByEmailOrPhone(identifier);
@@ -80,8 +156,8 @@ export async function POST(request: Request) {
         return apiError('Compte désactivé ou verrouillé', 403);
       }
 
-      const isValidPassword = await verifyPassword(password, user.passwordHash);
-      if (!isValidPassword) {
+      const isValidPasswordResult = await verifyPassword(password, user.passwordHash);
+      if (!isValidPasswordResult) {
         return apiError('Mot de passe incorrect', 401);
       }
 
@@ -124,6 +200,11 @@ export async function POST(request: Request) {
       const passwordValidation = isValidPassword(password);
       if (!passwordValidation.valid) {
         return apiError(passwordValidation.message || 'Mot de passe invalide');
+      }
+
+      // Demo mode registration
+      if (isDemoMode) {
+        return apiError('L\'inscription n\'est pas disponible en mode démo. Utilisez demo@kfm-delice.com / demo123 pour vous connecter.', 400);
       }
 
       // Check if user exists
@@ -175,6 +256,14 @@ export async function POST(request: Request) {
         return apiError('Téléphone ou email est requis');
       }
 
+      // Demo mode OTP
+      if (isDemoMode) {
+        return apiSuccess({
+          message: 'Code OTP envoyé (mode démo)',
+          otpCode: '123456',
+        });
+      }
+
       // Check if user exists for login OTP
       if (type === 'LOGIN') {
         const user = await getUserByEmailOrPhone(phone || email);
@@ -208,6 +297,26 @@ export async function POST(request: Request) {
       
       if (!otpCode || (!phone && !email)) {
         return apiError('Code OTP et téléphone/email sont requis');
+      }
+
+      // Demo mode OTP verification
+      if (isDemoMode) {
+        if (otpCode === '123456') {
+          return apiSuccess({
+            user: {
+              id: DEMO_USER.id,
+              email: DEMO_USER.email,
+              phone: DEMO_USER.phone,
+              role: DEMO_USER.role,
+              firstName: DEMO_USER.firstName,
+              lastName: DEMO_USER.lastName,
+            },
+            token: generateDemoToken(),
+            refreshToken: `demo-refresh-${Date.now()}`,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          }, 'Connexion réussie (mode démo)');
+        }
+        return apiError('Code OTP invalide (mode démo - utilisez 123456)', 400);
       }
 
       const otp = await verifyOtpCode(type, otpCode, phone, email);
@@ -254,6 +363,18 @@ export async function POST(request: Request) {
         return apiError('Refresh token est requis');
       }
 
+      // Demo mode refresh
+      if (isDemoMode) {
+        if (refreshToken.startsWith('demo-refresh-')) {
+          return apiSuccess({
+            token: generateDemoToken(),
+            refreshToken: `demo-refresh-${Date.now()}`,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          }, 'Token rafraîchi (mode démo)');
+        }
+        return apiError('Refresh token invalide ou expiré', 401);
+      }
+
       const storedToken = await db.refreshToken.findUnique({
         where: { token: refreshToken },
         include: { user: true },
@@ -294,6 +415,11 @@ export async function DELETE(request: Request) {
       return apiError('Token requis', 401);
     }
 
+    // Demo mode logout
+    if (!isDatabaseAvailable() || !db) {
+      return apiSuccess({ loggedOut: true }, 'Déconnexion réussie (mode démo)');
+    }
+
     const success = await invalidateSession(token);
 
     if (!success) {
@@ -312,6 +438,11 @@ export async function PATCH(request: Request) {
 
     if (!token) {
       return apiError('Non autorisé', 401);
+    }
+
+    // Demo mode password update
+    if (!isDatabaseAvailable() || !db) {
+      return apiError('La modification du mot de passe n\'est pas disponible en mode démo', 400);
     }
 
     const session = await validateSession(token);

@@ -103,6 +103,30 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
 
+    // Check if database is available
+    if (!isDatabaseAvailable() || !db) {
+      // Return mock created item for demo mode
+      const mockItem = {
+        id: `item-${Date.now()}`,
+        name,
+        slug: `${slug}-${Date.now()}`,
+        description: description || null,
+        price: parseFloat(price),
+        discountPrice: discountPrice ? parseFloat(discountPrice) : null,
+        prepTime: prepTime ? parseInt(prepTime) : null,
+        image: image || null,
+        isAvailable: isAvailable ?? true,
+        isFeatured: isFeatured ?? false,
+        isPopular: isPopular ?? false,
+        isNew: isNew ?? false,
+        sortOrder: 1,
+        categoryId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      return apiSuccess(mockItem, 'Plat créé (mode démo)', 201);
+    }
+
     // Get the max sortOrder for this category
     const maxSort = await db.menuItem.aggregate({
       where: { categoryId },
@@ -127,7 +151,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return apiSuccess(item);
+    return apiSuccess(item, 'Plat créé avec succès', 201);
   } catch (error) {
     console.error('Error creating item:', error);
     return apiError('Erreur lors de la création du plat', 500);

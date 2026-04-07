@@ -19,31 +19,46 @@ fi
 echo "✅ DATABASE_URL is configured"
 echo "   (Connection string hidden for security)"
 
-# Run Prisma generate (should already be done in build, but just in case)
+# Determine if we're using PostgreSQL (production) or SQLite (development)
+IS_POSTGRES=$(echo "$DATABASE_URL" | grep -c "postgresql" || echo "0")
+
+if [ "$IS_POSTGRES" -gt 0 ]; then
+    echo "📊 Using PostgreSQL database (production mode)"
+    SCHEMA_PATH="./prisma/schema.production.prisma"
+else
+    echo "📊 Using SQLite database (development mode)"
+    SCHEMA_PATH="./prisma/schema.prisma"
+fi
+
+# Run Prisma generate with the correct schema
 echo ""
 echo "📦 Generating Prisma Client..."
-npx prisma generate --schema=./prisma/schema.prisma 2>&1 || echo "⚠️ Prisma generate warning (may already exist)"
+npx prisma generate --schema=$SCHEMA_PATH 2>&1 || echo "⚠️ Prisma generate warning (may already exist)"
 
 # Run Prisma migrations - push schema to database
 echo ""
-echo "📦 Running Prisma db push..."
-npx prisma db push --accept-data-loss --skip-generate 2>&1 || {
+echo "📦 Running Prisma db push with schema: $SCHEMA_PATH..."
+npx prisma db push --accept-data-loss --skip-generate --schema=$SCHEMA_PATH 2>&1 || {
     echo "⚠️ Prisma db push had issues, but continuing..."
 }
 
 # Wait a moment for database to be ready
 echo ""
 echo "⏳ Waiting for database to stabilize..."
-sleep 2
+sleep 3
 
 # Seed the database if needed (create initial admin user, etc.)
 echo ""
 echo "📦 Checking if database needs seeding..."
-# Check if we have any users
-HAS_USERS=$(npx prisma db execute --stdin <<< "SELECT COUNT(*) FROM User;" 2>/dev/null || echo "0")
-if [[ "$HAS_USERS" == *"0"* ]] || [[ -z "$HAS_USERS" ]]; then
+
+# Check if User table exists and has users
+USER_COUNT=$(npx prisma db execute --stdin --schema=$SCHEMA_PATH <<< "SELECT COUNT(*) FROM \"User\";" 2>/dev/null | grep -oE '[0-9]+' || echo "0")
+
+if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
     echo "No users found, running seed..."
     npm run seed 2>&1 || echo "⚠️ Seed had issues, but continuing..."
+else
+    echo "Database already has $USER_COUNT users, skipping seed"
 fi
 
 # Start the Next.js server

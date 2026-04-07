@@ -59,9 +59,33 @@ try {
     execSync('cp -r node_modules/bcryptjs/* .next/standalone/node_modules/bcryptjs/', { stdio: 'inherit' });
   }
 
+  // Copy all required node_modules for serverExternalPackages
+  console.log('\n📦 Copying additional dependencies to standalone...');
+  
+  // List of packages that need to be copied
+  const packagesToCopy = ['bcryptjs', '@prisma/client', 'prisma'];
+  
+  packagesToCopy.forEach(pkg => {
+    const pkgPath = pkg.startsWith('@') 
+      ? `node_modules/${pkg}` 
+      : `node_modules/${pkg}`;
+    
+    if (fs.existsSync(pkgPath)) {
+      const targetPath = `.next/standalone/node_modules/${pkg}`;
+      execSync(`mkdir -p ${path.dirname(targetPath)}`, { stdio: 'inherit' });
+      execSync(`cp -r ${pkgPath} ${targetPath}`, { stdio: 'inherit' });
+      console.log(`  ✓ Copied ${pkg}`);
+    }
+  });
+
   // Copy schema to standalone
   execSync('mkdir -p .next/standalone/prisma', { stdio: 'inherit' });
   execSync(`cp ${targetSchemaPath} .next/standalone/prisma/schema.prisma`, { stdio: 'inherit' });
+
+  // Copy the production schema with correct name
+  if (isProduction) {
+    execSync(`cp ${schemaPath} .next/standalone/prisma/schema.production.prisma`, { stdio: 'inherit' });
+  }
 
   console.log('\n✅ Build completed successfully!');
 } catch (error) {

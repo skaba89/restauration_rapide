@@ -1,0 +1,63 @@
+# ============================================
+# Restaurant OS - Render Auto-Deploy Workflow
+# Déclenche le déploiement sur Render après push sur master
+# ============================================
+
+name: Render Deploy
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+env:
+  RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+  SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+
+jobs:
+  deploy:
+    name: Trigger Render Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger Render Deploy Hook
+        run: |
+          echo "🚀 Triggering Render deployment..."
+          
+          # Utiliser le deploy hook de Render si configuré
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+            echo "✅ Deploy hook triggered successfully!"
+          else
+            echo "⚠️ RENDER_DEPLOY_HOOK not configured, Render will auto-deploy if connected to GitHub"
+          fi
+
+      - name: Deployment info
+        run: |
+          echo "📦 Deployment Information:"
+          echo "  Branch: ${{ github.ref_name }}"
+          echo "  Commit: ${{ github.sha }}"
+          echo "  Actor: ${{ github.actor }}"
+          echo "  Repository: ${{ github.repository }}"
+
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    steps:
+      - name: Send notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ needs.deploy.result }}
+          text: |
+            🚀 Deployment triggered on Render!
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
+            URL: https://kfm-delice.onrender.com
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

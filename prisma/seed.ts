@@ -546,10 +546,11 @@ const MENU_ITEMS = {
 };
 
 // ============================================
-// COUNTRIES CONFIGURATION
+// COUNTRIES CONFIGURATION (Guinea first as default)
 // ============================================
 
 const COUNTRIES = [
+  { code: 'GN', name: 'Guinée', dialCode: '+224', currency: 'GNF', language: 'fr', timezone: 'Africa/Conakry' },
   { code: 'CI', name: 'Côte d\'Ivoire', dialCode: '+225', currency: 'XOF', language: 'fr', timezone: 'Africa/Abidjan' },
   { code: 'SN', name: 'Sénégal', dialCode: '+221', currency: 'XOF', language: 'fr', timezone: 'Africa/Dakar' },
   { code: 'NG', name: 'Nigeria', dialCode: '+234', currency: 'NGN', language: 'en', timezone: 'Africa/Lagos' },
@@ -564,7 +565,6 @@ const COUNTRIES = [
   { code: 'RW', name: 'Rwanda', dialCode: '+250', currency: 'RWF', language: 'fr', timezone: 'Africa/Kigali' },
   { code: 'TZ', name: 'Tanzanie', dialCode: '+255', currency: 'TZS', language: 'en', timezone: 'Africa/Dar_es_Salaam' },
   { code: 'UG', name: 'Ouganda', dialCode: '+256', currency: 'UGX', language: 'en', timezone: 'Africa/Kampala' },
-  { code: 'GN', name: 'Guinée', dialCode: '+224', currency: 'GNF', language: 'fr', timezone: 'Africa/Conakry' },
   { code: 'BF', name: 'Burkina Faso', dialCode: '+226', currency: 'XOF', language: 'fr', timezone: 'Africa/Ouagadougou' },
   { code: 'ML', name: 'Mali', dialCode: '+223', currency: 'XOF', language: 'fr', timezone: 'Africa/Bamako' },
   { code: 'BJ', name: 'Bénin', dialCode: '+229', currency: 'XOF', language: 'fr', timezone: 'Africa/Porto-Novo' },

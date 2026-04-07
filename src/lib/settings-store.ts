@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 
 // Available currencies with their formatting
 export const CURRENCIES = {
+  GNF: { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen', locale: 'fr-GN', position: 'after' },
   XOF: { code: 'XOF', symbol: 'FCFA', name: 'Franc CFA (BCEAO)', locale: 'fr-SN', position: 'after' },
   XAF: { code: 'XAF', symbol: 'FCFA', name: 'Franc CFA (BEAC)', locale: 'fr-CM', position: 'after' },
   CDF: { code: 'CDF', symbol: 'FC', name: 'Franc Congolais', locale: 'fr-CD', position: 'after' },
@@ -20,8 +21,9 @@ export const CURRENCIES = {
 
 export type CurrencyCode = keyof typeof CURRENCIES;
 
-// Available countries
+// Available countries (Guinea first as default)
 export const COUNTRIES = {
+  GN: { code: 'GN', name: 'Guinée', flag: '🇬🇳', currency: 'GNF', phoneCode: '+224' },
   CI: { code: 'CI', name: 'Côte d\'Ivoire', flag: '🇨🇮', currency: 'XOF', phoneCode: '+225' },
   SN: { code: 'SN', name: 'Sénégal', flag: '🇸🇳', currency: 'XOF', phoneCode: '+221' },
   ML: { code: 'ML', name: 'Mali', flag: '🇲🇱', currency: 'XOF', phoneCode: '+223' },
@@ -29,7 +31,6 @@ export const COUNTRIES = {
   BJ: { code: 'BJ', name: 'Bénin', flag: '🇧🇯', currency: 'XOF', phoneCode: '+229' },
   NE: { code: 'NE', name: 'Niger', flag: '🇳🇪', currency: 'XOF', phoneCode: '+227' },
   TG: { code: 'TG', name: 'Togo', flag: '🇹🇬', currency: 'XOF', phoneCode: '+228' },
-  GN: { code: 'GN', name: 'Guinée', flag: '🇬🇳', currency: 'GNF', phoneCode: '+224' },
   CM: { code: 'CM', name: 'Cameroun', flag: '🇨🇲', currency: 'XAF', phoneCode: '+237' },
   CD: { code: 'CD', name: 'RD Congo', flag: '🇨🇩', currency: 'CDF', phoneCode: '+243' },
   GH: { code: 'GH', name: 'Ghana', flag: '🇬🇭', currency: 'GHS', phoneCode: '+233' },
@@ -37,7 +38,7 @@ export const COUNTRIES = {
   KE: { code: 'KE', name: 'Kenya', flag: '🇰🇪', currency: 'KES', phoneCode: '+254' },
   UG: { code: 'UG', name: 'Ouganda', flag: '🇺🇬', currency: 'UGX', phoneCode: '+256' },
   RW: { code: 'RW', name: 'Rwanda', flag: '🇷🇼', currency: 'RWF', phoneCode: '+250' },
-  ZA: { code: 'ZA', name: 'Afrique du Sud', flag: '🇿🇦', currency: 'ZAR', phoneCode: '+27' },
+  ZAR: { code: 'ZA', name: 'Afrique du Sud', flag: '🇿🇦', currency: 'ZAR', phoneCode: '+27' },
   MA: { code: 'MA', name: 'Maroc', flag: '🇲🇦', currency: 'MAD', phoneCode: '+212' },
   TN: { code: 'TN', name: 'Tunisie', flag: '🇹🇳', currency: 'TND', phoneCode: '+216' },
 } as const;
@@ -140,23 +141,23 @@ const DEFAULT_FEATURES: FeatureFlags = {
   staffManagement: true,
 };
 
-// Default restaurant
+// Default restaurant (KFM DELICE)
 const DEFAULT_RESTAURANT: RestaurantInfo = {
-  id: 'default',
-  name: 'Le Petit Maquis',
-  slug: 'le-petit-maquis',
-  address: 'Cocody, Riviera 2, Abidjan',
-  phone: '+225 07 00 00 00 00',
-  email: 'contact@lepetitmaquis.com',
+  id: 'kfm-delice',
+  name: 'KFM DELICE',
+  slug: 'kfm-delice',
+  address: 'Nongo, Ratoma, Conakry',
+  phone: '+224 623 21 72 40',
+  email: 'contact@kfm-delice.com',
   openingHours: {
-    open: '11:00',
-    close: '23:00',
+    open: '10:00',
+    close: '22:00',
     days: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
   },
-  deliveryFee: 500,
-  minOrderAmount: 1000,
+  deliveryFee: 5000,
+  minOrderAmount: 10000,
   deliveryTime: {
-    min: 25,
+    min: 20,
     max: 45,
   },
 };
@@ -164,9 +165,9 @@ const DEFAULT_RESTAURANT: RestaurantInfo = {
 export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set, get) => ({
-      // Initial values
-      currency: 'XOF',
-      country: 'CI',
+      // Initial values (Guinea and GNF as defaults)
+      currency: 'GNF',
+      country: 'GN',
       currentRestaurant: DEFAULT_RESTAURANT,
       restaurants: [DEFAULT_RESTAURANT],
       features: DEFAULT_FEATURES,

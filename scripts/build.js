@@ -42,52 +42,132 @@ try {
 
   // Copy static files and public folder for standalone
   console.log('\n📂 Preparing standalone server...');
-  execSync('cp -r .next/static .next/standalone/.next/', { stdio: 'inherit' });
-  execSync('cp -r public .next/standalone/', { stdio: 'inherit' });
+  
+  // Ensure directories exist
+  if (!fs.existsSync('.next/standalone/.next')) {
+    fs.mkdirSync('.next/standalone/.next', { recursive: true });
+  }
+  
+  // Copy static files
+  if (fs.existsSync('.next/static')) {
+    execSync('cp -r .next/static .next/standalone/.next/', { stdio: 'inherit' });
+  }
+  
+  // Copy public folder
+  if (fs.existsSync('public')) {
+    execSync('cp -r public .next/standalone/', { stdio: 'inherit' });
+  }
 
   // Copy Prisma client to standalone
   console.log('\n📦 Copying Prisma to standalone...');
-  execSync('mkdir -p .next/standalone/node_modules/.prisma', { stdio: 'inherit' });
-  execSync('mkdir -p .next/standalone/node_modules/@prisma', { stdio: 'inherit' });
-  execSync('cp -r node_modules/.prisma/client .next/standalone/node_modules/.prisma/', { stdio: 'inherit' });
-  execSync('cp -r node_modules/@prisma/client .next/standalone/node_modules/@prisma/', { stdio: 'inherit' });
-
-  // Copy bcryptjs to standalone (required for auth)
-  console.log('\n📦 Copying bcryptjs to standalone...');
-  execSync('mkdir -p .next/standalone/node_modules/bcryptjs', { stdio: 'inherit' });
-  if (fs.existsSync('node_modules/bcryptjs')) {
-    execSync('cp -r node_modules/bcryptjs/* .next/standalone/node_modules/bcryptjs/', { stdio: 'inherit' });
+  
+  const prismaTargetDirs = [
+    '.next/standalone/node_modules/.prisma',
+    '.next/standalone/node_modules/@prisma',
+    '.next/standalone/node_modules/prisma',
+  ];
+  
+  prismaTargetDirs.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+  
+  // Copy .prisma/client
+  if (fs.existsSync('node_modules/.prisma/client')) {
+    execSync('cp -r node_modules/.prisma/client .next/standalone/node_modules/.prisma/', { stdio: 'inherit' });
+  }
+  
+  // Copy @prisma/client
+  if (fs.existsSync('node_modules/@prisma/client')) {
+    execSync('cp -r node_modules/@prisma/client .next/standalone/node_modules/@prisma/', { stdio: 'inherit' });
+  }
+  
+  // Copy prisma CLI (optional, for migrations)
+  if (fs.existsSync('node_modules/prisma')) {
+    execSync('cp -r node_modules/prisma .next/standalone/node_modules/', { stdio: 'inherit' });
   }
 
-  // Copy all required node_modules for serverExternalPackages
-  console.log('\n📦 Copying additional dependencies to standalone...');
+  // Copy bcryptjs to standalone (CRITICAL for auth)
+  console.log('\n📦 Copying bcryptjs to standalone...');
   
-  // List of packages that need to be copied
-  const packagesToCopy = ['bcryptjs', '@prisma/client', 'prisma'];
+  if (fs.existsSync('node_modules/bcryptjs')) {
+    if (!fs.existsSync('.next/standalone/node_modules/bcryptjs')) {
+      fs.mkdirSync('.next/standalone/node_modules/bcryptjs', { recursive: true });
+    }
+    execSync('cp -r node_modules/bcryptjs/* .next/standalone/node_modules/bcryptjs/', { stdio: 'inherit' });
+    console.log('  ✓ bcryptjs copied successfully');
+  } else {
+    console.warn('  ⚠️ bcryptjs not found in node_modules');
+  }
+
+  // Copy additional runtime dependencies
+  console.log('\n📦 Copying additional dependencies...');
   
-  packagesToCopy.forEach(pkg => {
-    const pkgPath = pkg.startsWith('@') 
-      ? `node_modules/${pkg}` 
-      : `node_modules/${pkg}`;
+  const additionalDeps = [
+    'bcryptjs',
+    '@prisma/client',
+    '@prisma/engines',
+    'prisma',
+    'decimal.js',
+    '@panva/asn1.js',
+    'dotenv',
+  ];
+  
+  additionalDeps.forEach(pkg => {
+    const pkgPath = `node_modules/${pkg}`;
+    const targetPath = `.next/standalone/node_modules/${pkg}`;
     
-    if (fs.existsSync(pkgPath)) {
-      const targetPath = `.next/standalone/node_modules/${pkg}`;
-      execSync(`mkdir -p ${path.dirname(targetPath)}`, { stdio: 'inherit' });
-      execSync(`cp -r ${pkgPath} ${targetPath}`, { stdio: 'inherit' });
-      console.log(`  ✓ Copied ${pkg}`);
+    if (fs.existsSync(pkgPath) && !fs.existsSync(targetPath)) {
+      console.log(`  Copying ${pkg}...`);
+      try {
+        execSync(`mkdir -p ${path.dirname(targetPath)}`, { stdio: 'pipe' });
+        execSync(`cp -r ${pkgPath} ${targetPath}`, { stdio: 'pipe' });
+        console.log(`  ✓ ${pkg} copied`);
+      } catch (e) {
+        console.warn(`  ⚠️ Failed to copy ${pkg}: ${e.message}`);
+      }
     }
   });
 
   // Copy schema to standalone
-  execSync('mkdir -p .next/standalone/prisma', { stdio: 'inherit' });
+  console.log('\n📦 Copying Prisma schema...');
+  if (!fs.existsSync('.next/standalone/prisma')) {
+    fs.mkdirSync('.next/standalone/prisma', { recursive: true });
+  }
   execSync(`cp ${targetSchemaPath} .next/standalone/prisma/schema.prisma`, { stdio: 'inherit' });
 
   // Copy the production schema with correct name
-  if (isProduction) {
+  if (isProduction && fs.existsSync(schemaPath)) {
     execSync(`cp ${schemaPath} .next/standalone/prisma/schema.production.prisma`, { stdio: 'inherit' });
   }
 
+  // Copy server.js if it exists
+  if (fs.existsSync('server.js')) {
+    console.log('\n📦 Copying custom server.js...');
+    execSync('cp server.js .next/standalone/', { stdio: 'inherit' });
+  }
+
+  // Create a package.json for the standalone folder
+  console.log('\n📦 Creating standalone package.json...');
+  const standalonePkg = {
+    name: 'kfm-delice-standalone',
+    version: '1.0.0',
+    private: true,
+    scripts: {
+      start: 'node server.js'
+    }
+  };
+  fs.writeFileSync('.next/standalone/package.json', JSON.stringify(standalonePkg, null, 2));
+
   console.log('\n✅ Build completed successfully!');
+  console.log('\n📋 Build summary:');
+  console.log('  - Next.js standalone build created');
+  console.log('  - Static files copied');
+  console.log('  - Prisma client copied');
+  console.log('  - bcryptjs copied (for auth)');
+  console.log('  - Schema files copied');
+  
 } catch (error) {
   console.error('\n❌ Build failed:', error.message);
   process.exit(1);

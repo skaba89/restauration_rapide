@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 
 // Demo users - In production, these would come from the database
+// Using simple passwords for demo mode
 const DEMO_USERS: Record<string, { password: string; user: any }> = {
   'demo@kfm-delice.com': {
     password: 'demo123',
@@ -121,13 +122,19 @@ export async function POST(request: Request) {
     // Login with password
     if (action === 'login') {
       const identifier = (email || phone || '').toLowerCase().trim();
-      if (!identifier || !password) {
+      const passwordStr = String(password || '').trim();
+      
+      console.log('[AUTH] Login attempt:', { identifier, hasPassword: !!passwordStr });
+      
+      if (!identifier || !passwordStr) {
         return json(false, { error: 'Email/téléphone et mot de passe sont requis' }, 400);
       }
 
       // Check demo users
       const demoUser = DEMO_USERS[identifier];
-      if (demoUser && demoUser.password === password) {
+      console.log('[AUTH] Demo user found:', !!demoUser, 'password match:', demoUser ? demoUser.password === passwordStr : false);
+      
+      if (demoUser && demoUser.password === passwordStr) {
         const token = generateToken();
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         
@@ -195,8 +202,9 @@ export async function POST(request: Request) {
         console.log('Database not available, using demo mode only');
       }
 
+      console.log('[AUTH] Login failed for:', identifier);
       return json(false, { 
-        error: 'Identifiants incorrects. Comptes démo disponibles: demo@kfm-delice.com (demo123) ou contact@kfm-delice.com (KfmDelice2024!)' 
+        error: 'Identifiants incorrects. Comptes démo disponibles: demo@kfm-delice.com (demo123), contact@kfm-delice.com (KfmDelice2024!), admin@kfm-delice.com (AdminKFM2024!)' 
       }, 401);
     }
 

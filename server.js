@@ -3,8 +3,6 @@
  * This ensures the server binds to the correct host and port
  */
 
-const { createServer } = require('http');
-const { parse } = require('url');
 const path = require('path');
 const fs = require('fs');
 
@@ -21,25 +19,28 @@ console.log(`📡 Host: ${process.env.HOSTNAME}`);
 console.log(`🔌 Port: ${PORT}`);
 console.log('==========================================');
 
-// Check if standalone server exists
-const standalonePath = path.join(__dirname, '.next', 'standalone', 'server.js');
+// Path to the standalone server directory
+const standaloneDir = path.join(__dirname, '.next', 'standalone');
+const standaloneServer = path.join(standaloneDir, 'server.js');
 
-if (fs.existsSync(standalonePath)) {
-  console.log('✅ Found standalone server, starting...');
-  // Change to standalone directory to ensure relative paths work
-  process.chdir(path.join(__dirname, '.next', 'standalone'));
-  // Require the standalone server
-  require(standalonePath);
+// Check if standalone server exists
+if (fs.existsSync(standaloneServer)) {
+  console.log('✅ Starting Next.js standalone server...');
+  
+  // Change working directory to standalone folder
+  // This is required because the standalone server expects to run from its own directory
+  process.chdir(standaloneDir);
+  
+  // Update __dirname to reflect new working directory
+  // This ensures all relative paths work correctly
+  
+  // Now require the standalone server
+  // The standalone server will handle everything from here
+  require(standaloneServer);
 } else {
-  console.log('⚠️ Standalone server not found, starting development server...');
-  // Fallback to regular Next.js server
-  const { createServer: createNextServer } = require('next/dist/server/lib/start-server');
-  createNextServer({
-    dir: __dirname,
-    port: PORT,
-    hostname: process.env.HOSTNAME,
-  }).catch(err => {
-    console.error('Failed to start server:', err);
-    process.exit(1);
-  });
+  console.error('❌ Standalone server not found!');
+  console.error('Expected path:', standaloneServer);
+  console.error('');
+  console.error('Make sure the build completed successfully with output: "standalone" in next.config.ts');
+  process.exit(1);
 }

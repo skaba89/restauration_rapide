@@ -154,11 +154,8 @@ try {
     execSync(`cp ${schemaPath} .next/standalone/prisma/schema.production.prisma`, { stdio: 'inherit' });
   }
 
-  // Copy server.js if it exists
-  if (fs.existsSync('server.js')) {
-    console.log('\n📦 Copying custom server.js...');
-    execSync('cp server.js .next/standalone/', { stdio: 'inherit' });
-  }
+  // NOTE: Do NOT copy server.js to standalone - Next.js generates its own server.js
+  // We use the root server.js to properly start the standalone server
 
   // Create a package.json for the standalone folder
   console.log('\n📦 Creating standalone package.json...');

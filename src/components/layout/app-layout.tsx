@@ -21,6 +21,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import {
   LayoutDashboard,
@@ -66,6 +71,8 @@ import {
   Users as StaffIcon,
   Utensils,
   TrendingUp,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useLogout, useAuth } from '@/hooks/use-api';
@@ -77,64 +84,111 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   badge?: number;
-  section?: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  // Principal
-  { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, section: 'principal' },
-  { title: 'POS', href: '/pos', icon: Calculator, section: 'principal' },
-  { title: 'Commandes', href: '/orders', icon: ShoppingCart, badge: 5, section: 'principal' },
-  { title: 'Cuisine', href: '/kitchen', icon: ChefHat, section: 'principal' },
-  
-  // Menu & Produits
-  { title: 'Menu', href: '/menu', icon: UtensilsCrossed, section: 'menu' },
-  { title: 'Recettes', href: '/recipes', icon: Utensils, section: 'menu' },
-  { title: 'Nutrition', href: '/nutrition', icon: Heart, section: 'menu' },
-  
-  // Clients
-  { title: 'Clients', href: '/customers', icon: Users, section: 'clients' },
-  { title: 'Réservations', href: '/reservations', icon: CalendarDays, section: 'clients' },
-  { title: 'Fidélité', href: '/loyalty', icon: Gift, section: 'clients' },
-  { title: 'Avis', href: '/reviews', icon: Star, section: 'clients' },
-  { title: 'Feedback', href: '/feedback', icon: MessageSquare, section: 'clients' },
-  
-  // Livraison
-  { title: 'Livraisons', href: '/deliveries', icon: Truck, section: 'livraison' },
-  { title: 'Drivers', href: '/drivers', icon: Bike, section: 'livraison' },
-  { title: 'Suivi', href: '/tracking', icon: TrendingUp, section: 'livraison' },
-  
-  // Opérations
-  { title: 'Inventaire', href: '/inventory', icon: Package, section: 'operations' },
-  { title: 'Staff', href: '/staff', icon: StaffIcon, section: 'operations' },
-  { title: 'RH', href: '/hr', icon: Users, section: 'operations' },
-  { title: 'Fournisseurs', href: '/suppliers', icon: Truck, section: 'operations' },
-  { title: 'Fil d\'attente', href: '/waitlist', icon: Clock, section: 'operations' },
-  { title: 'Plan de salle', href: '/floor-plan', icon: Building2, section: 'operations' },
-  
-  // Finance
-  { title: 'Comptabilité', href: '/accounting', icon: DollarSign, section: 'finance' },
-  { title: 'Dépenses', href: '/expenses', icon: Receipt, section: 'finance' },
-  { title: 'Factures', href: '/invoices', icon: Receipt, section: 'finance' },
-  
-  // Marketing
-  { title: 'Promotions', href: '/promotions', icon: Percent, section: 'marketing' },
-  { title: 'Cartes cadeaux', href: '/gift-cards', icon: Gift, section: 'marketing' },
-  { title: 'Événements', href: '/events', icon: Calendar, section: 'marketing' },
-  { title: 'Traiteur', href: '/catering', icon: UtensilsCrossed, section: 'marketing' },
-  
-  // Admin
-  { title: 'Succursales', href: '/branches', icon: Building2, section: 'admin' },
-  { title: 'Abonnements', href: '/subscriptions', icon: CreditCard, section: 'admin' },
-  { title: 'QR Code', href: '/qrcode', icon: QrCode, section: 'admin' },
-  { title: 'Impression', href: '/printing', icon: Printer, section: 'admin' },
-  { title: 'Intégrations', href: '/integrations', icon: Puzzle, section: 'admin' },
-  
-  // Analyse
-  { title: 'Analytics', href: '/analytics', icon: BarChart3, section: 'analyse' },
-  
-  // Paramètres
-  { title: 'Paramètres', href: '/settings', icon: Settings, section: 'parametres' },
+interface NavCategory {
+  title: string;
+  icon: React.ElementType;
+  items: NavItem[];
+}
+
+// Navigation organized by categories with collapsible sections
+const NAV_CATEGORIES: NavCategory[] = [
+  {
+    title: 'Principal',
+    icon: LayoutDashboard,
+    items: [
+      { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { title: 'POS', href: '/pos', icon: Calculator },
+      { title: 'Commandes', href: '/orders', icon: ShoppingCart, badge: 5 },
+      { title: 'Cuisine', href: '/kitchen', icon: ChefHat },
+    ],
+  },
+  {
+    title: 'Menu & Produits',
+    icon: UtensilsCrossed,
+    items: [
+      { title: 'Menu', href: '/menu', icon: UtensilsCrossed },
+      { title: 'Recettes', href: '/recipes', icon: Utensils },
+      { title: 'Nutrition', href: '/nutrition', icon: Heart },
+    ],
+  },
+  {
+    title: 'Clients',
+    icon: Users,
+    items: [
+      { title: 'Clients', href: '/customers', icon: Users },
+      { title: 'Réservations', href: '/reservations', icon: CalendarDays },
+      { title: 'Fidélité', href: '/loyalty', icon: Gift },
+      { title: 'Avis', href: '/reviews', icon: Star },
+      { title: 'Feedback', href: '/feedback', icon: MessageSquare },
+    ],
+  },
+  {
+    title: 'Livraison',
+    icon: Truck,
+    items: [
+      { title: 'Livraisons', href: '/deliveries', icon: Truck },
+      { title: 'Drivers', href: '/drivers', icon: Bike },
+      { title: 'Suivi', href: '/tracking', icon: TrendingUp },
+    ],
+  },
+  {
+    title: 'Opérations',
+    icon: Package,
+    items: [
+      { title: 'Inventaire', href: '/inventory', icon: Package },
+      { title: 'Staff', href: '/staff', icon: StaffIcon },
+      { title: 'RH', href: '/hr', icon: Users },
+      { title: 'Fournisseurs', href: '/suppliers', icon: Truck },
+      { title: 'Fil d\'attente', href: '/waitlist', icon: Clock },
+      { title: 'Plan de salle', href: '/floor-plan', icon: Building2 },
+    ],
+  },
+  {
+    title: 'Finance',
+    icon: DollarSign,
+    items: [
+      { title: 'Comptabilité', href: '/accounting', icon: DollarSign },
+      { title: 'Dépenses', href: '/expenses', icon: Receipt },
+      { title: 'Factures', href: '/invoices', icon: Receipt },
+    ],
+  },
+  {
+    title: 'Marketing',
+    icon: Megaphone,
+    items: [
+      { title: 'Promotions', href: '/promotions', icon: Percent },
+      { title: 'Cartes cadeaux', href: '/gift-cards', icon: Gift },
+      { title: 'Événements', href: '/events', icon: Calendar },
+      { title: 'Traiteur', href: '/catering', icon: UtensilsCrossed },
+    ],
+  },
+  {
+    title: 'Administration',
+    icon: Building2,
+    items: [
+      { title: 'Succursales', href: '/branches', icon: Building2 },
+      { title: 'Abonnements', href: '/subscriptions', icon: CreditCard },
+      { title: 'QR Code', href: '/qrcode', icon: QrCode },
+      { title: 'Impression', href: '/printing', icon: Printer },
+      { title: 'Intégrations', href: '/integrations', icon: Puzzle },
+    ],
+  },
+  {
+    title: 'Analyse',
+    icon: BarChart3,
+    items: [
+      { title: 'Analytics', href: '/analytics', icon: BarChart3 },
+    ],
+  },
+  {
+    title: 'Paramètres',
+    icon: Settings,
+    items: [
+      { title: 'Paramètres', href: '/settings', icon: Settings },
+    ],
+  },
 ];
 
 // Demo notifications
@@ -186,29 +240,74 @@ const DEMO_NOTIFICATIONS = [
   },
 ];
 
+// Collapsible category component
+function NavCategoryItem({
+  category,
+  pathname,
+  onNavigate,
+}: {
+  category: NavCategory;
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Check if any child is active
+  const isChildActive = category.items.some(
+    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
+  );
+
+  return (
+    <Collapsible open={isOpen || isChildActive} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger asChild>
+        <button
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+            isChildActive
+              ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+              : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+          }`}
+        >
+          <category.icon className="h-4 w-4" />
+          <span className="text-sm font-medium flex-1 text-left">{category.title}</span>
+          {isOpen || isChildActive ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pl-4 pt-1 space-y-1">
+        {category.items.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                isActive
+                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                  : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+              }`}
+            >
+              <item.icon className="h-4 w-4" />
+              <span className="text-sm">{item.title}</span>
+              {item.badge && (
+                <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 // Separate NavContent component
 function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
-  // Group items by section
-  const sections: Record<string, NavItem[]> = {};
-  NAV_ITEMS.forEach(item => {
-    const section = item.section || 'other';
-    if (!sections[section]) sections[section] = [];
-    sections[section].push(item);
-  });
-
-  const sectionLabels: Record<string, string> = {
-    principal: 'Principal',
-    menu: 'Menu & Produits',
-    clients: 'Clients',
-    livraison: 'Livraison',
-    operations: 'Opérations',
-    finance: 'Finance',
-    marketing: 'Marketing',
-    admin: 'Administration',
-    analyse: 'Analyse',
-    parametres: 'Paramètres',
-  };
-
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
@@ -222,40 +321,16 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation with collapsible categories */}
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-4">
-          {Object.entries(sections).map(([section, items]) => (
-            <div key={section}>
-              <p className="text-xs font-semibold text-muted-foreground px-3 mb-2 uppercase tracking-wider">
-                {sectionLabels[section] || section}
-              </p>
-              <div className="space-y-1">
-                {items.map((item) => {
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={onNavigate}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                        isActive
-                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                          : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
-                      }`}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span className="text-sm">{item.title}</span>
-                      {item.badge && (
-                        <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
+        <nav className="space-y-1">
+          {NAV_CATEGORIES.map((category) => (
+            <NavCategoryItem
+              key={category.title}
+              category={category}
+              pathname={pathname}
+              onNavigate={onNavigate}
+            />
           ))}
         </nav>
       </ScrollArea>
@@ -330,6 +405,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Find current page title
+  const getCurrentPageTitle = () => {
+    for (const category of NAV_CATEGORIES) {
+      for (const item of category.items) {
+        if (pathname === item.href || pathname.startsWith(item.href + '/')) {
+          return item.title;
+        }
+      }
+    }
+    return 'Dashboard';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Desktop Sidebar */}
@@ -359,7 +446,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
             {/* Page Title - Mobile */}
             <h1 className="font-semibold lg:hidden">
-              {NAV_ITEMS.find((item) => pathname.startsWith(item.href))?.title || 'Dashboard'}
+              {getCurrentPageTitle()}
             </h1>
 
             {/* Quick Actions */}

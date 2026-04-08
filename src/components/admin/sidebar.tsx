@@ -37,6 +37,13 @@ import {
   ClipboardList,
   PieChart,
   CalendarDays,
+  ChefHat,
+  TruckIcon,
+  DollarSign,
+  FileBarChart,
+  UserCog,
+  Crown,
+  Building,
 } from 'lucide-react';
 
 interface NavItem {
@@ -44,113 +51,146 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   badge?: number | string;
-  children?: NavItem[];
 }
 
-const ADMIN_NAV_ITEMS: NavItem[] = [
-  { title: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
-  { title: 'Analyses', href: '/admin/analytics', icon: BarChart3 },
-  { title: 'Rapports', href: '/admin/reports', icon: PieChart },
-  { title: 'Organisations', href: '/admin/organizations', icon: Building2 },
-  { title: 'Restaurants', href: '/admin/restaurants', icon: Store },
-  { title: 'Utilisateurs', href: '/admin/users', icon: Users },
-  { title: 'Menus', href: '/admin/menus', icon: UtensilsCrossed },
-  { title: 'Commandes', href: '/admin/orders', icon: ClipboardList },
-  { title: 'Réservations', href: '/admin/reservations', icon: CalendarDays },
-  { title: 'Livraisons', href: '/admin/deliveries', icon: Truck },
-  { title: 'Point de vente', href: '/admin/pos', icon: ShoppingCart },
-  { title: 'Factures', href: '/admin/invoices', icon: Receipt },
-  { title: 'Dépenses', href: '/admin/expenses', icon: Wallet },
-  { title: 'Inventaire', href: '/admin/inventory', icon: Package },
-  { title: 'Ressources Humaines', href: '/admin/hr', icon: UsersRound },
-  { title: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
+interface NavCategory {
+  title: string;
+  icon: React.ElementType;
+  items: NavItem[];
+}
+
+// Navigation organized by categories
+const NAV_CATEGORIES: NavCategory[] = [
+  {
+    title: 'Tableau de bord',
+    icon: LayoutDashboard,
+    items: [
+      { title: 'Vue d\'ensemble', href: '/admin', icon: LayoutDashboard },
+      { title: 'Analyses', href: '/admin/analytics', icon: BarChart3 },
+      { title: 'Rapports', href: '/admin/reports', icon: PieChart },
+    ],
+  },
+  {
+    title: 'Gestion',
+    icon: Building2,
+    items: [
+      { title: 'Organisations', href: '/admin/organizations', icon: Building2 },
+      { title: 'Restaurants', href: '/admin/restaurants', icon: Store },
+      { title: 'Utilisateurs', href: '/admin/users', icon: Users },
+    ],
+  },
+  {
+    title: 'Menu & Produits',
+    icon: UtensilsCrossed,
+    items: [
+      { title: 'Menus', href: '/admin/menus', icon: UtensilsCrossed },
+      { title: 'Inventaire', href: '/admin/inventory', icon: Package },
+    ],
+  },
+  {
+    title: 'Commandes & Services',
+    icon: ShoppingCart,
+    items: [
+      { title: 'Commandes', href: '/admin/orders', icon: ClipboardList },
+      { title: 'Réservations', href: '/admin/reservations', icon: CalendarDays },
+      { title: 'Livraisons', href: '/admin/deliveries', icon: Truck },
+      { title: 'Point de vente', href: '/admin/pos', icon: ShoppingCart },
+    ],
+  },
+  {
+    title: 'Finance',
+    icon: DollarSign,
+    items: [
+      { title: 'Factures', href: '/admin/invoices', icon: Receipt },
+      { title: 'Dépenses', href: '/admin/expenses', icon: Wallet },
+    ],
+  },
+  {
+    title: 'Ressources Humaines',
+    icon: UsersRound,
+    items: [
+      { title: 'Personnel', href: '/admin/hr', icon: UsersRound },
+    ],
+  },
+  {
+    title: 'Abonnements',
+    icon: Crown,
+    items: [
+      { title: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
+    ],
+  },
   {
     title: 'Paramètres',
-    href: '/admin/settings',
     icon: Settings,
-    children: [
+    items: [
       { title: 'Général', href: '/admin/settings', icon: Settings },
       { title: 'Notifications', href: '/admin/settings/notifications', icon: Bell },
       { title: 'Sécurité', href: '/admin/settings/security', icon: Shield },
       { title: 'Logs d\'audit', href: '/admin/settings/audit-logs', icon: FileText },
-    ]
+    ],
   },
 ];
 
-interface SidebarNavItemProps {
-  item: NavItem;
+interface SidebarCategoryProps {
+  category: NavCategory;
   pathname: string;
   onNavigate?: () => void;
 }
 
-function SidebarNavItem({ item, pathname, onNavigate }: SidebarNavItemProps) {
+function SidebarCategory({ category, pathname, onNavigate }: SidebarCategoryProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-  const hasChildren = item.children && item.children.length > 0;
 
-  if (hasChildren) {
-    const isChildActive = item.children!.some(child => 
-      pathname === child.href || pathname.startsWith(child.href + '/')
-    );
+  // Check if any child is active
+  const isChildActive = category.items.some(
+    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
+  );
 
-    return (
-      <Collapsible open={isOpen || isChildActive} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-              isChildActive
-                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
-            }`}
-          >
-            <item.icon className="h-5 w-5" />
-            <span className="font-medium flex-1 text-left">{item.title}</span>
-            {isOpen || isChildActive ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pl-4 pt-1">
-          {item.children!.map((child) => (
+  return (
+    <Collapsible open={isOpen || isChildActive} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger asChild>
+        <button
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+            isChildActive
+              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+              : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+          }`}
+        >
+          <category.icon className="h-5 w-5" />
+          <span className="font-medium flex-1 text-left">{category.title}</span>
+          {isOpen || isChildActive ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pl-4 pt-1 space-y-1">
+        {category.items.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+
+          return (
             <Link
-              key={child.href}
-              href={child.href}
+              key={item.href}
+              href={item.href}
               onClick={onNavigate}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                pathname === child.href
+                isActive
                   ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
                   : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
               }`}
             >
-              <child.icon className="h-4 w-4" />
-              <span className="text-sm">{child.title}</span>
+              <item.icon className="h-4 w-4" />
+              <span className="text-sm">{item.title}</span>
+              {item.badge !== undefined && (
+                <Badge variant="secondary" className="ml-auto text-xs">
+                  {item.badge}
+                </Badge>
+              )}
             </Link>
-          ))}
-        </CollapsibleContent>
-      </Collapsible>
-    );
-  }
-
-  return (
-    <Link
-      href={item.href}
-      onClick={onNavigate}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-        isActive
-          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-          : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
-      }`}
-    >
-      <item.icon className="h-5 w-5" />
-      <span className="font-medium">{item.title}</span>
-      {item.badge !== undefined && (
-        <Badge variant="secondary" className="ml-auto text-xs">
-          {item.badge}
-        </Badge>
-      )}
-    </Link>
+          );
+        })}
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -182,13 +222,13 @@ export function AdminSidebarContent({ pathname, onNavigate }: AdminSidebarConten
         <p className="text-xs text-muted-foreground mt-1">Tous les systèmes fonctionnent</p>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation with categories */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
-          {ADMIN_NAV_ITEMS.map((item) => (
-            <SidebarNavItem
-              key={item.href}
-              item={item}
+          {NAV_CATEGORIES.map((category) => (
+            <SidebarCategory
+              key={category.title}
+              category={category}
               pathname={pathname}
               onNavigate={onNavigate}
             />

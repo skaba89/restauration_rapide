@@ -11,6 +11,7 @@ interface CurrencyContextType {
   setCurrency: (currency: Currency) => void;
   formatCurrency: (amount: number, options?: { showCode?: boolean }) => string;
   isLoading: boolean;
+  refreshCurrency: () => Promise<void>;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
@@ -27,7 +28,7 @@ const DEFAULT_CURRENCY: Currency = {
 function getCurrencyFromCode(code: string): Currency {
   const found = CURRENCIES.find(c => c.code === code);
   if (found) return found;
-  
+
   // Fallback currencies
   const fallbacks: Record<string, Currency> = {
     'GNF': { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen', decimalPlaces: 0 },
@@ -36,7 +37,7 @@ function getCurrencyFromCode(code: string): Currency {
     'EUR': { code: 'EUR', symbol: '€', name: 'Euro', decimalPlaces: 2 },
     'USD': { code: 'USD', symbol: '$', name: 'Dollar US', decimalPlaces: 2 },
   };
-  
+
   return fallbacks[code] || DEFAULT_CURRENCY;
 }
 
@@ -44,61 +45,96 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [currency, setCurrencyState] = useState<Currency>(DEFAULT_CURRENCY);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load currency from organization settings on mount
-  useEffect(() => {
-    const loadCurrency = async () => {
+  // Load currency from settings on mount
+  const loadCurrency = useCallback(async () => {
+    try {
+      // First try the public settings API (works for both authenticated and public pages)
+      const response = await fetch('/api/public/settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.success && data?.data?.currency) {
+          const currencyData = getCurrencyFromCode(data.data.currency);
+          setCurrencyState(currencyData);
+          // Save to localStorage for quick access
+          localStorage.setItem('currency', JSON.stringify(currencyData));
+          localStorage.setItem('currencyCode', data.data.currency);
+          return;
+        }
+      }
+    } catch (error) {
+      console.log('Could not load currency from public API');
+    }
+
+    // Fallback to localStorage
+    const savedCurrency = localStorage.getItem('currency');
+    const savedCode = localStorage.getItem('currencyCode');
+    if (savedCurrency) {
       try {
-        // Try to fetch from organization settings API
-        const response = await fetch('/api/settings');
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.currency) {
-            const currencyData = getCurrencyFromCode(data.currency);
-            setCurrencyState(currencyData);
-            // Also save to localStorage for quick access
-            localStorage.setItem('currency', JSON.stringify(currencyData));
-            return;
-          }
+        const parsed = JSON.parse(savedCurrency);
+        if (parsed && parsed.code) {
+          setCurrencyState(getCurrencyFromCode(parsed.code));
+          return;
         }
-      } catch (error) {
-        console.log('Could not load currency from API, using localStorage');
+      } catch {
+        // Ignore parse errors
       }
+    } else if (savedCode) {
+      setCurrencyState(getCurrencyFromCode(savedCode));
+      return;
+    }
 
-      // Fallback to localStorage
-      const saved = localStorage.getItem('currency');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed && parsed.code) {
-            setCurrencyState(getCurrencyFromCode(parsed.code));
-          }
-        } catch {
-          // Ignore parse errors
-        }
-      }
-      
-      setIsLoading(false);
-    };
-
-    loadCurrency();
+    setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadCurrency();
+  }, [loadCurrency]);
 
   // Set currency and save to both localStorage and API
   const setCurrency = useCallback(async (newCurrency: Currency) => {
     setCurrencyState(newCurrency);
     localStorage.setItem('currency', JSON.stringify(newCurrency));
-    
+    localStorage.setItem('currencyCode', newCurrency.code);
+
     // Also save to organization settings via API
     try {
-      await fetch('/api/settings', {
+      // Get organization ID from localStorage or settings
+      const orgResponse = await fetch('/api/public/settings');
+      let organizationId = null;
+      if (orgResponse.ok) {
+        const orgData = await orgResponse.json();
+        organizationId = orgData?.data?.id;
+      }
+
+      // Update currency via settings API
+      const response = await fetch('/api/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currency: newCurrency.code }),
+        body: JSON.stringify({
+          type: 'organization',
+          organizationId,
+          settings: {
+            config: {
+              currency: newCurrency.code,
+            }
+          }
+        }),
       });
+
+      if (!response.ok) {
+        console.log('Could not save currency to organization settings');
+      }
     } catch (error) {
-      console.log('Could not save currency to API');
+      console.log('Could not save currency to API:', error);
     }
   }, []);
+
+  // Refresh currency from server
+  const refreshCurrency = useCallback(async () => {
+    setIsLoading(true);
+    await loadCurrency();
+    setIsLoading(false);
+  }, [loadCurrency]);
 
   // Format currency with current settings
   const formatCurrency = useCallback((amount: number, options?: { showCode?: boolean }): string => {
@@ -113,6 +149,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     setCurrency,
     formatCurrency,
     isLoading,
+    refreshCurrency,
   };
 
   return (
@@ -142,6 +179,7 @@ export function useCurrencySafe() {
       setCurrency: () => {},
       formatCurrency: (amount: number) => formatCurrencyUtil(amount, 'GNF'),
       isLoading: false,
+      refreshCurrency: async () => {},
     };
   }
   return context;

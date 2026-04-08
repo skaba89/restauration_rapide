@@ -26,6 +26,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrency } from '@/lib/currency-context';
 import { CURRENCIES } from '@/lib/currency';
+
+// Currency type from lib/currency
+type CurrencyType = {
+  code: string;
+  name: string;
+  symbol: string;
+  decimalPlaces: number;
+};
 import {
   Settings,
   Store,
@@ -109,7 +117,7 @@ const DEMO_SITES = [
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { currency, setCurrency, currencyCode } = useCurrency();
+  const { currency, setCurrency, currencyCode, refreshCurrency } = useCurrency();
   const [selectedCountry, setSelectedCountry] = useState('GN'); // Default to Guinea
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -238,36 +246,63 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       // Find the currency object from the code
-      const selectedCurrency = CURRENCIES.find(c => c.code === restaurantSettings.currency) || {
+      const selectedCurrencyObj = Object.values(CURRENCIES).find(c => c.code === restaurantSettings.currency);
+      const currencyData: CurrencyType = selectedCurrencyObj ? {
+        code: selectedCurrencyObj.code,
+        name: selectedCurrencyObj.name,
+        symbol: selectedCurrencyObj.symbol,
+        decimalPlaces: selectedCurrencyObj.decimalPlaces,
+      } : {
         code: restaurantSettings.currency,
         symbol: restaurantSettings.currency,
         name: restaurantSettings.currency,
         decimalPlaces: 0,
       };
 
-      // Update currency context (this also saves to localStorage and API)
-      setCurrency(selectedCurrency);
+      // Get organization ID from public settings
+      let organizationId = null;
+      try {
+        const settingsRes = await fetch('/api/public/settings');
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          organizationId = settingsData?.data?.id;
+        }
+      } catch (e) {
+        console.log('Could not get organization ID');
+      }
 
-      // Save all settings to API
+      // Save settings to API
       const response = await fetch('/api/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: restaurantSettings.name,
-          phone: restaurantSettings.phone,
-          email: restaurantSettings.email,
-          address: restaurantSettings.address,
-          city: restaurantSettings.city,
-          currency: restaurantSettings.currency,
-          country: selectedCountry,
-          logo: restaurantSettings.logo,
+          type: 'organization',
+          organizationId,
+          settings: {
+            organization: {
+              name: restaurantSettings.name,
+              email: restaurantSettings.email,
+              phone: restaurantSettings.phone,
+              address: restaurantSettings.address,
+              city: restaurantSettings.city,
+            },
+            config: {
+              currency: restaurantSettings.currency,
+            }
+          }
         }),
       });
 
       if (response.ok) {
+        // Update currency context (this also saves to localStorage)
+        setCurrency(currencyData);
+        
+        // Refresh currency from server
+        await refreshCurrency();
+
         toast({
           title: 'Paramètres enregistrés',
-          description: 'Les informations du restaurant et la devise ont été mises à jour avec succès',
+          description: 'Les informations du restaurant et la devise ont été mises à jour avec succès. La devise est maintenant appliquée à toutes les pages.',
         });
       } else {
         throw new Error('Failed to save settings');

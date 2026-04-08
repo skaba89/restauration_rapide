@@ -139,10 +139,12 @@ export default function SettingsPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const response = await fetch('/api/settings');
+        // Use public settings API which doesn't require parameters
+        const response = await fetch('/api/public/settings');
         if (response.ok) {
-          const data = await response.json();
-          if (data) {
+          const result = await response.json();
+          if (result?.success && result?.data) {
+            const data = result.data;
             setRestaurantSettings(prev => ({
               ...prev,
               name: data.name || prev.name,

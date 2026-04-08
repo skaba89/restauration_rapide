@@ -51,13 +51,14 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       // First try the public settings API (works for both authenticated and public pages)
       const response = await fetch('/api/public/settings');
       if (response.ok) {
-        const data = await response.json();
-        if (data?.success && data?.data?.currency) {
-          const currencyData = getCurrencyFromCode(data.data.currency);
+        const result = await response.json();
+        if (result?.success && result?.data?.currency) {
+          const currencyData = getCurrencyFromCode(result.data.currency);
           setCurrencyState(currencyData);
           // Save to localStorage for quick access
           localStorage.setItem('currency', JSON.stringify(currencyData));
-          localStorage.setItem('currencyCode', data.data.currency);
+          localStorage.setItem('currencyCode', result.data.currency);
+          setIsLoading(false);
           return;
         }
       }
@@ -73,6 +74,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         const parsed = JSON.parse(savedCurrency);
         if (parsed && parsed.code) {
           setCurrencyState(getCurrencyFromCode(parsed.code));
+          setIsLoading(false);
           return;
         }
       } catch {
@@ -80,9 +82,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       }
     } else if (savedCode) {
       setCurrencyState(getCurrencyFromCode(savedCode));
+      setIsLoading(false);
       return;
     }
 
+    // Use default currency
+    setCurrencyState(DEFAULT_CURRENCY);
     setIsLoading(false);
   }, []);
 

@@ -24,7 +24,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Calendar, Plus, Users, Phone, MapPin, RefreshCw, Check, X, Edit, Trash2, Eye } from 'lucide-react';
-import { useCurrency } from '@/lib/currency-context';
+
+// Simple currency formatter for GNF (Guinean Franc)
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('fr-GN', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount) + ' GNF';
+};
 
 interface CateringOrder {
   id: string;
@@ -61,7 +69,6 @@ const EVENT_TYPES = [
 ];
 
 export default function CateringPage() {
-  const { formatCurrency } = useCurrency();
   const [orders, setOrders] = useState<CateringOrder[]>(DEMO_ORDERS);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');

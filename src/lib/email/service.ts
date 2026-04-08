@@ -128,10 +128,8 @@ export class EmailService {
    */
   private async sendViaSMTP(options: SendEmailOptions): Promise<EmailSendResult> {
     try {
-      // Dynamic import for nodemailer (optional dependency)
-      const nodemailer = await import('nodemailer').catch(() => null);
-      
-      if (!nodemailer || !this.config.smtp) {
+      // Check if SMTP is configured
+      if (!this.config.smtp) {
         // Development mode: log email instead of sending
         if (this.config.development?.logEmails) {
           logger.info('Email (development mode)', {
@@ -149,7 +147,27 @@ export class EmailService {
         
         return {
           success: false,
-          error: 'SMTP not configured or nodemailer not installed',
+          error: 'SMTP not configured',
+          provider: 'smtp',
+        };
+      }
+
+      // Dynamic import for nodemailer
+      let nodemailer: any;
+      try {
+        nodemailer = await import('nodemailer');
+      } catch {
+        return {
+          success: false,
+          error: 'Nodemailer package not installed',
+          provider: 'smtp',
+        };
+      }
+
+      if (!nodemailer) {
+        return {
+          success: false,
+          error: 'Nodemailer not available',
           provider: 'smtp',
         };
       }

@@ -32,7 +32,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, RefreshCw, Save, X } from 'lucide-react';
-import { useCurrency } from '@/lib/currency-context';
+
+// Simple currency formatter for GNF (Guinean Franc)
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('fr-GN', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount) + ' GNF';
+};
 
 interface MenuItem {
   id: string;
@@ -62,7 +70,6 @@ const CATEGORIES = ['Plats', 'Boissons', 'Accompagnements', 'Desserts', 'Entrée
 const ALLERGENS = ['Gluten', 'Poisson', 'Arachides', 'Lait', 'Œufs', 'Soja', 'Fruits de mer'];
 
 export default function MenuPage() {
-  const { formatCurrency } = useCurrency();
   const [menuItems, setMenuItems] = useState<MenuItem[]>(DEMO_MENU_ITEMS);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');

@@ -225,13 +225,31 @@ export class EmailService {
    */
   private async sendViaSendGrid(options: SendEmailOptions): Promise<EmailSendResult> {
     try {
-      // Dynamic import for @sendgrid/mail (optional dependency)
-      const sgMail = await import('@sendgrid/mail').catch(() => null);
-      
-      if (!sgMail || !this.config.sendgrid?.apiKey) {
+      // Check if SendGrid is configured
+      if (!this.config.sendgrid?.apiKey) {
         return {
           success: false,
-          error: 'SendGrid not configured or package not installed',
+          error: 'SendGrid not configured',
+          provider: 'sendgrid',
+        };
+      }
+
+      // Dynamic import for @sendgrid/mail
+      let sgMail: any;
+      try {
+        sgMail = await import('@sendgrid/mail');
+      } catch {
+        return {
+          success: false,
+          error: 'SendGrid package not installed',
+          provider: 'sendgrid',
+        };
+      }
+
+      if (!sgMail) {
+        return {
+          success: false,
+          error: 'SendGrid not available',
           provider: 'sendgrid',
         };
       }

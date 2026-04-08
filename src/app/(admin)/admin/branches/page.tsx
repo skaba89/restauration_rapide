@@ -24,8 +24,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { apiGet } from '@/lib/api-client';
-import { useCurrency } from '@/lib/currency-context';
 import { useToast } from '@/hooks/use-toast';
+
+// Simple currency formatter for GNF (Guinean Franc)
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('fr-GN', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount) + ' GNF';
+};
 
 interface Branch {
   id: string;
@@ -55,7 +63,6 @@ interface Branch {
 }
 
 export default function AdminBranchesPage() {
-  const { formatCurrency } = useCurrency();
   const [isLoading, setIsLoading] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [error, setError] = useState<string | null>(null);

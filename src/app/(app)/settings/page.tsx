@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/lib/currency-context';
+import { CURRENCIES } from '@/lib/currency';
 import {
   Settings,
   Store,
@@ -47,6 +49,7 @@ import {
   Trash2,
   Edit,
   Check,
+  Loader2,
 } from 'lucide-react';
 
 // African countries with currencies
@@ -106,20 +109,54 @@ const DEMO_SITES = [
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const [selectedCountry, setSelectedCountry] = useState('CI');
+  const { currency, setCurrency, currencyCode } = useCurrency();
+  const [selectedCountry, setSelectedCountry] = useState('GN'); // Default to Guinea
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const logoInputRef = useRef<HTMLInputElement>(null);
   
-  // Restaurant settings
+  // Restaurant settings - initialize with default currency from context
   const [restaurantSettings, setRestaurantSettings] = useState({
-    name: 'Restaurant Le Savana',
-    phone: '07 00 00 00 01',
-    email: 'contact@savana.ci',
-    address: 'Cocody, Rue des Jardins',
-    city: 'Abidjan',
-    currency: 'XOF',
+    name: 'KFM DELICE',
+    phone: '+224 62 00 00 00',
+    email: 'contact@kfm-delice.com',
+    address: 'Kaloum, Conakry',
+    city: 'Conakry',
+    currency: currencyCode || 'GNF',
+    country: 'GN',
     logo: null as string | null,
   });
+
+  // Load settings from API on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            setRestaurantSettings(prev => ({
+              ...prev,
+              name: data.name || prev.name,
+              phone: data.phone || prev.phone,
+              email: data.email || prev.email,
+              address: data.address || prev.address,
+              city: data.city || prev.city,
+              currency: data.currency || prev.currency,
+              country: data.country || prev.country,
+              logo: data.logo || prev.logo,
+            }));
+            setSelectedCountry(data.country || 'GN');
+          }
+        }
+      } catch (error) {
+        console.log('Could not load settings from API');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSettings();
+  }, []);
 
   // Order settings
   const [orderSettings, setOrderSettings] = useState({
@@ -199,14 +236,51 @@ export default function SettingsPage() {
   // Save general settings
   const saveGeneralSettings = async () => {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsSaving(false);
-    
-    toast({
-      title: 'Paramètres enregistrés',
-      description: 'Les informations du restaurant ont été mises à jour',
-    });
+    try {
+      // Find the currency object from the code
+      const selectedCurrency = CURRENCIES.find(c => c.code === restaurantSettings.currency) || {
+        code: restaurantSettings.currency,
+        symbol: restaurantSettings.currency,
+        name: restaurantSettings.currency,
+        decimalPlaces: 0,
+      };
+
+      // Update currency context (this also saves to localStorage and API)
+      setCurrency(selectedCurrency);
+
+      // Save all settings to API
+      const response = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: restaurantSettings.name,
+          phone: restaurantSettings.phone,
+          email: restaurantSettings.email,
+          address: restaurantSettings.address,
+          city: restaurantSettings.city,
+          currency: restaurantSettings.currency,
+          country: selectedCountry,
+          logo: restaurantSettings.logo,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Paramètres enregistrés',
+          description: 'Les informations du restaurant et la devise ont été mises à jour avec succès',
+        });
+      } else {
+        throw new Error('Failed to save settings');
+      }
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de sauvegarder les paramètres',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Save order settings

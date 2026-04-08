@@ -48,6 +48,24 @@ import {
   AlertCircle,
   Trash2,
   X,
+  Warehouse,
+  Receipt,
+  ChefHat as Kitchen,
+  DollarSign,
+  Gift,
+  Percent,
+  Heart,
+  Star,
+  QrCode,
+  Printer,
+  Building2,
+  Calendar,
+  Megaphone,
+  Puzzle,
+  MessageSquare,
+  Users as StaffIcon,
+  Utensils,
+  TrendingUp,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useLogout, useAuth } from '@/hooks/use-api';
@@ -59,19 +77,64 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   badge?: number;
+  section?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { title: 'POS', href: '/pos', icon: Calculator },
-  { title: 'Commandes', href: '/orders', icon: ShoppingCart, badge: 5 },
-  { title: 'Menu', href: '/menu', icon: UtensilsCrossed },
-  { title: 'Réservations', href: '/reservations', icon: CalendarDays },
-  { title: 'Clients', href: '/customers', icon: Users },
-  { title: 'Livraisons', href: '/deliveries', icon: Truck },
-  { title: 'Drivers', href: '/drivers', icon: Bike },
-  { title: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { title: 'Paramètres', href: '/settings', icon: Settings },
+  // Principal
+  { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, section: 'principal' },
+  { title: 'POS', href: '/pos', icon: Calculator, section: 'principal' },
+  { title: 'Commandes', href: '/orders', icon: ShoppingCart, badge: 5, section: 'principal' },
+  { title: 'Cuisine', href: '/kitchen', icon: ChefHat, section: 'principal' },
+  
+  // Menu & Produits
+  { title: 'Menu', href: '/menu', icon: UtensilsCrossed, section: 'menu' },
+  { title: 'Recettes', href: '/recipes', icon: Utensils, section: 'menu' },
+  { title: 'Nutrition', href: '/nutrition', icon: Heart, section: 'menu' },
+  
+  // Clients
+  { title: 'Clients', href: '/customers', icon: Users, section: 'clients' },
+  { title: 'Réservations', href: '/reservations', icon: CalendarDays, section: 'clients' },
+  { title: 'Fidélité', href: '/loyalty', icon: Gift, section: 'clients' },
+  { title: 'Avis', href: '/reviews', icon: Star, section: 'clients' },
+  { title: 'Feedback', href: '/feedback', icon: MessageSquare, section: 'clients' },
+  
+  // Livraison
+  { title: 'Livraisons', href: '/deliveries', icon: Truck, section: 'livraison' },
+  { title: 'Drivers', href: '/drivers', icon: Bike, section: 'livraison' },
+  { title: 'Suivi', href: '/tracking', icon: TrendingUp, section: 'livraison' },
+  
+  // Opérations
+  { title: 'Inventaire', href: '/inventory', icon: Package, section: 'operations' },
+  { title: 'Staff', href: '/staff', icon: StaffIcon, section: 'operations' },
+  { title: 'RH', href: '/hr', icon: Users, section: 'operations' },
+  { title: 'Fournisseurs', href: '/suppliers', icon: Truck, section: 'operations' },
+  { title: 'Fil d\'attente', href: '/waitlist', icon: Clock, section: 'operations' },
+  { title: 'Plan de salle', href: '/floor-plan', icon: Building2, section: 'operations' },
+  
+  // Finance
+  { title: 'Comptabilité', href: '/accounting', icon: DollarSign, section: 'finance' },
+  { title: 'Dépenses', href: '/expenses', icon: Receipt, section: 'finance' },
+  { title: 'Factures', href: '/invoices', icon: Receipt, section: 'finance' },
+  
+  // Marketing
+  { title: 'Promotions', href: '/promotions', icon: Percent, section: 'marketing' },
+  { title: 'Cartes cadeaux', href: '/gift-cards', icon: Gift, section: 'marketing' },
+  { title: 'Événements', href: '/events', icon: Calendar, section: 'marketing' },
+  { title: 'Traiteur', href: '/catering', icon: UtensilsCrossed, section: 'marketing' },
+  
+  // Admin
+  { title: 'Succursales', href: '/branches', icon: Building2, section: 'admin' },
+  { title: 'Abonnements', href: '/subscriptions', icon: CreditCard, section: 'admin' },
+  { title: 'QR Code', href: '/qrcode', icon: QrCode, section: 'admin' },
+  { title: 'Impression', href: '/printing', icon: Printer, section: 'admin' },
+  { title: 'Intégrations', href: '/integrations', icon: Puzzle, section: 'admin' },
+  
+  // Analyse
+  { title: 'Analytics', href: '/analytics', icon: BarChart3, section: 'analyse' },
+  
+  // Paramètres
+  { title: 'Paramètres', href: '/settings', icon: Settings, section: 'parametres' },
 ];
 
 // Demo notifications
@@ -125,6 +188,27 @@ const DEMO_NOTIFICATIONS = [
 
 // Separate NavContent component
 function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  // Group items by section
+  const sections: Record<string, NavItem[]> = {};
+  NAV_ITEMS.forEach(item => {
+    const section = item.section || 'other';
+    if (!sections[section]) sections[section] = [];
+    sections[section].push(item);
+  });
+
+  const sectionLabels: Record<string, string> = {
+    principal: 'Principal',
+    menu: 'Menu & Produits',
+    clients: 'Clients',
+    livraison: 'Livraison',
+    operations: 'Opérations',
+    finance: 'Finance',
+    marketing: 'Marketing',
+    admin: 'Administration',
+    analyse: 'Analyse',
+    parametres: 'Paramètres',
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
@@ -133,45 +217,54 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
           <ChefHat className="h-6 w-6 text-white" />
         </div>
         <div>
-          <h1 className="font-bold text-lg">Restaurant OS</h1>
+          <h1 className="font-bold text-lg">KFM DELICE</h1>
           <p className="text-xs text-muted-foreground">Africa-First</p>
         </div>
       </div>
 
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                    : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
-                }`}
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="font-medium">{item.title}</span>
-                {item.badge && (
-                  <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+        <nav className="space-y-4">
+          {Object.entries(sections).map(([section, items]) => (
+            <div key={section}>
+              <p className="text-xs font-semibold text-muted-foreground px-3 mb-2 uppercase tracking-wider">
+                {sectionLabels[section] || section}
+              </p>
+              <div className="space-y-1">
+                {items.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onNavigate}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                          : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+                      }`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span className="text-sm">{item.title}</span>
+                      {item.badge && (
+                        <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </ScrollArea>
 
       {/* Restaurant Info */}
       <div className="p-4 border-t">
         <div className="p-3 rounded-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
-          <p className="font-semibold text-sm">Restaurant Le Savana</p>
-          <p className="text-xs text-muted-foreground">Cocody, Abidjan</p>
+          <p className="font-semibold text-sm">KFM DELICE</p>
+          <p className="text-xs text-muted-foreground">Conakry, Guinée</p>
           <div className="flex items-center gap-1 mt-2">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-xs text-green-600">Ouvert</span>

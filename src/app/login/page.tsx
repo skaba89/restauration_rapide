@@ -321,8 +321,9 @@ export default function LoginPage() {
                   <AlertCircle className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-xs text-blue-800">
                     <strong>Comptes de démonstration:</strong><br />
-                    📧 demo@kfm-delice.com / demo123<br />
-                    📧 contact@kfm-delice.com / KfmDelice2024!
+                    📧 admin@kfm-delice.com / AdminKFM2024! (Super Admin)<br />
+                    📧 demo@kfm-delice.com / demo123 (Org Admin)<br />
+                    📧 contact@kfm-delice.com / KfmDelice2024! (Org Admin)
                   </AlertDescription>
                 </Alert>
                 

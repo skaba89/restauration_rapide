@@ -1,14 +1,19 @@
 // Public Orders API - Create orders from public menu pages
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
+import { emitOrderCreated } from '@/lib/websocket/server-client';
 import { NextRequest } from 'next/server';
 
 // Generate a unique order number
 function generateOrderNumber(): string {
   const timestamp = Date.now().toString(36).toUpperCase();
   const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${timestamp}-${random}`;
+  return `ORD-${timestamp}-${random}`;
 }
+
+// Demo orders storage (in-memory for demo mode)
+let demoOrderCounter = 145;
+const demoOrders: any[] = [];
 
 // POST /api/public/orders - Create a new order from public menu
 export async function POST(request: NextRequest) {
@@ -33,9 +38,6 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validation
-    if (!restaurantId) {
-      return apiError('Restaurant ID est requis', 400);
-    }
     if (!customerName || !customerPhone) {
       return apiError('Le nom et le téléphone sont requis', 400);
     }
@@ -43,8 +45,69 @@ export async function POST(request: NextRequest) {
       return apiError('Au moins un article est requis', 400);
     }
 
+    // Check if we're in demo mode (no database)
+    const demoMode = !db || !restaurantId || restaurantId === 'demo-rest-1' || restaurantId.startsWith('demo-');
+
+    if (demoMode) {
+      // Demo mode - create order in memory
+      demoOrderCounter++;
+      const orderNumber = `ORD-2024-${String(demoOrderCounter).padStart(4, '0')}`;
+      
+      const demoOrder = {
+        id: `demo-ord-${Date.now()}`,
+        orderNumber,
+        restaurantId: restaurantId || 'demo-rest-1',
+        customerName,
+        customerPhone,
+        customerEmail,
+        orderType: orderType || 'DELIVERY',
+        source: 'web',
+        status: 'PENDING',
+        paymentStatus: 'PENDING',
+        deliveryAddress,
+        deliveryCity,
+        deliveryNotes,
+        deliveryFee: deliveryFee || 0,
+        subtotal: subtotal || 0,
+        total: total || 0,
+        notes,
+        items: items.map((item: any) => ({
+          id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          itemName: item.name,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice || item.price,
+          totalPrice: item.totalPrice || (item.price * item.quantity),
+        })),
+        createdAt: new Date(),
+      };
+
+      demoOrders.unshift(demoOrder);
+
+      // Emit WebSocket event for real-time update
+      emitOrderCreated({
+        orderId: demoOrder.id,
+        orderNumber: demoOrder.orderNumber,
+        organizationId: 'kfm-org-1',
+        restaurantId: demoOrder.restaurantId,
+        orderType: demoOrder.orderType,
+        customerName: demoOrder.customerName,
+        total: demoOrder.total,
+        itemCount: items.length,
+        deliveryAddress: demoOrder.deliveryAddress,
+      });
+
+      return apiSuccess({
+        id: demoOrder.id,
+        orderNumber: demoOrder.orderNumber,
+        status: demoOrder.status,
+        total: demoOrder.total,
+        createdAt: demoOrder.createdAt,
+      }, 'Commande créée avec succès', 201);
+    }
+
+    // Production mode - use database
     // Check if restaurant exists and is active
-    const restaurant = await db.restaurant.findUnique({
+    const restaurant = await db!.restaurant.findUnique({
       where: { id: restaurantId, isActive: true },
     });
 
@@ -53,13 +116,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the default currency (GNF for Guinea)
-    let currency = await db.currency.findFirst({
+    let currency = await db!.currency.findFirst({
       where: { code: 'GNF' },
     });
 
     if (!currency) {
       // Create default currency if not exists
-      currency = await db.currency.create({
+      currency = await db!.currency.create({
         data: {
           code: 'GNF',
           symbol: 'GNF',
@@ -71,7 +134,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the order
-    const order = await db.order.create({
+    const order = await db!.order.create({
       data: {
         orderNumber: generateOrderNumber(),
         restaurantId,
@@ -112,7 +175,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create status history
-    await db.orderStatusHistory.create({
+    await db!.orderStatusHistory.create({
       data: {
         orderId: order.id,
         status: 'PENDING',
@@ -121,7 +184,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create payment record
-    await db.payment.create({
+    await db!.payment.create({
       data: {
         orderId: order.id,
         amount: total,
@@ -132,6 +195,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Emit WebSocket event for real-time update
+    emitOrderCreated({
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      organizationId: restaurant.organizationId,
+      restaurantId: restaurant.id,
+      orderType: order.orderType || 'DELIVERY',
+      customerName,
+      total: order.total,
+      itemCount: items.length,
+      deliveryAddress,
+    });
+
     return apiSuccess({
       id: order.id,
       orderNumber: order.orderNumber,
@@ -139,5 +215,23 @@ export async function POST(request: NextRequest) {
       total: order.total,
       createdAt: order.createdAt,
     }, 'Commande créée avec succès', 201);
+  });
+}
+
+// GET /api/public/orders - Get demo orders
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const demo = searchParams.get('demo');
+
+  if (demo === 'true' || !db) {
+    return apiSuccess({
+      orders: demoOrders.slice(0, 50),
+      total: demoOrders.length,
+    });
+  }
+
+  return apiSuccess({
+    orders: [],
+    total: 0,
   });
 }

@@ -1,0 +1,2 @@
+$ bun --hot index.ts
+[WS] Restaurant OS WebSocket server running on port 3003

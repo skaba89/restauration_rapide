@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useRealTime } from '@/hooks/use-realtime';
 import {
   ShoppingCart,
   Search,
@@ -55,6 +56,9 @@ import {
   Minus,
   Trash2,
   User,
+  Wifi,
+  WifiOff,
+  Bell,
 } from 'lucide-react';
 
 // Demo orders data
@@ -211,6 +215,14 @@ const getTypeIcon = (type: OrderType) => {
 
 export default function OrdersPage() {
   const { toast } = useToast();
+  
+  // Real-time connection
+  const { isConnected, newOrders, clearNewOrders } = useRealTime({
+    organizationId: 'kfm-org-1',
+    role: 'admin',
+    autoConnect: true,
+  });
+  
   const [orders, setOrders] = useState(DEMO_ORDERS);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
@@ -227,6 +239,42 @@ export default function OrdersPage() {
   const [orderNotes, setOrderNotes] = useState('');
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  // Add real-time orders to the list
+  useEffect(() => {
+    if (newOrders.length > 0) {
+      // Use setTimeout to defer state update
+      const timer = setTimeout(() => {
+        // Convert real-time orders to the local format
+        const rtOrders = newOrders.map(rt => ({
+          id: rt.orderId,
+          orderNumber: rt.orderNumber,
+          customerName: rt.customerName || 'Client',
+          customerPhone: '',
+          status: 'PENDING' as OrderStatus,
+          type: (rt.orderType || 'DINE_IN') as OrderType,
+          items: [],
+          total: rt.total || 0,
+          deliveryFee: 0,
+          deliveryAddress: '',
+          createdAt: new Date(rt.timestamp || Date.now()),
+          timer: 0,
+          notes: '',
+        }));
+        
+        setOrders(prev => [...rtOrders, ...prev]);
+        
+        toast({
+          title: 'Nouvelle commande',
+          description: `Commande ${newOrders[0].orderNumber} reçue`,
+        });
+        
+        clearNewOrders();
+      }, 0);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [newOrders, clearNewOrders, toast]);
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
@@ -363,7 +411,17 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Commandes</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">Commandes</h1>
+            {/* Real-time connection indicator */}
+            <Badge variant={isConnected ? 'default' : 'secondary'} className={`text-xs ${isConnected ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}`}>
+              {isConnected ? (
+                <><Wifi className="h-3 w-3 mr-1" /> En direct</>
+              ) : (
+                <><WifiOff className="h-3 w-3 mr-1" /> Hors ligne</>
+              )}
+            </Badge>
+          </div>
           <p className="text-muted-foreground">Gérez les commandes en temps réel</p>
         </div>
         <div className="flex items-center gap-2">

@@ -4,6 +4,27 @@ import { NextResponse } from 'next/server';
 // Demo users - In production, these would come from the database
 // Using simple passwords for demo mode
 const DEMO_USERS: Record<string, { password: string; user: any }> = {
+  // Super Admin account
+  'admin@kfm-delice.com': {
+    password: 'AdminKFM2024!',
+    user: {
+      id: 'admin-user-1',
+      email: 'admin@kfm-delice.com',
+      phone: '+224 623 21 72 40',
+      role: 'SUPER_ADMIN',
+      firstName: 'Super',
+      lastName: 'Admin',
+      avatar: null,
+      isActive: true,
+      organizations: [{
+        id: 'kfm-org-1',
+        name: 'KFM DELICE',
+        slug: 'kfm-delice',
+        role: 'ADMIN',
+      }],
+    },
+  },
+  // Demo account
   'demo@kfm-delice.com': {
     password: 'demo123',
     user: {
@@ -23,12 +44,13 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
       }],
     },
   },
+  // Contact account
   'contact@kfm-delice.com': {
     password: 'KfmDelice2024!',
     user: {
       id: 'kfm-user-1',
       email: 'contact@kfm-delice.com',
-      phone: '+224 623 21 72 40',
+      phone: '+224 623 21 72 41',
       role: 'ORG_ADMIN',
       firstName: 'KFM',
       lastName: 'DELICE',
@@ -42,23 +64,23 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
       }],
     },
   },
-  // KFM admin accounts
-  'admin@kfm-delice.com': {
-    password: 'AdminKFM2024!',
+  // Restaurant Manager account
+  'amadou@kfm-delice.com': {
+    password: 'kfm2024!',
     user: {
-      id: 'admin-user-1',
-      email: 'admin@kfm-delice.com',
-      phone: '+224 623 21 72 40',
-      role: 'SUPER_ADMIN',
-      firstName: 'Super',
-      lastName: 'Admin',
+      id: 'amadou-user-1',
+      email: 'amadou@kfm-delice.com',
+      phone: '+224 622 111 222',
+      role: 'RESTAURANT_MANAGER',
+      firstName: 'Amadou',
+      lastName: 'Diallo',
       avatar: null,
       isActive: true,
       organizations: [{
         id: 'kfm-org-1',
         name: 'KFM DELICE',
         slug: 'kfm-delice',
-        role: 'ADMIN',
+        role: 'MANAGER',
       }],
     },
   },
@@ -204,7 +226,7 @@ export async function POST(request: Request) {
 
       console.log('[AUTH] Login failed for:', identifier);
       return json(false, { 
-        error: 'Identifiants incorrects. Comptes démo disponibles: demo@kfm-delice.com (demo123), contact@kfm-delice.com (KfmDelice2024!), admin@kfm-delice.com (AdminKFM2024!)' 
+        error: 'Identifiants incorrects. Comptes démo disponibles:\n• admin@kfm-delice.com / AdminKFM2024! (SUPER_ADMIN)\n• demo@kfm-delice.com / demo123 (ORG_ADMIN)\n• contact@kfm-delice.com / KfmDelice2024! (ORG_ADMIN)\n• amadou@kfm-delice.com / kfm2024! (RESTAURANT_MANAGER)' 
       }, 401);
     }
 

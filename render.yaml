@@ -4,8 +4,11 @@ services:
     env: node
     region: oregon
     plan: free
+    branch: main
+    autoDeploy: true
     buildCommand: npm run build
     startCommand: ./scripts/start-render.sh
+    numInstances: 1
     envVars:
       - key: NODE_VERSION
         value: "20"
@@ -19,4 +22,4 @@ services:
         value: https://kfm-delice.onrender.com
       - key: NEXT_PUBLIC_APP_NAME
         value: KFM DELICE
-    healthCheckPath: /
+    healthCheckPath: /api/health

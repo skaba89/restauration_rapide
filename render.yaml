@@ -4,7 +4,7 @@ services:
     env: node
     region: oregon
     plan: free
-    branch: main
+    branch: master
     autoDeploy: true
     buildCommand: npm run build
     startCommand: ./scripts/start-render.sh

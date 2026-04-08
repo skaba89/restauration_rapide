@@ -32,6 +32,12 @@ if (isProduction) {
 }
 
 try {
+  // Clean up any previous incomplete build
+  if (fs.existsSync('.next/standalone')) {
+    console.log('\n🧹 Cleaning up previous standalone build...');
+    execSync('rm -rf .next/standalone', { stdio: 'inherit' });
+  }
+
   // Generate Prisma client
   console.log('\n📦 Generating Prisma client...');
   execSync(`npx prisma generate --schema=${targetSchemaPath}`, { stdio: 'inherit' });
@@ -39,6 +45,12 @@ try {
   // Build Next.js
   console.log('\n🏗️ Building Next.js application...');
   execSync('next build', { stdio: 'inherit' });
+
+  // Verify standalone was created
+  if (!fs.existsSync('.next/standalone/server.js')) {
+    throw new Error('Standalone server.js was not generated! Check next.config.ts has output: "standalone"');
+  }
+  console.log('✅ Standalone server.js generated successfully');
 
   // Copy static files and public folder for standalone
   console.log('\n📂 Preparing standalone server...');

@@ -51,9 +51,17 @@ import {
   UserX,
   UserCheck,
 } from 'lucide-react';
-import { useCurrency } from '@/lib/currency-context';
 import { apiGet } from '@/lib/api-client';
 import { useToast } from '@/hooks/use-toast';
+
+// Simple currency formatter for GNF (Guinean Franc)
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('fr-GN', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount) + ' GNF';
+};
 
 interface StaffMember {
   id: string;
@@ -81,7 +89,6 @@ const STATUS_CONFIG = {
 };
 
 export default function StaffPage() {
-  const { formatCurrency } = useCurrency();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);

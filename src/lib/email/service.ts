@@ -278,13 +278,32 @@ export class EmailService {
    */
   private async sendViaResend(options: SendEmailOptions): Promise<EmailSendResult> {
     try {
-      // Dynamic import for resend (optional dependency)
-      const { Resend } = await import('resend').catch(() => ({ Resend: null }));
-      
-      if (!Resend || !this.config.resend?.apiKey) {
+      // Check if Resend is configured
+      if (!this.config.resend?.apiKey) {
         return {
           success: false,
-          error: 'Resend not configured or package not installed',
+          error: 'Resend not configured',
+          provider: 'resend',
+        };
+      }
+
+      // Dynamic import for resend
+      let Resend: any;
+      try {
+        const resendModule = await import('resend');
+        Resend = resendModule.Resend;
+      } catch {
+        return {
+          success: false,
+          error: 'Resend package not installed',
+          provider: 'resend',
+        };
+      }
+
+      if (!Resend) {
+        return {
+          success: false,
+          error: 'Resend not available',
           provider: 'resend',
         };
       }

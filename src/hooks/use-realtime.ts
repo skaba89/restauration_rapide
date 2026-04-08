@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
 
 // Types
 interface OrderEvent {
@@ -58,8 +57,17 @@ interface UseRealTimeReturn {
   disconnect: () => void;
 }
 
-// Singleton socket instance
-let socketInstance: Socket | null = null;
+// Lazy load socket.io-client
+type SocketType = any;
+let socketIO: typeof import('socket.io-client') | null = null;
+let socketInstance: SocketType | null = null;
+
+async function getSocketIO() {
+  if (!socketIO) {
+    socketIO = await import('socket.io-client');
+  }
+  return socketIO;
+}
 
 export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn {
   const {
@@ -79,41 +87,49 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
   const hasJoinedRef = useRef(false);
 
   // Get or create socket
-  const getSocket = useCallback(() => {
+  const getSocket = useCallback(async () => {
     if (!socketInstance) {
-      const wsUrl = typeof window !== 'undefined' 
-        ? (window as any).__WEBSOCKET_URL__ || 'http://localhost:3003'
-        : 'http://localhost:3003';
-      
-      socketInstance = io(wsUrl, {
-        path: '/',
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 1000,
-      });
+      try {
+        const { io } = await getSocketIO();
+        const wsUrl = typeof window !== 'undefined' 
+          ? (window as any).__WEBSOCKET_URL__ || 'http://localhost:3003'
+          : 'http://localhost:3003';
+        
+        socketInstance = io(wsUrl, {
+          path: '/',
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 10,
+          reconnectionDelay: 1000,
+        });
 
-      socketInstance.on('connect', () => {
-        console.log('[RealTime] Connected:', socketInstance?.id);
-        setIsConnected(true);
-      });
+        socketInstance.on('connect', () => {
+          console.log('[RealTime] Connected:', socketInstance?.id);
+          setIsConnected(true);
+        });
 
-      socketInstance.on('disconnect', () => {
-        console.log('[RealTime] Disconnected');
-        setIsConnected(false);
-        hasJoinedRef.current = false;
-      });
+        socketInstance.on('disconnect', () => {
+          console.log('[RealTime] Disconnected');
+          setIsConnected(false);
+          hasJoinedRef.current = false;
+        });
 
-      socketInstance.on('connect_error', (error) => {
-        console.error('[RealTime] Connection error:', error.message);
-      });
+        socketInstance.on('connect_error', (error: Error) => {
+          console.error('[RealTime] Connection error:', error.message);
+        });
+      } catch (error) {
+        console.error('[RealTime] Failed to load socket.io-client:', error);
+        return null;
+      }
     }
     return socketInstance;
   }, []);
 
   // Connect and join rooms
-  const connect = useCallback(() => {
-    const socket = getSocket();
+  const connect = useCallback(async () => {
+    const socket = await getSocket();
+    
+    if (!socket) return;
     
     if (!socket.connected) {
       socket.connect();
@@ -144,69 +160,79 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
   useEffect(() => {
     if (!autoConnect) return;
 
-    connect();
+    let mounted = true;
 
-    const socket = getSocket();
-
-    // Order created
-    const handleOrderCreated = (data: OrderEvent) => {
-      console.log('[RealTime] New order:', data.orderNumber);
-      setNewOrders(prev => [data, ...prev]);
+    const setupSocket = async () => {
+      await connect();
+      const socket = await getSocket();
       
-      // Play notification sound
-      try {
-        const audio = new Audio('/sounds/notification.mp3');
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
-      } catch (e) {}
+      if (!socket || !mounted) return;
 
-      // Browser notification
-      if (typeof window !== 'undefined' && 'Notification' in window) {
-        if (Notification.permission === 'granted') {
-          new Notification(`Nouvelle commande #${data.orderNumber}`, {
-            body: `${data.customerName || 'Client'} - ${data.itemCount || 0} articles`,
-            icon: '/favicon.ico',
-          });
+      // Order created
+      const handleOrderCreated = (data: OrderEvent) => {
+        console.log('[RealTime] New order:', data.orderNumber);
+        setNewOrders(prev => [data, ...prev]);
+        
+        // Play notification sound
+        try {
+          const audio = new Audio('/sounds/notification.mp3');
+          audio.volume = 0.5;
+          audio.play().catch(() => {});
+        } catch (e) {}
+
+        // Browser notification
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+          if (Notification.permission === 'granted') {
+            new Notification(`Nouvelle commande #${data.orderNumber}`, {
+              body: `${data.customerName || 'Client'} - ${data.itemCount || 0} articles`,
+              icon: '/favicon.ico',
+            });
+          }
         }
-      }
+      };
+
+      // Order updated
+      const handleOrderUpdated = (data: OrderEvent) => {
+        console.log('[RealTime] Order updated:', data.orderNumber, data.status);
+        setOrderUpdates(prev => [data, ...prev]);
+      };
+
+      // Reservation created
+      const handleReservationCreated = (data: ReservationEvent) => {
+        console.log('[RealTime] New reservation:', data.reservationId);
+        setNewReservations(prev => [data, ...prev]);
+      };
+
+      // Delivery status update
+      const handleDeliveryUpdate = (data: DeliveryEvent) => {
+        console.log('[RealTime] Delivery update:', data.deliveryId, data.status);
+        setDeliveryUpdates(prev => [data, ...prev]);
+      };
+
+      socket.on('order:created', handleOrderCreated);
+      socket.on('order:new', handleOrderCreated);
+      socket.on('order:updated', handleOrderUpdated);
+      socket.on('order:status', handleOrderUpdated);
+      socket.on('reservation:created', handleReservationCreated);
+      socket.on('reservation:new', handleReservationCreated);
+      socket.on('delivery:status', handleDeliveryUpdate);
+      socket.on('delivery:updated', handleDeliveryUpdate);
     };
 
-    // Order updated
-    const handleOrderUpdated = (data: OrderEvent) => {
-      console.log('[RealTime] Order updated:', data.orderNumber, data.status);
-      setOrderUpdates(prev => [data, ...prev]);
-    };
-
-    // Reservation created
-    const handleReservationCreated = (data: ReservationEvent) => {
-      console.log('[RealTime] New reservation:', data.reservationId);
-      setNewReservations(prev => [data, ...prev]);
-    };
-
-    // Delivery status update
-    const handleDeliveryUpdate = (data: DeliveryEvent) => {
-      console.log('[RealTime] Delivery update:', data.deliveryId, data.status);
-      setDeliveryUpdates(prev => [data, ...prev]);
-    };
-
-    socket.on('order:created', handleOrderCreated);
-    socket.on('order:new', handleOrderCreated);
-    socket.on('order:updated', handleOrderUpdated);
-    socket.on('order:status', handleOrderUpdated);
-    socket.on('reservation:created', handleReservationCreated);
-    socket.on('reservation:new', handleReservationCreated);
-    socket.on('delivery:status', handleDeliveryUpdate);
-    socket.on('delivery:updated', handleDeliveryUpdate);
+    setupSocket();
 
     return () => {
-      socket.off('order:created', handleOrderCreated);
-      socket.off('order:new', handleOrderCreated);
-      socket.off('order:updated', handleOrderUpdated);
-      socket.off('order:status', handleOrderUpdated);
-      socket.off('reservation:created', handleReservationCreated);
-      socket.off('reservation:new', handleReservationCreated);
-      socket.off('delivery:status', handleDeliveryUpdate);
-      socket.off('delivery:updated', handleDeliveryUpdate);
+      mounted = false;
+      if (socketInstance) {
+        socketInstance.off('order:created');
+        socketInstance.off('order:new');
+        socketInstance.off('order:updated');
+        socketInstance.off('order:status');
+        socketInstance.off('reservation:created');
+        socketInstance.off('reservation:new');
+        socketInstance.off('delivery:status');
+        socketInstance.off('delivery:updated');
+      }
     };
   }, [autoConnect, connect, getSocket]);
 

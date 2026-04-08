@@ -1,0 +1,11 @@
+{
+  "version": "2.0.1",
+  "buildDate": "2026-04-09",
+  "commitHash": "auto-updated",
+  "features": [
+    "Authentication fixed",
+    "Real-time sync enabled",
+    "Guinea/GNF defaults",
+    "All buttons functional"
+  ]
+}

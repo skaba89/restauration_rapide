@@ -1,10 +1,10 @@
 // Health check API - Simple route to verify API is working
 import { NextResponse } from 'next/server';
 
-// Version unique pour forcer le rebuild - VERSION 2.0.0 - Build 2026-04-08T06:00:00Z
-const BUILD_VERSION = '2.0.0';
+// Version unique pour forcer le rebuild - VERSION 2.0.1 - Build 2026-04-09
+const BUILD_VERSION = '2.0.1';
 const BUILD_TIME = new Date().toISOString();
-const BUILD_COMMIT = '9408612';
+const BUILD_COMMIT = 'LATEST_DEPLOY';
 
 export async function GET() {
   return NextResponse.json({
@@ -13,7 +13,7 @@ export async function GET() {
     buildTime: BUILD_TIME,
     buildVersion: BUILD_VERSION,
     buildCommit: BUILD_COMMIT,
-    message: 'KFM DELICE API is running - VERSION 2.0.0',
+    message: 'KFM DELICE API is running - VERSION 2.0.1 - AUTO-DEPLOY FIX',
     version: BUILD_VERSION,
     demoAccounts: [
       { email: 'admin@kfm-delice.com', password: 'AdminKFM2024!', role: 'SUPER_ADMIN' },

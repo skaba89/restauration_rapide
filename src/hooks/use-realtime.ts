@@ -46,6 +46,7 @@ interface UseRealTimeOptions {
 
 interface UseRealTimeReturn {
   isConnected: boolean;
+  isAvailable: boolean;
   newOrders: OrderEvent[];
   orderUpdates: OrderEvent[];
   newReservations: ReservationEvent[];
@@ -57,10 +58,28 @@ interface UseRealTimeReturn {
   disconnect: () => void;
 }
 
+// Check if WebSocket should be enabled
+function shouldEnableWebSocket(): boolean {
+  // Check if a WebSocket URL is explicitly configured
+  if (process.env.NEXT_PUBLIC_WEBSOCKET_URL) {
+    return true;
+  }
+  
+  // In development, allow localhost WebSocket
+  if (process.env.NODE_ENV === 'development') {
+    return true;
+  }
+  
+  // In production without explicit WebSocket URL, disable WebSocket
+  // This prevents errors when no WebSocket server is available
+  return false;
+}
+
 // Lazy load socket.io-client
 type SocketType = any;
 let socketIO: typeof import('socket.io-client') | null = null;
 let socketInstance: SocketType | null = null;
+let connectionFailed = false;
 
 async function getSocketIO() {
   if (!socketIO) {
@@ -79,15 +98,36 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
   } = options;
 
   const [isConnected, setIsConnected] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(false);
   const [newOrders, setNewOrders] = useState<OrderEvent[]>([]);
   const [orderUpdates, setOrderUpdates] = useState<OrderEvent[]>([]);
   const [newReservations, setNewReservations] = useState<ReservationEvent[]>([]);
   const [deliveryUpdates, setDeliveryUpdates] = useState<DeliveryEvent[]>([]);
 
   const hasJoinedRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  // Check WebSocket availability on mount
+  useEffect(() => {
+    const available = shouldEnableWebSocket();
+    setIsAvailable(available);
+    
+    if (!available) {
+      console.log('[RealTime] WebSocket disabled - polling will be used for updates');
+    }
+    
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Get or create socket
   const getSocket = useCallback(async () => {
+    // Don't create socket if WebSocket is disabled or already failed
+    if (!shouldEnableWebSocket() || connectionFailed) {
+      return null;
+    }
+    
     if (!socketInstance) {
       try {
         const { io } = await getSocketIO();
@@ -100,7 +140,7 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
           if (process.env.NEXT_PUBLIC_WEBSOCKET_URL) {
             wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
           } else if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-            // In production, use the same origin (the server will handle WebSocket)
+            // In production without explicit URL, use same origin
             wsUrl = `${window.location.protocol}//${window.location.host}`;
           }
         }
@@ -109,26 +149,45 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
           path: '/api/socket',
           transports: ['polling', 'websocket'],
           reconnection: true,
-          reconnectionAttempts: 10,
-          reconnectionDelay: 1000,
+          reconnectionAttempts: 3, // Limit attempts
+          reconnectionDelay: 2000,
+          timeout: 10000,
         });
 
         socketInstance.on('connect', () => {
-          console.log('[RealTime] Connected:', socketInstance?.id);
-          setIsConnected(true);
+          if (isMountedRef.current) {
+            console.log('[RealTime] Connected');
+            setIsConnected(true);
+            setIsAvailable(true);
+          }
         });
 
         socketInstance.on('disconnect', () => {
-          console.log('[RealTime] Disconnected');
-          setIsConnected(false);
-          hasJoinedRef.current = false;
+          if (isMountedRef.current) {
+            console.log('[RealTime] Disconnected');
+            setIsConnected(false);
+            hasJoinedRef.current = false;
+          }
         });
 
         socketInstance.on('connect_error', (error: Error) => {
-          console.error('[RealTime] Connection error:', error.message);
+          // Only log once
+          if (!connectionFailed) {
+            console.log('[RealTime] WebSocket not available - real-time features disabled');
+            connectionFailed = true;
+          }
+          if (isMountedRef.current) {
+            setIsConnected(false);
+            setIsAvailable(false);
+          }
+          // Stop reconnection attempts
+          if (socketInstance) {
+            socketInstance.disconnect();
+          }
         });
       } catch (error) {
-        console.error('[RealTime] Failed to load socket.io-client:', error);
+        console.log('[RealTime] Failed to load socket.io-client');
+        connectionFailed = true;
         return null;
       }
     }
@@ -137,6 +196,11 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
 
   // Connect and join rooms
   const connect = useCallback(async () => {
+    // Don't try to connect if WebSocket is disabled
+    if (!shouldEnableWebSocket()) {
+      return;
+    }
+    
     const socket = await getSocket();
     
     if (!socket) return;
@@ -163,12 +227,13 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
       socketInstance.disconnect();
       socketInstance = null;
       hasJoinedRef.current = false;
+      connectionFailed = false;
     }
   }, []);
 
   // Set up event listeners
   useEffect(() => {
-    if (!autoConnect) return;
+    if (!autoConnect || !shouldEnableWebSocket()) return;
 
     let mounted = true;
 
@@ -180,6 +245,7 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
 
       // Order created
       const handleOrderCreated = (data: OrderEvent) => {
+        if (!mounted) return;
         console.log('[RealTime] New order:', data.orderNumber);
         setNewOrders(prev => [data, ...prev]);
         
@@ -203,18 +269,21 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
 
       // Order updated
       const handleOrderUpdated = (data: OrderEvent) => {
+        if (!mounted) return;
         console.log('[RealTime] Order updated:', data.orderNumber, data.status);
         setOrderUpdates(prev => [data, ...prev]);
       };
 
       // Reservation created
       const handleReservationCreated = (data: ReservationEvent) => {
+        if (!mounted) return;
         console.log('[RealTime] New reservation:', data.reservationId);
         setNewReservations(prev => [data, ...prev]);
       };
 
       // Delivery status update
       const handleDeliveryUpdate = (data: DeliveryEvent) => {
+        if (!mounted) return;
         console.log('[RealTime] Delivery update:', data.deliveryId, data.status);
         setDeliveryUpdates(prev => [data, ...prev]);
       };
@@ -253,6 +322,7 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
 
   return {
     isConnected,
+    isAvailable,
     newOrders,
     orderUpdates,
     newReservations,
@@ -270,7 +340,7 @@ export function useNewOrderNotifications(onNewOrder?: (order: OrderEvent) => voi
   const [newOrderCount, setNewOrderCount] = useState(0);
   const [latestOrder, setLatestOrder] = useState<OrderEvent | null>(null);
 
-  const { newOrders, isConnected, clearNewOrders } = useRealTime();
+  const { newOrders, isConnected, isAvailable, clearNewOrders } = useRealTime();
 
   useEffect(() => {
     if (newOrders.length > 0) {
@@ -288,7 +358,7 @@ export function useNewOrderNotifications(onNewOrder?: (order: OrderEvent) => voi
   return {
     newOrderCount,
     latestOrder,
-    isConnected,
+    isConnected: isConnected && isAvailable,
     acknowledge,
   };
 }

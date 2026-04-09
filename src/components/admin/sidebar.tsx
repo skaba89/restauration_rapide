@@ -76,7 +76,17 @@ const NAV_CATEGORIES: NavCategory[] = [
     items: [
       { title: 'Organisations', href: '/admin/organizations', icon: Building2 },
       { title: 'Restaurants', href: '/admin/restaurants', icon: Store },
-      { title: 'Utilisateurs', href: '/admin/users', icon: Users },
+      { title: 'Utilisateurs', href: '/admin/users', icon: UserCog },
+    ],
+  },
+  {
+    title: 'Gestion Personnel',
+    icon: UsersRound,
+    items: [
+      { title: 'Tous les utilisateurs', href: '/admin/users', icon: Users },
+      { title: 'Cuisiniers', href: '/admin/hr?role=kitchen', icon: ChefHat },
+      { title: 'Employés', href: '/admin/hr?role=staff', icon: UsersRound },
+      { title: 'Livreurs', href: '/admin/drivers', icon: Truck },
     ],
   },
   {
@@ -103,13 +113,6 @@ const NAV_CATEGORIES: NavCategory[] = [
     items: [
       { title: 'Factures', href: '/admin/invoices', icon: Receipt },
       { title: 'Dépenses', href: '/admin/expenses', icon: Wallet },
-    ],
-  },
-  {
-    title: 'Ressources Humaines',
-    icon: UsersRound,
-    items: [
-      { title: 'Personnel', href: '/admin/hr', icon: UsersRound },
     ],
   },
   {

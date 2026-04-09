@@ -400,6 +400,131 @@ export async function updateUser(id: string, data: Partial<{
   });
 }
 
+// ============================================
+// Create User (Super Admin)
+// ============================================
+
+export interface CreateUserData {
+  email: string;
+  phone?: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  role: UserRole;
+  organizationId?: string;
+  restaurantId?: string;
+  // Driver specific
+  vehicleType?: string;
+  vehiclePlate?: string;
+  // Staff specific
+  staffRole?: string;
+  department?: string;
+  hourlyRate?: number;
+}
+
+export async function createUser(data: CreateUserData) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  const bcrypt = await import('bcryptjs');
+  const hashedPassword = await bcrypt.hash(data.password, 12);
+
+  // Check if user already exists
+  const existingUser = await db.user.findUnique({
+    where: { email: data.email }
+  });
+
+  if (existingUser) {
+    throw new Error('Un utilisateur avec cet email existe déjà');
+  }
+
+  // Create user
+  const user = await db.user.create({
+    data: {
+      email: data.email,
+      phone: data.phone || null,
+      passwordHash: hashedPassword,
+      firstName: data.firstName || null,
+      lastName: data.lastName || null,
+      role: data.role,
+      isActive: true,
+      language: 'fr',
+      timezone: 'Africa/Conakry',
+    },
+  });
+
+  // Link to organization if provided
+  if (data.organizationId) {
+    await db.organizationUser.create({
+      data: {
+        organizationId: data.organizationId,
+        userId: user.id,
+        role: data.role.toLowerCase(),
+      },
+    });
+  }
+
+  // Create driver profile if role is DRIVER
+  if (data.role === 'DRIVER' && data.organizationId) {
+    await db.driver.create({
+      data: {
+        organizationId: data.organizationId,
+        userId: user.id,
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        phone: data.phone || '',
+        vehicleType: data.vehicleType || 'motorcycle',
+        vehiclePlate: data.vehiclePlate || '',
+        isActive: true,
+        isVerified: false,
+      },
+    });
+  }
+
+  // Create staff profile if role is STAFF or KITCHEN and restaurantId is provided
+  if ((data.role === 'STAFF' || data.role === 'KITCHEN') && data.restaurantId) {
+    await db.staffProfile.create({
+      data: {
+        userId: user.id,
+        restaurantId: data.restaurantId,
+        role: data.staffRole || (data.role === 'KITCHEN' ? 'cook' : 'staff'),
+        department: data.department || null,
+        hourlyRate: data.hourlyRate || null,
+        isActive: true,
+      },
+    });
+  }
+
+  return user;
+}
+
+export async function deleteUser(id: string) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  // Soft delete by setting isActive to false
+  return db.user.update({
+    where: { id },
+    data: { isActive: false },
+  });
+}
+
+export async function resetUserPassword(id: string, newPassword: string) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  const bcrypt = await import('bcryptjs');
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+  return db.user.update({
+    where: { id },
+    data: { passwordHash: hashedPassword },
+  });
+}
+
 export async function fetchUserById(id: string) {
   return db.user.findUnique({
     where: { id },

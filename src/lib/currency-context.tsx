@@ -17,7 +17,7 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-// Default currency for Guinea (GNF)
+// Default currency for Guinea (GNF) - Used for both SSR and initial client render
 const DEFAULT_CURRENCY: Currency = {
   code: 'GNF',
   symbol: 'GNF',
@@ -43,19 +43,24 @@ function getCurrencyFromCode(code: string): Currency {
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
+  // Always start with default currency for consistent SSR/initial client render
   const [currency, setCurrencyState] = useState<Currency>(DEFAULT_CURRENCY);
   const [isLoading, setIsLoading] = useState(true);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Mark as hydrated after first render (client-side only)
   useEffect(() => {
-    setIsHydrated(true);
+    // Use requestAnimationFrame to ensure hydration is complete
+    const raf = requestAnimationFrame(() => {
+      setIsHydrated(true);
+    });
+    return () => cancelAnimationFrame(raf);
   }, []);
 
-  // Load currency from settings on mount (client-side only)
+  // Load currency from settings after hydration (client-side only)
   const loadCurrency = useCallback(async () => {
-    // Only run on client
-    if (typeof window === 'undefined') return;
+    // Only run on client after hydration
+    if (typeof window === 'undefined' || !isHydrated) return;
     
     try {
       // First try the public settings API (works for both authenticated and public pages)
@@ -77,7 +82,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
-      console.log('Could not load currency from public API');
+      // Silent fail - will use default
     }
 
     // Fallback to localStorage
@@ -105,12 +110,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     }
 
     // Use default currency
-    setCurrencyState(DEFAULT_CURRENCY);
     setIsLoading(false);
-  }, []);
+  }, [isHydrated]);
 
   useEffect(() => {
-    // Only load currency after hydration
+    // Only load currency after hydration is complete
     if (isHydrated) {
       loadCurrency();
     }
@@ -152,7 +156,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         }),
       });
     } catch (error) {
-      console.log('Could not save currency to API:', error);
+      // Silent fail
     }
   }, []);
 

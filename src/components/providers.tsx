@@ -1,6 +1,6 @@
 // ============================================
 // RESTAURANT OS - Global Providers
-// React Query + Theme + Toast + Error Boundary + Currency
+// React Query + Theme + Toast + Error Boundary + Currency + Tooltip
 // ============================================
 
 'use client';
@@ -12,6 +12,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { SkipLink } from '@/lib/accessibility';
 import { CurrencyProvider } from '@/lib/currency-context';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { useState } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -50,12 +51,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
           storageKey="restaurant-os-theme"
           nonce={undefined}
         >
-          <CurrencyProvider>
-            {/* Skip link for accessibility */}
-            <SkipLink />
-            {children}
-            <Toaster />
-          </CurrencyProvider>
+          <TooltipProvider delayDuration={0}>
+            <CurrencyProvider>
+              {/* Skip link for accessibility */}
+              <SkipLink />
+              {children}
+              <Toaster />
+            </CurrencyProvider>
+          </TooltipProvider>
         </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

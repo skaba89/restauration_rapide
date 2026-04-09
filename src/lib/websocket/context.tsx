@@ -1,21 +1,20 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
 import {
   ServerToClientEvents,
   ClientToServerEvents,
-  SocketRooms,
 } from './types';
 
 // Socket type
-type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+type TypedSocket = any;
 
 // Context interface
 interface SocketContextValue {
   socket: TypedSocket | null;
   isConnected: boolean;
   error: Error | null;
+  isAvailable: boolean;
   
   // Connection management
   connect: (token: string) => void;
@@ -50,8 +49,25 @@ interface SocketContextValue {
 // Create context
 const SocketContext = createContext<SocketContextValue | null>(null);
 
+// Check if WebSocket is available (has valid URL configured)
+const isWebSocketAvailable = (): boolean => {
+  const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+  
+  // If no URL is configured, WebSocket is not available
+  if (!socketUrl) {
+    return false;
+  }
+  
+  // If URL is localhost and we're in production, WebSocket is not available
+  if (process.env.NODE_ENV === 'production' && socketUrl.includes('localhost')) {
+    return false;
+  }
+  
+  return true;
+};
+
 // Socket URL from environment or default
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || '';
 
 // Provider props
 interface SocketProviderProps {
@@ -63,127 +79,175 @@ interface SocketProviderProps {
 /**
  * Socket Provider Component
  * Wrap your app with this to enable real-time features
+ * 
+ * Note: WebSocket is optional and will be disabled if:
+ * - NEXT_PUBLIC_SOCKET_URL is not set
+ * - The socket server is not available
  */
 export function SocketProvider({ children, autoConnect = false, token }: SocketProviderProps) {
   const [socket, setSocket] = useState<TypedSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [isAvailable, setIsAvailable] = useState(false);
   const subscriptionsRef = useRef<Map<string, () => void>>(new Map());
+  const socketRef = useRef<TypedSocket | null>(null);
+  const connectionAttemptedRef = useRef(false);
+
+  // Check WebSocket availability on mount
+  useEffect(() => {
+    const available = isWebSocketAvailable();
+    setIsAvailable(available);
+    
+    if (!available) {
+      console.log('[Socket] WebSocket not configured - real-time features disabled');
+    }
+  }, []);
 
   // Connect to socket server
-  const connect = useCallback((authToken: string) => {
-    if (socket?.connected) {
+  const connect = useCallback(async (authToken: string) => {
+    // Don't connect if not available
+    if (!isWebSocketAvailable()) {
+      console.log('[Socket] WebSocket not available, skipping connection');
+      return;
+    }
+    
+    // Don't reconnect if already connected or attempting
+    if (socketRef.current?.connected || connectionAttemptedRef.current) {
       return;
     }
 
-    const newSocket = io(SOCKET_URL, {
-      auth: { token: authToken },
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-    }) as TypedSocket;
+    connectionAttemptedRef.current = true;
 
-    newSocket.on('connect', () => {
-      setIsConnected(true);
-      setError(null);
-      console.log('[Socket] Connected:', newSocket.id);
-    });
+    try {
+      // Dynamic import of socket.io-client
+      const { io } = await import('socket.io-client');
+      
+      const newSocket = io(SOCKET_URL, {
+        auth: { token: authToken },
+        transports: ['polling', 'websocket'], // Start with polling, upgrade to websocket
+        reconnection: true,
+        reconnectionAttempts: 3, // Limit reconnection attempts
+        reconnectionDelay: 2000,
+        reconnectionDelayMax: 5000,
+        timeout: 10000,
+      });
 
-    newSocket.on('disconnect', (reason) => {
-      setIsConnected(false);
-      console.log('[Socket] Disconnected:', reason);
-    });
+      newSocket.on('connect', () => {
+        setIsConnected(true);
+        setError(null);
+        setIsAvailable(true);
+        console.log('[Socket] Connected:', newSocket.id);
+      });
 
-    newSocket.on('connect_error', (err) => {
-      setError(err);
-      console.error('[Socket] Connection error:', err.message);
-    });
+      newSocket.on('disconnect', (reason: string) => {
+        setIsConnected(false);
+        console.log('[Socket] Disconnected:', reason);
+      });
 
-    setSocket(newSocket);
-  }, [socket]);
+      newSocket.on('connect_error', (err: Error) => {
+        setIsConnected(false);
+        // Only log once, not on every reconnection attempt
+        if (connectionAttemptedRef.current) {
+          console.log('[Socket] Connection failed - real-time features unavailable');
+          setError(err);
+          // Stop trying after first failure in production
+          if (process.env.NODE_ENV === 'production') {
+            newSocket.disconnect();
+            setIsAvailable(false);
+          }
+        }
+      });
+
+      socketRef.current = newSocket;
+      setSocket(newSocket);
+    } catch (err) {
+      console.log('[Socket] Failed to load socket.io-client - real-time features disabled');
+      setIsAvailable(false);
+    }
+  }, []);
 
   // Disconnect from socket server
   const disconnect = useCallback(() => {
-    if (socket) {
-      socket.disconnect();
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
       setSocket(null);
       setIsConnected(false);
       subscriptionsRef.current.clear();
+      connectionAttemptedRef.current = false;
     }
-  }, [socket]);
+  }, []);
 
   // Room management functions
   const joinRestaurant = useCallback((restaurantId: string) => {
-    socket?.emit('join:restaurant' as never, restaurantId);
-  }, [socket]);
+    socketRef.current?.emit('join:restaurant', restaurantId);
+  }, []);
 
   const leaveRestaurant = useCallback((restaurantId: string) => {
-    socket?.emit('leave:restaurant' as never, restaurantId);
-  }, [socket]);
+    socketRef.current?.emit('leave:restaurant', restaurantId);
+  }, []);
 
   const joinOrganization = useCallback((organizationId: string) => {
-    socket?.emit('join:organization' as never, organizationId);
-  }, [socket]);
+    socketRef.current?.emit('join:organization', organizationId);
+  }, []);
 
   const leaveOrganization = useCallback((organizationId: string) => {
-    socket?.emit('leave:organization' as never, organizationId);
-  }, [socket]);
+    socketRef.current?.emit('leave:organization', organizationId);
+  }, []);
 
   const joinKitchen = useCallback((restaurantId: string) => {
-    socket?.emit('join:kitchen' as never, restaurantId);
-  }, [socket]);
+    socketRef.current?.emit('join:kitchen', restaurantId);
+  }, []);
 
   const joinDelivery = useCallback((organizationId: string) => {
-    socket?.emit('join:delivery' as never, organizationId);
-  }, [socket]);
+    socketRef.current?.emit('join:delivery', organizationId);
+  }, []);
 
   // Driver event functions
   const updateDriverLocation = useCallback((lat: number, lng: number, accuracy?: number, batteryLevel?: number) => {
-    socket?.emit('driver:location' as never, { lat, lng, accuracy, batteryLevel });
-  }, [socket]);
+    socketRef.current?.emit('driver:location', { lat, lng, accuracy, batteryLevel });
+  }, []);
 
   const updateDriverStatus = useCallback((status: 'online' | 'offline' | 'busy') => {
-    socket?.emit('driver:status' as never, { status, isAvailable: status === 'online' });
-  }, [socket]);
+    socketRef.current?.emit('driver:status', { status, isAvailable: status === 'online' });
+  }, []);
 
   // Order event functions
   const acceptOrder = useCallback((orderId: string) => {
-    socket?.emit('order:accept' as never, orderId);
-  }, [socket]);
+    socketRef.current?.emit('order:accept', orderId);
+  }, []);
 
   const rejectOrder = useCallback((orderId: string, reason: string) => {
-    socket?.emit('order:reject' as never, { orderId, reason });
-  }, [socket]);
+    socketRef.current?.emit('order:reject', { orderId, reason });
+  }, []);
 
   // Table event functions
   const updateTableStatus = useCallback((tableId: string, status: string, partySize?: number) => {
-    socket?.emit('table:status' as never, { tableId, status, partySize });
-  }, [socket]);
+    socketRef.current?.emit('table:status', { tableId, status, partySize });
+  }, []);
 
   // Generic event subscription
   const subscribe = useCallback(<K extends keyof ServerToClientEvents>(
     event: K,
     callback: ServerToClientEvents[K]
   ) => {
-    if (!socket) {
+    if (!socketRef.current) {
       return () => {};
     }
 
-    socket.on(event, callback);
+    socketRef.current.on(event, callback as any);
     
     const unsubscribe = () => {
-      socket.off(event, callback);
+      socketRef.current?.off(event, callback as any);
     };
 
     subscriptionsRef.current.set(event as string, unsubscribe);
     return unsubscribe;
-  }, [socket]);
+  }, []);
 
   // Auto-connect if token provided
   useEffect(() => {
-    if (autoConnect && token) {
+    if (autoConnect && token && isWebSocketAvailable()) {
       connect(token);
     }
 
@@ -197,6 +261,7 @@ export function SocketProvider({ children, autoConnect = false, token }: SocketP
     socket,
     isConnected,
     error,
+    isAvailable,
     connect,
     disconnect,
     joinRestaurant,
@@ -233,13 +298,15 @@ export function useSocket() {
 
 /**
  * Hook for order events in dashboard
+ * Falls back gracefully when WebSocket is not available
  */
 export function useOrderEvents(restaurantId?: string) {
-  const { socket, isConnected, subscribe, joinRestaurant, leaveRestaurant } = useSocket();
+  const { socket, isConnected, isAvailable, subscribe, joinRestaurant, leaveRestaurant } = useSocket();
   const [newOrders, setNewOrders] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!isConnected || !restaurantId) return;
+    // Don't do anything if WebSocket is not available
+    if (!isAvailable || !isConnected || !restaurantId) return;
 
     joinRestaurant(restaurantId);
 
@@ -248,7 +315,6 @@ export function useOrderEvents(restaurantId?: string) {
     });
 
     const unsubStatus = subscribe('order:status', (data: any) => {
-      // Handle status updates
       console.log('Order status update:', data);
     });
 
@@ -257,20 +323,20 @@ export function useOrderEvents(restaurantId?: string) {
       unsubStatus();
       leaveRestaurant(restaurantId);
     };
-  }, [isConnected, restaurantId, subscribe, joinRestaurant, leaveRestaurant]);
+  }, [isAvailable, isConnected, restaurantId, subscribe, joinRestaurant, leaveRestaurant]);
 
-  return { newOrders, isConnected };
+  return { newOrders, isConnected: isConnected && isAvailable };
 }
 
 /**
  * Hook for kitchen display
  */
 export function useKitchenEvents(restaurantId: string) {
-  const { isConnected, subscribe, joinKitchen } = useSocket();
+  const { isConnected, isAvailable, subscribe, joinKitchen } = useSocket();
   const [pendingOrders, setPendingOrders] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isAvailable || !isConnected) return;
 
     joinKitchen(restaurantId);
 
@@ -296,21 +362,21 @@ export function useKitchenEvents(restaurantId: string) {
       unsubOrder();
       unsubReady();
     };
-  }, [isConnected, restaurantId, subscribe, joinKitchen]);
+  }, [isAvailable, isConnected, restaurantId, subscribe, joinKitchen]);
 
-  return { pendingOrders, isConnected };
+  return { pendingOrders, isConnected: isConnected && isAvailable };
 }
 
 /**
  * Hook for delivery tracking
  */
 export function useDeliveryTracking(deliveryId: string) {
-  const { isConnected, subscribe } = useSocket();
+  const { isConnected, isAvailable, subscribe } = useSocket();
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isAvailable || !isConnected) return;
 
     const unsubLocation = subscribe('delivery:location', (data: any) => {
       if (data.deliveryId === deliveryId) {
@@ -328,20 +394,20 @@ export function useDeliveryTracking(deliveryId: string) {
       unsubLocation();
       unsubStatus();
     };
-  }, [isConnected, deliveryId, subscribe]);
+  }, [isAvailable, isConnected, deliveryId, subscribe]);
 
-  return { location, status, isConnected };
+  return { location, status, isConnected: isConnected && isAvailable };
 }
 
 /**
  * Hook for driver updates
  */
 export function useDriverUpdates() {
-  const { isConnected, subscribe, updateDriverLocation, updateDriverStatus } = useSocket();
+  const { isConnected, isAvailable, subscribe, updateDriverLocation, updateDriverStatus } = useSocket();
   const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isAvailable || !isConnected) return;
 
     const unsubAssigned = subscribe('delivery:assigned', (data: any) => {
       setOrders((prev) => [...prev, data]);
@@ -357,13 +423,13 @@ export function useDriverUpdates() {
       unsubAssigned();
       unsubStatus();
     };
-  }, [isConnected, subscribe]);
+  }, [isAvailable, isConnected, subscribe]);
 
   return {
     orders,
     updateLocation: updateDriverLocation,
     updateStatus: updateDriverStatus,
-    isConnected,
+    isConnected: isConnected && isAvailable,
   };
 }
 

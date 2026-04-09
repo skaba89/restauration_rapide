@@ -6,7 +6,6 @@ const globalForPrisma = globalThis as unknown as {
 
 // Track database connection status
 let dbConnectionStatus: 'unknown' | 'connected' | 'error' = 'unknown'
-let connectionCheckPromise: Promise<boolean> | null = null
 let dbInstance: PrismaClient | null = null
 
 // Create Prisma client with error handling
@@ -20,8 +19,7 @@ function createPrismaClient(): PrismaClient | null {
 
   try {
     const client = new PrismaClient({
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-      // Add connection timeout for production
+      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
       datasources: {
         db: {
           url: process.env.DATABASE_URL,
@@ -29,10 +27,9 @@ function createPrismaClient(): PrismaClient | null {
       },
     })
     
-    // Test connection asynchronously (non-blocking)
-    testConnection(client).catch(err => {
-      console.error('Database connection test failed:', err)
-    })
+    // Don't test connection on startup - let it fail lazily
+    // This prevents crashes if DB is unavailable at startup
+    dbConnectionStatus = 'unknown'
     
     return client
   } catch (error) {
@@ -40,29 +37,6 @@ function createPrismaClient(): PrismaClient | null {
     dbConnectionStatus = 'error'
     return null
   }
-}
-
-// Test database connection
-async function testConnection(client: PrismaClient) {
-  if (connectionCheckPromise) {
-    return connectionCheckPromise
-  }
-  
-  connectionCheckPromise = (async () => {
-    try {
-      // Simple query to test connection
-      await client.$queryRaw`SELECT 1`
-      dbConnectionStatus = 'connected'
-      console.log('✅ Database connection established')
-      return true
-    } catch (error) {
-      console.error('❌ Database connection failed:', error instanceof Error ? error.message : 'Unknown error')
-      dbConnectionStatus = 'error'
-      return false
-    }
-  })()
-  
-  return connectionCheckPromise
 }
 
 // Export db - will be null if Prisma client creation fails
@@ -82,8 +56,25 @@ export function getDatabaseStatus(): 'unknown' | 'connected' | 'error' {
   return dbConnectionStatus
 }
 
-// Helper to reset connection status (useful after fixes)
-export function resetConnectionStatus(): void {
-  dbConnectionStatus = 'unknown'
-  connectionCheckPromise = null
+// Helper to mark database as unavailable (called when DB errors occur)
+export function markDatabaseUnavailable(): void {
+  dbConnectionStatus = 'error'
+}
+
+// Test database connection (can be called explicitly)
+export async function testDatabaseConnection(): Promise<boolean> {
+  if (!db) {
+    return false
+  }
+  
+  try {
+    await db.$queryRaw`SELECT 1`
+    dbConnectionStatus = 'connected'
+    console.log('✅ Database connection established')
+    return true
+  } catch (error) {
+    console.error('❌ Database connection failed:', error instanceof Error ? error.message : 'Unknown error')
+    dbConnectionStatus = 'error'
+    return false
+  }
 }

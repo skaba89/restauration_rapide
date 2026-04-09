@@ -2,6 +2,38 @@
 import { NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 
+// Helper to ensure reference data exists
+async function ensureReferenceData() {
+  try {
+    // Check if GNF currency exists
+    let gnfCurrency = await db.currency.findUnique({ where: { code: 'GNF' } });
+    if (!gnfCurrency) {
+      gnfCurrency = await db.currency.create({
+        data: { code: 'GNF', name: 'Franc Guinéen', symbol: 'GNF', decimalPlaces: 0 },
+      });
+    }
+
+    // Check if Guinea country exists
+    let gnCountry = await db.country.findUnique({ where: { code: 'GN' } });
+    if (!gnCountry) {
+      gnCountry = await db.country.create({
+        data: {
+          code: 'GN',
+          name: 'Guinée',
+          dialCode: '+224',
+          currencyId: gnfCurrency.id,
+          isActive: true,
+        },
+      });
+    }
+
+    return { gnfCurrency, gnCountry };
+  } catch (error) {
+    console.error('Error ensuring reference data:', error);
+    return { gnfCurrency: null, gnCountry: null };
+  }
+}
+
 // GET - Fetch restaurant settings
 export async function GET() {
   try {
@@ -11,6 +43,9 @@ export async function GET() {
         error: 'Base de données non disponible',
       }, { status: 503 });
     }
+
+    // Ensure reference data exists
+    const { gnfCurrency, gnCountry } = await ensureReferenceData();
 
     // Try to find existing restaurant
     let restaurant = await db.restaurant.findFirst({

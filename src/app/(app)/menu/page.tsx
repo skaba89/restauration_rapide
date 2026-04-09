@@ -31,6 +31,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/lib/currency-context';
 import {
   Search,
   Plus,
@@ -63,12 +64,13 @@ const DEMO_CATEGORIES = [
   { id: '4', name: 'Desserts', icon: Cake, itemCount: 5, active: true },
 ];
 
+// Demo menu items with prices in base currency (will be converted)
 const DEMO_MENU_ITEMS = [
   {
     id: '1',
     name: 'Attieké Poisson Grillé',
     category: 'Plats Principaux',
-    price: 3500,
+    price: 8000,
     description: 'Attieké traditionnel avec poisson grillé et sauce tomate',
     image: null,
     isAvailable: true,
@@ -81,7 +83,7 @@ const DEMO_MENU_ITEMS = [
     id: '2',
     name: 'Kedjenou de Poulet',
     category: 'Plats Principaux',
-    price: 4500,
+    price: 7000,
     description: 'Poulet braisé aux légumes, cuit à l\'étouffée',
     image: null,
     isAvailable: true,
@@ -94,7 +96,7 @@ const DEMO_MENU_ITEMS = [
     id: '3',
     name: 'Thiéboudienne',
     category: 'Plats Principaux',
-    price: 3500,
+    price: 7000,
     description: 'Riz rouge au poisson et légumes, spécialité sénégalaise',
     image: null,
     isAvailable: true,
@@ -107,7 +109,7 @@ const DEMO_MENU_ITEMS = [
     id: '4',
     name: 'Jus de Bissap',
     category: 'Boissons',
-    price: 750,
+    price: 4000,
     description: 'Jus naturel de fleur d\'hibiscus rafraîchissant',
     image: null,
     isAvailable: true,
@@ -120,7 +122,7 @@ const DEMO_MENU_ITEMS = [
     id: '5',
     name: 'Alloco Sauce Graine',
     category: 'Plats Principaux',
-    price: 2500,
+    price: 5000,
     description: 'Bananes plantain frites avec sauce graine aux légumes',
     image: null,
     isAvailable: false,
@@ -133,7 +135,7 @@ const DEMO_MENU_ITEMS = [
     id: '6',
     name: 'Riz Gras',
     category: 'Accompagnements',
-    price: 1500,
+    price: 5000,
     description: 'Riz aux tomates et épices parfumé',
     image: null,
     isAvailable: true,
@@ -146,7 +148,7 @@ const DEMO_MENU_ITEMS = [
     id: '7',
     name: 'Foutou Banane',
     category: 'Accompagnements',
-    price: 1200,
+    price: 6000,
     description: 'Pâte de banane plantain traditionnelle',
     image: null,
     isAvailable: true,
@@ -159,7 +161,7 @@ const DEMO_MENU_ITEMS = [
     id: '8',
     name: 'Ignan Pimenté',
     category: 'Accompagnements',
-    price: 500,
+    price: 2000,
     description: 'Sauce pimentée maison',
     image: null,
     isAvailable: true,
@@ -170,10 +172,9 @@ const DEMO_MENU_ITEMS = [
   },
 ];
 
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
-
 export default function MenuPage() {
   const { toast } = useToast();
+  const { formatCurrency } = useCurrency();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -635,7 +636,7 @@ export default function MenuPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Prix (FCFA) *</Label>
+              <Label htmlFor="price">Prix ({formatCurrency(0).replace('0', '').trim()}) *</Label>
               <Input 
                 id="price" 
                 type="number" 
@@ -779,7 +780,7 @@ export default function MenuPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-price">Prix (FCFA) *</Label>
+                <Label htmlFor="edit-price">Prix ({formatCurrency(0).replace('0', '').trim()}) *</Label>
                 <Input 
                   id="edit-price" 
                   type="number" 

@@ -91,13 +91,23 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
     if (!socketInstance) {
       try {
         const { io } = await getSocketIO();
-        const wsUrl = typeof window !== 'undefined' 
-          ? (window as any).__WEBSOCKET_URL__ || 'http://localhost:3003'
-          : 'http://localhost:3003';
+        // In production, use the same host as the website or the WEBSOCKET_URL env var
+        // In development, use localhost:3003
+        let wsUrl = 'http://localhost:3003';
+        
+        if (typeof window !== 'undefined') {
+          // Check for environment variable first
+          if (process.env.NEXT_PUBLIC_WEBSOCKET_URL) {
+            wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
+          } else if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            // In production, use the same origin (the server will handle WebSocket)
+            wsUrl = `${window.location.protocol}//${window.location.host}`;
+          }
+        }
         
         socketInstance = io(wsUrl, {
-          path: '/',
-          transports: ['websocket', 'polling'],
+          path: '/api/socket',
+          transports: ['polling', 'websocket'],
           reconnection: true,
           reconnectionAttempts: 10,
           reconnectionDelay: 1000,

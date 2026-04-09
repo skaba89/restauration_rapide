@@ -7,7 +7,18 @@ let socket: SocketType | null = null;
 let socketIO: typeof import('socket.io-client') | null = null;
 
 // WebSocket server URL
-const WS_URL = process.env.WEBSOCKET_URL || 'http://localhost:3003';
+// In production, use the same host or the WEBSOCKET_URL env var
+const getWsUrl = () => {
+  if (process.env.WEBSOCKET_URL) {
+    return process.env.WEBSOCKET_URL;
+  }
+  // In production on Render, use the same host
+  if (process.env.RENDER || process.env.NODE_ENV === 'production') {
+    return process.env.RENDER_EXTERNAL_URL || 'https://kfm-delice.onrender.com';
+  }
+  return 'http://localhost:3003';
+};
+const WS_URL = getWsUrl();
 
 // Lazy load socket.io-client
 async function getSocketIO() {

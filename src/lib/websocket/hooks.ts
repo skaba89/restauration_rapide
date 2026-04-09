@@ -193,7 +193,7 @@ export function useOrderNotifications(restaurantId?: string) {
       if (typeof window !== 'undefined' && 'Notification' in window) {
         if (Notification.permission === 'granted') {
           new Notification(`Nouvelle commande #${data.orderNumber}`, {
-            body: `${data.customerName} - ${data.itemCount} articles - ${data.total} FCFA`,
+            body: `${data.customerName} - ${data.itemCount} articles`,
             icon: '/favicon.ico',
             tag: data.orderId,
           });

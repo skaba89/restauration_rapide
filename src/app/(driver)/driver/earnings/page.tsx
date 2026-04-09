@@ -16,6 +16,8 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 
+import { useCurrencySafe } from '@/lib/currency-context';
+
 const EARNINGS_DATA = {
   today: {
     amount: 12500,
@@ -57,8 +59,7 @@ const WEEKLY_DATA = [
 
 export default function DriverEarningsPage() {
   const [period, setPeriod] = useState<'today' | 'week' | 'month'>('today');
-
-  const formatCurrency = (amount: number) => `${amount.toLocaleString()} FCFA`;
+  const { formatCurrency } = useCurrencySafe();
 
   const data = EARNINGS_DATA[period];
 

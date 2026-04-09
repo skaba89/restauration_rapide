@@ -28,6 +28,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const DRIVER_DATA = {
   firstName: 'Amadou',
@@ -52,6 +53,7 @@ export default function DriverProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [driverData, setDriverData] = useState(DRIVER_DATA);
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
 
   const handleSave = () => {
     setIsEditing(false);
@@ -129,8 +131,7 @@ export default function DriverProfilePage() {
         <Card>
           <CardContent className="p-4 text-center">
             <DollarSign className="h-8 w-8 mx-auto text-green-500 mb-2" />
-            <p className="text-2xl font-bold">{(driverData.earnings / 1000).toFixed(0)}k</p>
-            <p className="text-sm text-muted-foreground">FCFA gagnés</p>
+            <p className="text-2xl font-bold">{formatCurrency(driverData.earnings)}</p>
           </CardContent>
         </Card>
       </div>

@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const PENDING_ORDERS = [
   {
@@ -82,8 +83,7 @@ export default function DriverOrdersPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-
-  const formatCurrency = (amount: number) => `${amount.toLocaleString()} FCFA`;
+  const { formatCurrency } = useCurrencySafe();
 
   const handleAcceptOrder = (order: typeof PENDING_ORDERS[0]) => {
     setSelectedOrder(order);

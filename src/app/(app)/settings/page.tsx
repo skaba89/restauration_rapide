@@ -7,13 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -24,27 +17,13 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useCurrency } from '@/lib/currency-context';
-import { CURRENCIES } from '@/lib/currency';
-
-// Currency type from lib/currency
-type CurrencyType = {
-  code: string;
-  name: string;
-  symbol: string;
-  decimalPlaces: number;
-};
 import {
   Settings,
   Store,
   CreditCard,
-  Globe,
   Bell,
-  Shield,
-  Palette,
   ChefHat,
   Truck,
-  Users,
   DollarSign,
   Save,
   Camera,
@@ -60,36 +39,8 @@ import {
   Loader2,
 } from 'lucide-react';
 
-// African countries with currencies
-const AFRICAN_COUNTRIES = [
-  { code: 'CI', name: 'Côte d\'Ivoire', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'SN', name: 'Sénégal', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'ML', name: 'Mali', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'BF', name: 'Burkina Faso', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'GN', name: 'Guinée', currency: 'GNF', currencyName: 'Franc Guinéen' },
-  { code: 'CM', name: 'Cameroun', currency: 'XAF', currencyName: 'Franc CFA' },
-  { code: 'TG', name: 'Togo', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'BJ', name: 'Bénin', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'NE', name: 'Niger', currency: 'XOF', currencyName: 'Franc CFA' },
-  { code: 'CD', name: 'RD Congo', currency: 'CDF', currencyName: 'Franc Congolais' },
-  { code: 'MG', name: 'Madagascar', currency: 'MGA', currencyName: 'Ariary' },
-  { code: 'KE', name: 'Kenya', currency: 'KES', currencyName: 'Shilling Kényan' },
-  { code: 'NG', name: 'Nigeria', currency: 'NGN', currencyName: 'Naira' },
-  { code: 'GH', name: 'Ghana', currency: 'GHS', currencyName: 'Cedi' },
-];
-
-// Mobile money providers by country
-const MOBILE_MONEY_PROVIDERS: Record<string, string[]> = {
-  CI: ['Orange Money', 'MTN MoMo', 'Wave', 'Moov Money'],
-  SN: ['Orange Money', 'Wave', 'Free Money'],
-  GN: ['Orange Money', 'MTN MoMo', 'Cellcom'],
-  ML: ['Orange Money', 'Moov Money'],
-  BF: ['Orange Money', 'Moov Money'],
-  CM: ['Orange Money', 'MTN MoMo'],
-  KE: ['M-Pesa', 'Airtel Money'],
-  GH: ['MTN MoMo', 'Vodafone Cash', 'AirtelTigo Money'],
-  NG: ['Paga', 'OPay', 'PalmPay'],
-};
+// Mobile money providers for Guinea
+const MOBILE_MONEY_PROVIDERS = ['Orange Money', 'MTN MoMo', 'Cellcom'];
 
 // Demo sites data
 const DEMO_SITES = [
@@ -117,20 +68,18 @@ const DEMO_SITES = [
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { currency, setCurrency, currencyCode, refreshCurrency } = useCurrency();
-  const [selectedCountry, setSelectedCountry] = useState('GN'); // Default to Guinea
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const logoInputRef = useRef<HTMLInputElement>(null);
   
-  // Restaurant settings - initialize with default currency from context
+  // Restaurant settings - fixed to GNF currency
   const [restaurantSettings, setRestaurantSettings] = useState({
     name: 'KFM DELICE',
     phone: '+224 62 00 00 00',
     email: 'contact@kfm-delice.com',
     address: 'Kaloum, Conakry',
     city: 'Conakry',
-    currency: currencyCode || 'GNF',
+    currency: 'GNF',
     country: 'GN',
     logo: null as string | null,
   });
@@ -152,11 +101,8 @@ export default function SettingsPage() {
               email: data.email || prev.email,
               address: data.address || prev.address,
               city: data.city || prev.city,
-              currency: data.currency || prev.currency,
-              country: data.country || prev.country,
               logo: data.logo || prev.logo,
             }));
-            setSelectedCountry(data.country || 'GN');
           }
         }
       } catch (error) {
@@ -247,20 +193,6 @@ export default function SettingsPage() {
   const saveGeneralSettings = async () => {
     setIsSaving(true);
     try {
-      // Find the currency object from the code
-      const selectedCurrencyObj = Object.values(CURRENCIES).find(c => c.code === restaurantSettings.currency);
-      const currencyData: CurrencyType = selectedCurrencyObj ? {
-        code: selectedCurrencyObj.code,
-        name: selectedCurrencyObj.name,
-        symbol: selectedCurrencyObj.symbol,
-        decimalPlaces: selectedCurrencyObj.decimalPlaces,
-      } : {
-        code: restaurantSettings.currency,
-        symbol: restaurantSettings.currency,
-        name: restaurantSettings.currency,
-        decimalPlaces: 0,
-      };
-
       // Get organization ID from public settings
       let organizationId = null;
       try {
@@ -288,23 +220,14 @@ export default function SettingsPage() {
               address: restaurantSettings.address,
               city: restaurantSettings.city,
             },
-            config: {
-              currency: restaurantSettings.currency,
-            }
           }
         }),
       });
 
       if (response.ok) {
-        // Update currency context (this also saves to localStorage)
-        setCurrency(currencyData);
-        
-        // Refresh currency from server
-        await refreshCurrency();
-
         toast({
           title: 'Paramètres enregistrés',
-          description: 'Les informations du restaurant et la devise ont été mises à jour avec succès. La devise est maintenant appliquée à toutes les pages.',
+          description: 'Les informations du restaurant ont été mises à jour avec succès.',
         });
       } else {
         throw new Error('Failed to save settings');
@@ -554,59 +477,20 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                Localisation & Devise
+                <DollarSign className="h-5 w-5" />
+                Devise
               </CardTitle>
-              <CardDescription>Configurez votre pays et votre devise</CardDescription>
+              <CardDescription>Devise utilisée pour les transactions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Pays</Label>
-                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AFRICAN_COUNTRIES.map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
-                          {country.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="flex items-center gap-4 p-4 rounded-lg border bg-orange-50 dark:bg-orange-950/20">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white">
+                  <DollarSign className="h-6 w-6" />
                 </div>
-                <div className="space-y-2">
-                  <Label>Devise</Label>
-                  <Select
-                    value={restaurantSettings.currency}
-                    onValueChange={(v) => setRestaurantSettings({ ...restaurantSettings, currency: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from(new Set(AFRICAN_COUNTRIES.map(c => c.currency))).map((currency) => {
-                        const country = AFRICAN_COUNTRIES.find(c => c.currency === currency);
-                        return (
-                          <SelectItem key={currency} value={currency}>
-                            {currency} - {country?.currencyName}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+                <div>
+                  <p className="font-medium text-lg">GNF - Franc Guinéen</p>
+                  <p className="text-sm text-muted-foreground">Guinée (GN)</p>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-4">
-                <Badge variant="secondary" className="gap-1">
-                  <DollarSign className="h-3 w-3" />
-                  Multi-devises supporté
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <Globe className="h-3 w-3" />
-                  {AFRICAN_COUNTRIES.length} pays africains
-                </Badge>
               </div>
             </CardContent>
           </Card>
@@ -715,7 +599,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Minimum de commande (FCFA)</Label>
+                  <Label>Minimum de commande (GNF)</Label>
                   <Input
                     type="number"
                     value={orderSettings.minOrder}
@@ -746,7 +630,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground mb-4">
-                Moyens de paiement disponibles en {AFRICAN_COUNTRIES.find(c => c.code === selectedCountry)?.name}:
+                Moyens de paiement disponibles en Guinée:
               </p>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 rounded-lg border">
@@ -765,7 +649,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 
-                {(MOBILE_MONEY_PROVIDERS[selectedCountry] || []).map((provider) => (
+                {MOBILE_MONEY_PROVIDERS.map((provider) => (
                   <div key={provider} className="flex items-center justify-between p-4 rounded-lg border">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
@@ -820,7 +704,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Frais de livraison (FCFA)</Label>
+                  <Label>Frais de livraison (GNF)</Label>
                   <Input
                     type="number"
                     value={orderSettings.deliveryFee}

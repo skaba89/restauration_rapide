@@ -7,7 +7,7 @@ services:
     branch: master
     autoDeploy: true
     buildCommand: npm run build
-    startCommand: ./scripts/start-render.sh
+    startCommand: chmod +x ./scripts/start-render.sh && ./scripts/start-render.sh
     numInstances: 1
     envVars:
       - key: NODE_VERSION

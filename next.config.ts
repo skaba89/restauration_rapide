@@ -24,9 +24,10 @@ const nextConfig: NextConfig = {
   // These packages will not be bundled and must be available in node_modules at runtime
   serverExternalPackages: ['bcryptjs', '@prisma/client', 'prisma'],
 
-  // Image optimization
+  // Image optimization - disabled for Render free tier to prevent timeouts
+  // Images will load directly from their source URLs
   images: {
-    formats: ['image/avif', 'image/webp'],
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

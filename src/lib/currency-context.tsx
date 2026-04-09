@@ -12,11 +12,12 @@ interface CurrencyContextType {
   formatCurrency: (amount: number, options?: { showCode?: boolean }) => string;
   isLoading: boolean;
   refreshCurrency: () => Promise<void>;
+  isHydrated: boolean;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-// Default currency for Guinea (GNF)
+// Default currency for Guinea (GNF) - Used for both SSR and initial client render
 const DEFAULT_CURRENCY: Currency = {
   code: 'GNF',
   symbol: 'GNF',
@@ -42,11 +43,25 @@ function getCurrencyFromCode(code: string): Currency {
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
+  // Always start with default currency for consistent SSR/initial client render
   const [currency, setCurrencyState] = useState<Currency>(DEFAULT_CURRENCY);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load currency from settings on mount
+  // Mark as hydrated after first render (client-side only)
+  useEffect(() => {
+    // Use requestAnimationFrame to ensure hydration is complete
+    const raf = requestAnimationFrame(() => {
+      setIsHydrated(true);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // Load currency from settings after hydration (client-side only)
   const loadCurrency = useCallback(async () => {
+    // Only run on client after hydration
+    if (typeof window === 'undefined' || !isHydrated) return;
+    
     try {
       // First try the public settings API (works for both authenticated and public pages)
       const response = await fetch('/api/public/settings');
@@ -56,50 +71,65 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           const currencyData = getCurrencyFromCode(result.data.currency);
           setCurrencyState(currencyData);
           // Save to localStorage for quick access
-          localStorage.setItem('currency', JSON.stringify(currencyData));
-          localStorage.setItem('currencyCode', result.data.currency);
+          try {
+            localStorage.setItem('currency', JSON.stringify(currencyData));
+            localStorage.setItem('currencyCode', result.data.currency);
+          } catch (e) {
+            // localStorage might not be available
+          }
           setIsLoading(false);
           return;
         }
       }
     } catch (error) {
-      console.log('Could not load currency from public API');
+      // Silent fail - will use default
     }
 
     // Fallback to localStorage
-    const savedCurrency = localStorage.getItem('currency');
-    const savedCode = localStorage.getItem('currencyCode');
-    if (savedCurrency) {
-      try {
-        const parsed = JSON.parse(savedCurrency);
-        if (parsed && parsed.code) {
-          setCurrencyState(getCurrencyFromCode(parsed.code));
-          setIsLoading(false);
-          return;
+    try {
+      const savedCurrency = localStorage.getItem('currency');
+      const savedCode = localStorage.getItem('currencyCode');
+      if (savedCurrency) {
+        try {
+          const parsed = JSON.parse(savedCurrency);
+          if (parsed && parsed.code) {
+            setCurrencyState(getCurrencyFromCode(parsed.code));
+            setIsLoading(false);
+            return;
+          }
+        } catch {
+          // Ignore parse errors
         }
-      } catch {
-        // Ignore parse errors
+      } else if (savedCode) {
+        setCurrencyState(getCurrencyFromCode(savedCode));
+        setIsLoading(false);
+        return;
       }
-    } else if (savedCode) {
-      setCurrencyState(getCurrencyFromCode(savedCode));
-      setIsLoading(false);
-      return;
+    } catch (e) {
+      // localStorage might not be available
     }
 
     // Use default currency
-    setCurrencyState(DEFAULT_CURRENCY);
     setIsLoading(false);
-  }, []);
+  }, [isHydrated]);
 
   useEffect(() => {
-    loadCurrency();
-  }, [loadCurrency]);
+    // Only load currency after hydration is complete
+    if (isHydrated) {
+      loadCurrency();
+    }
+  }, [isHydrated, loadCurrency]);
 
   // Set currency and save to both localStorage and API
   const setCurrency = useCallback(async (newCurrency: Currency) => {
     setCurrencyState(newCurrency);
-    localStorage.setItem('currency', JSON.stringify(newCurrency));
-    localStorage.setItem('currencyCode', newCurrency.code);
+    
+    try {
+      localStorage.setItem('currency', JSON.stringify(newCurrency));
+      localStorage.setItem('currencyCode', newCurrency.code);
+    } catch (e) {
+      // localStorage might not be available
+    }
 
     // Also save to organization settings via API
     try {
@@ -112,7 +142,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       }
 
       // Update currency via settings API
-      const response = await fetch('/api/settings', {
+      await fetch('/api/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -125,12 +155,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           }
         }),
       });
-
-      if (!response.ok) {
-        console.log('Could not save currency to organization settings');
-      }
     } catch (error) {
-      console.log('Could not save currency to API:', error);
+      // Silent fail
     }
   }, []);
 
@@ -155,6 +181,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     formatCurrency,
     isLoading,
     refreshCurrency,
+    isHydrated,
   };
 
   return (
@@ -185,6 +212,7 @@ export function useCurrencySafe() {
       formatCurrency: (amount: number) => formatCurrencyUtil(amount, 'GNF'),
       isLoading: false,
       refreshCurrency: async () => {},
+      isHydrated: false,
     };
   }
   return context;

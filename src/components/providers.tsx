@@ -46,6 +46,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           defaultTheme="light"
           enableSystem
           disableTransitionOnChange
+          enableColorScheme
+          storageKey="restaurant-os-theme"
+          nonce={undefined}
         >
           <CurrencyProvider>
             {/* Skip link for accessibility */}

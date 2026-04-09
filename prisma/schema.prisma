@@ -1759,3 +1759,25 @@ enum PaymentMethod {
   GOOGLE_PAY
   GIFT_CARD
 }
+
+// Simple Menu Item for demo/single-tenant use
+model SimpleMenuItem {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  category        String   @default("Plats")
+  price           Float
+  costPrice       Float    @default(0)
+  image           String?
+  isAvailable     Boolean  @default(true)
+  isPopular       Boolean  @default(false)
+  isNew           Boolean  @default(false)
+  preparationTime Int      @default(15)
+  allergens       String?  // JSON array of allergens
+  orderCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([isAvailable])
+}

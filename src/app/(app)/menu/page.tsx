@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +31,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useCurrency } from '@/lib/currency-context';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   Search,
   Plus,
@@ -54,149 +54,101 @@ import {
   Upload,
   X,
   Camera,
+  RefreshCw,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
-// Demo menu categories - replaced Vins & Alcools with Accompagnements
-const DEMO_CATEGORIES = [
-  { id: '1', name: 'Plats Principaux', icon: UtensilsCrossed, itemCount: 12, active: true },
-  { id: '2', name: 'Accompagnements', icon: Salad, itemCount: 6, active: true },
-  { id: '3', name: 'Boissons', icon: Coffee, itemCount: 8, active: true },
-  { id: '4', name: 'Desserts', icon: Cake, itemCount: 5, active: true },
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  costPrice: number;
+  isAvailable: boolean;
+  preparationTime: number;
+  isPopular: boolean;
+  isNew: boolean;
+  allergens: string[];
+  image?: string | null;
+  orderCount?: number;
+}
+
+const CATEGORIES = [
+  { id: '1', name: 'Plats', icon: UtensilsCrossed },
+  { id: '2', name: 'Accompagnements', icon: Salad },
+  { id: '3', name: 'Boissons', icon: Coffee },
+  { id: '4', name: 'Desserts', icon: Cake },
+  { id: '5', name: 'Entrées', icon: Salad },
 ];
 
-// Demo menu items with prices in base currency (will be converted)
-const DEMO_MENU_ITEMS = [
-  {
-    id: '1',
-    name: 'Attieké Poisson Grillé',
-    category: 'Plats Principaux',
-    price: 8000,
-    description: 'Attieké traditionnel avec poisson grillé et sauce tomate',
-    image: null,
-    isAvailable: true,
-    isPopular: true,
-    isNew: false,
-    prepTime: 20,
-    orders: 156,
-  },
-  {
-    id: '2',
-    name: 'Kedjenou de Poulet',
-    category: 'Plats Principaux',
-    price: 7000,
-    description: 'Poulet braisé aux légumes, cuit à l\'étouffée',
-    image: null,
-    isAvailable: true,
-    isPopular: true,
-    isNew: false,
-    prepTime: 25,
-    orders: 142,
-  },
-  {
-    id: '3',
-    name: 'Thiéboudienne',
-    category: 'Plats Principaux',
-    price: 7000,
-    description: 'Riz rouge au poisson et légumes, spécialité sénégalaise',
-    image: null,
-    isAvailable: true,
-    isPopular: false,
-    isNew: true,
-    prepTime: 30,
-    orders: 128,
-  },
-  {
-    id: '4',
-    name: 'Jus de Bissap',
-    category: 'Boissons',
-    price: 4000,
-    description: 'Jus naturel de fleur d\'hibiscus rafraîchissant',
-    image: null,
-    isAvailable: true,
-    isPopular: true,
-    isNew: false,
-    prepTime: 5,
-    orders: 98,
-  },
-  {
-    id: '5',
-    name: 'Alloco Sauce Graine',
-    category: 'Plats Principaux',
-    price: 5000,
-    description: 'Bananes plantain frites avec sauce graine aux légumes',
-    image: null,
-    isAvailable: false,
-    isPopular: false,
-    isNew: false,
-    prepTime: 15,
-    orders: 115,
-  },
-  {
-    id: '6',
-    name: 'Riz Gras',
-    category: 'Accompagnements',
-    price: 5000,
-    description: 'Riz aux tomates et épices parfumé',
-    image: null,
-    isAvailable: true,
-    isPopular: true,
-    isNew: false,
-    prepTime: 10,
-    orders: 180,
-  },
-  {
-    id: '7',
-    name: 'Foutou Banane',
-    category: 'Accompagnements',
-    price: 6000,
-    description: 'Pâte de banane plantain traditionnelle',
-    image: null,
-    isAvailable: true,
-    isPopular: false,
-    isNew: false,
-    prepTime: 15,
-    orders: 95,
-  },
-  {
-    id: '8',
-    name: 'Ignan Pimenté',
-    category: 'Accompagnements',
-    price: 2000,
-    description: 'Sauce pimentée maison',
-    image: null,
-    isAvailable: true,
-    isPopular: true,
-    isNew: false,
-    prepTime: 5,
-    orders: 200,
-  },
-];
+const ALLERGENS = ['Gluten', 'Poisson', 'Arachides', 'Lait', 'Œufs', 'Soja', 'Fruits de mer'];
 
 export default function MenuPage() {
   const { toast } = useToast();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency } = useCurrencySafe();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [menuItems, setMenuItems] = useState(DEMO_MENU_ITEMS);
-  const [categories, setCategories] = useState(DEMO_CATEGORIES);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<typeof DEMO_MENU_ITEMS[0] | null>(null);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
 
   // New item form state
   const [newItem, setNewItem] = useState({
     name: '',
-    category: '',
+    category: 'Plats',
     price: '',
+    costPrice: '',
     description: '',
-    prepTime: '',
+    prepTime: '15',
     isPopular: false,
     isNew: false,
+    isAvailable: true,
+    allergens: [] as string[],
     image: null as string | null,
   });
+
+  // Fetch menu items from API
+  const fetchMenuItems = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/admin/menu');
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        setMenuItems(result.data);
+        setIsDemo(result.isDemo || false);
+      }
+    } catch (error) {
+      console.error('Error fetching menu:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger le menu',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMenuItems();
+  }, []);
+
+  // Calculate category item counts
+  const categories = CATEGORIES.map(cat => ({
+    ...cat,
+    itemCount: menuItems.filter(item => item.category === cat.name).length,
+    active: menuItems.filter(item => item.category === cat.name && item.isAvailable).length > 0,
+  }));
 
   const filteredItems = menuItems.filter((item) => {
     if (selectedCategory !== 'all' && item.category !== selectedCategory) return false;
@@ -204,20 +156,39 @@ export default function MenuPage() {
     return true;
   });
 
-  const toggleItemAvailability = (itemId: string) => {
-    setMenuItems(prev => prev.map(item => 
-      item.id === itemId ? { ...item, isAvailable: !item.isAvailable } : item
-    ));
-    toast({
-      title: 'Disponibilité mise à jour',
-      description: 'Le statut de l\'article a été modifié',
-    });
+  const toggleItemAvailability = async (itemId: string) => {
+    const item = menuItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    try {
+      const response = await fetch('/api/admin/menu', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: itemId, isAvailable: !item.isAvailable }),
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => prev.map(i => 
+          i.id === itemId ? { ...i, isAvailable: !i.isAvailable } : i
+        ));
+        toast({
+          title: 'Disponibilité mise à jour',
+          description: 'Le statut de l\'article a été modifié',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
           title: 'Erreur',
@@ -227,7 +198,6 @@ export default function MenuPage() {
         return;
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: 'Erreur',
@@ -250,8 +220,8 @@ export default function MenuPage() {
     }
   };
 
-  const addMenuItem = () => {
-    if (!newItem.name || !newItem.category || !newItem.price) {
+  const addMenuItem = async () => {
+    if (!newItem.name || !newItem.price) {
       toast({
         title: 'Erreur',
         description: 'Veuillez remplir tous les champs obligatoires',
@@ -260,106 +230,188 @@ export default function MenuPage() {
       return;
     }
 
-    const newMenuItem = {
-      id: String(menuItems.length + 1),
-      name: newItem.name,
-      category: newItem.category,
-      price: parseInt(newItem.price),
-      description: newItem.description,
-      image: newItem.image,
-      isAvailable: true,
-      isPopular: newItem.isPopular,
-      isNew: newItem.isNew,
-      prepTime: parseInt(newItem.prepTime) || 15,
-      orders: 0,
-    };
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/admin/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newItem.name,
+          category: newItem.category,
+          price: newItem.price,
+          costPrice: newItem.costPrice || '0',
+          description: newItem.description,
+          preparationTime: newItem.prepTime,
+          isPopular: newItem.isPopular,
+          isNew: newItem.isNew,
+          isAvailable: newItem.isAvailable,
+          allergens: newItem.allergens,
+          image: newItem.image,
+        }),
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => [...prev, result.data]);
+        
+        // Reset form
+        setNewItem({
+          name: '',
+          category: 'Plats',
+          price: '',
+          costPrice: '',
+          description: '',
+          prepTime: '15',
+          isPopular: false,
+          isNew: false,
+          isAvailable: true,
+          allergens: [],
+          image: null,
+        });
+        setIsAddDialogOpen(false);
 
-    setMenuItems([...menuItems, newMenuItem]);
-    
-    // Update category item count
-    setCategories(prev => prev.map(cat => 
-      cat.name === newItem.category ? { ...cat, itemCount: cat.itemCount + 1 } : cat
-    ));
-
-    // Reset form
-    setNewItem({
-      name: '',
-      category: '',
-      price: '',
-      description: '',
-      prepTime: '',
-      isPopular: false,
-      isNew: false,
-      image: null,
-    });
-    setIsAddDialogOpen(false);
-
-    toast({
-      title: 'Article ajouté',
-      description: `${newMenuItem.name} a été ajouté au menu`,
-    });
+        toast({
+          title: 'Article ajouté',
+          description: `${result.data.name} a été ajouté au menu`,
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Erreur lors de l\'ajout',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const updateMenuItem = () => {
+  const updateMenuItem = async () => {
     if (!editingItem) return;
 
-    setMenuItems(prev => prev.map(item => 
-      item.id === editingItem.id ? editingItem : item
-    ));
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/admin/menu', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingItem),
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => prev.map(item => 
+          item.id === editingItem.id ? result.data : item
+        ));
+        setIsEditDialogOpen(false);
+        setEditingItem(null);
 
-    setIsEditDialogOpen(false);
-    setEditingItem(null);
-
-    toast({
-      title: 'Article mis à jour',
-      description: 'Les modifications ont été enregistrées',
-    });
+        toast({
+          title: 'Article mis à jour',
+          description: 'Les modifications ont été enregistrées',
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Erreur lors de la mise à jour',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const deleteMenuItem = (itemId: string) => {
+  const deleteMenuItem = async (itemId: string) => {
     const item = menuItems.find(i => i.id === itemId);
     if (!item) return;
 
-    setMenuItems(prev => prev.filter(i => i.id !== itemId));
-    
-    // Update category item count
-    setCategories(prev => prev.map(cat => 
-      cat.name === item.category ? { ...cat, itemCount: Math.max(0, cat.itemCount - 1) } : cat
-    ));
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer "${item.name}" ?`)) {
+      return;
+    }
 
-    toast({
-      title: 'Article supprimé',
-      description: `${item.name} a été retiré du menu`,
-    });
+    try {
+      const response = await fetch(`/api/admin/menu?id=${itemId}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => prev.filter(i => i.id !== itemId));
+
+        toast({
+          title: 'Article supprimé',
+          description: `${item.name} a été retiré du menu`,
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Erreur lors de la suppression',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const duplicateMenuItem = (itemId: string) => {
+  const duplicateMenuItem = async (itemId: string) => {
     const item = menuItems.find(i => i.id === itemId);
     if (!item) return;
 
-    const newItem = {
-      ...item,
-      id: String(menuItems.length + 1),
-      name: `${item.name} (copie)`,
-      orders: 0,
-    };
+    try {
+      const response = await fetch('/api/admin/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...item,
+          name: `${item.name} (copie)`,
+          id: undefined,
+        }),
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => [...prev, result.data]);
 
-    setMenuItems([...menuItems, newItem]);
-    
-    // Update category item count
-    setCategories(prev => prev.map(cat => 
-      cat.name === item.category ? { ...cat, itemCount: cat.itemCount + 1 } : cat
-    ));
-
-    toast({
-      title: 'Article dupliqué',
-      description: `Une copie de ${item.name} a été créée`,
-    });
+        toast({
+          title: 'Article dupliqué',
+          description: `Une copie de ${item.name} a été créée`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de la duplication',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const openEditDialog = (item: typeof DEMO_MENU_ITEMS[0]) => {
+  const openEditDialog = (item: MenuItem) => {
     setEditingItem({ ...item });
     setIsEditDialogOpen(true);
+  };
+
+  const toggleAllergen = (allergen: string, isEdit = false) => {
+    if (isEdit && editingItem) {
+      setEditingItem({
+        ...editingItem,
+        allergens: editingItem.allergens.includes(allergen)
+          ? editingItem.allergens.filter(a => a !== allergen)
+          : [...editingItem.allergens, allergen]
+      });
+    } else {
+      setNewItem({
+        ...newItem,
+        allergens: newItem.allergens.includes(allergen)
+          ? newItem.allergens.filter(a => a !== allergen)
+          : [...newItem.allergens, allergen]
+      });
+    }
   };
 
   return (
@@ -369,10 +421,20 @@ export default function MenuPage() {
         <div>
           <h1 className="text-2xl font-bold">Menu</h1>
           <p className="text-muted-foreground">Gérez vos plats et accompagnements</p>
+          {isDemo && (
+            <div className="flex items-center gap-2 mt-2 text-amber-600 text-sm">
+              <AlertCircle className="h-4 w-4" />
+              Mode démo - les données ne sont pas sauvegardées
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}>
             {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
+          </Button>
+          <Button variant="outline" onClick={fetchMenuItems} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Actualiser
           </Button>
           <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -406,7 +468,7 @@ export default function MenuPage() {
       </div>
 
       {/* Categories Overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
         {categories.map((category) => (
           <Card
             key={category.id}
@@ -430,8 +492,16 @@ export default function MenuPage() {
         ))}
       </div>
 
-      {/* Menu Items */}
-      {viewMode === 'grid' ? (
+      {/* Loading State */}
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Chargement du menu...</p>
+          </CardContent>
+        </Card>
+      ) : viewMode === 'grid' ? (
+        /* Grid View */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredItems.map((item) => (
             <Card key={item.id} className={`overflow-hidden ${!item.isAvailable ? 'opacity-60' : ''}`}>
@@ -490,7 +560,7 @@ export default function MenuPage() {
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-orange-600">{formatCurrency(item.price)}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">{item.orders} cmdes</span>
+                    <span className="text-xs text-muted-foreground">{item.orderCount || 0} cmdes</span>
                     <Switch
                       checked={item.isAvailable}
                       onCheckedChange={() => toggleItemAvailability(item.id)}
@@ -502,6 +572,7 @@ export default function MenuPage() {
           ))}
         </div>
       ) : (
+        /* List View */
         <Card>
           <CardContent className="p-0">
             <div className="divide-y">
@@ -524,9 +595,9 @@ export default function MenuPage() {
                     <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                       <span>{item.category}</span>
                       <span>•</span>
-                      <span>{item.prepTime} min</span>
+                      <span>{item.preparationTime} min</span>
                       <span>•</span>
-                      <span>{item.orders} commandes</span>
+                      <span>{item.orderCount || 0} commandes</span>
                     </div>
                   </div>
                   <div className="text-right">
@@ -565,13 +636,12 @@ export default function MenuPage() {
 
       {/* Add Item Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Ajouter un article</DialogTitle>
             <DialogDescription>Ajoutez un nouveau plat ou accompagnement à votre menu</DialogDescription>
           </DialogHeader>
           
-          {/* Hidden file input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -629,7 +699,7 @@ export default function MenuPage() {
                   <SelectValue placeholder="Sélectionner une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
+                  {CATEGORIES.map((cat) => (
                     <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -645,6 +715,26 @@ export default function MenuPage() {
                 onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="costPrice">Prix de revient ({formatCurrency(0).replace('0', '').trim()})</Label>
+              <Input 
+                id="costPrice" 
+                type="number" 
+                placeholder="2000" 
+                value={newItem.costPrice}
+                onChange={(e) => setNewItem({ ...newItem, costPrice: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prepTime">Temps de préparation (min)</Label>
+              <Input 
+                id="prepTime" 
+                type="number" 
+                placeholder="15" 
+                value={newItem.prepTime}
+                onChange={(e) => setNewItem({ ...newItem, prepTime: e.target.value })}
+              />
+            </div>
             <div className="col-span-2 space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea 
@@ -654,17 +744,30 @@ export default function MenuPage() {
                 onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="prepTime">Temps de préparation (min)</Label>
-              <Input 
-                id="prepTime" 
-                type="number" 
-                placeholder="20" 
-                value={newItem.prepTime}
-                onChange={(e) => setNewItem({ ...newItem, prepTime: e.target.value })}
-              />
+            <div className="col-span-2 space-y-2">
+              <Label>Allergènes</Label>
+              <div className="flex flex-wrap gap-2">
+                {ALLERGENS.map(allergen => (
+                  <Badge
+                    key={allergen}
+                    variant={newItem.allergens.includes(allergen) ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                    onClick={() => toggleAllergen(allergen)}
+                  >
+                    {allergen}
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <div className="flex items-end gap-4">
+            <div className="col-span-2 flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Switch 
+                  id="isAvailable" 
+                  checked={newItem.isAvailable}
+                  onCheckedChange={(v) => setNewItem({ ...newItem, isAvailable: v })}
+                />
+                <Label htmlFor="isAvailable">Disponible</Label>
+              </div>
               <div className="flex items-center gap-2">
                 <Switch 
                   id="popular" 
@@ -688,16 +791,20 @@ export default function MenuPage() {
               setIsAddDialogOpen(false);
               setNewItem({
                 name: '',
-                category: '',
+                category: 'Plats',
                 price: '',
+                costPrice: '',
                 description: '',
-                prepTime: '',
+                prepTime: '15',
                 isPopular: false,
                 isNew: false,
+                isAvailable: true,
+                allergens: [],
                 image: null,
               });
             }}>Annuler</Button>
-            <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={addMenuItem}>
+            <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={addMenuItem} disabled={isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
               Ajouter
             </Button>
           </div>
@@ -706,13 +813,12 @@ export default function MenuPage() {
 
       {/* Edit Item Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Modifier l'article</DialogTitle>
             <DialogDescription>Modifiez les informations de l'article</DialogDescription>
           </DialogHeader>
           
-          {/* Hidden file input for edit */}
           <input
             type="file"
             ref={editFileInputRef}
@@ -773,7 +879,7 @@ export default function MenuPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
+                    {CATEGORIES.map((cat) => (
                       <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -785,7 +891,25 @@ export default function MenuPage() {
                   id="edit-price" 
                   type="number" 
                   value={editingItem.price}
-                  onChange={(e) => setEditingItem({ ...editingItem, price: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => setEditingItem({ ...editingItem, price: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-costPrice">Prix de revient ({formatCurrency(0).replace('0', '').trim()})</Label>
+                <Input 
+                  id="edit-costPrice" 
+                  type="number" 
+                  value={editingItem.costPrice}
+                  onChange={(e) => setEditingItem({ ...editingItem, costPrice: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-prepTime">Temps de préparation (min)</Label>
+                <Input 
+                  id="edit-prepTime" 
+                  type="number" 
+                  value={editingItem.preparationTime}
+                  onChange={(e) => setEditingItem({ ...editingItem, preparationTime: parseInt(e.target.value) || 15 })}
                 />
               </div>
               <div className="col-span-2 space-y-2">
@@ -796,16 +920,30 @@ export default function MenuPage() {
                   onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-prepTime">Temps de préparation (min)</Label>
-                <Input 
-                  id="edit-prepTime" 
-                  type="number" 
-                  value={editingItem.prepTime}
-                  onChange={(e) => setEditingItem({ ...editingItem, prepTime: parseInt(e.target.value) || 0 })}
-                />
+              <div className="col-span-2 space-y-2">
+                <Label>Allergènes</Label>
+                <div className="flex flex-wrap gap-2">
+                  {ALLERGENS.map(allergen => (
+                    <Badge
+                      key={allergen}
+                      variant={editingItem.allergens?.includes(allergen) ? 'default' : 'outline'}
+                      className="cursor-pointer"
+                      onClick={() => toggleAllergen(allergen, true)}
+                    >
+                      {allergen}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-              <div className="flex items-end gap-4">
+              <div className="col-span-2 flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Switch 
+                    id="edit-isAvailable" 
+                    checked={editingItem.isAvailable}
+                    onCheckedChange={(v) => setEditingItem({ ...editingItem, isAvailable: v })}
+                  />
+                  <Label htmlFor="edit-isAvailable">Disponible</Label>
+                </div>
                 <div className="flex items-center gap-2">
                   <Switch 
                     id="edit-popular" 
@@ -830,7 +968,8 @@ export default function MenuPage() {
               setIsEditDialogOpen(false);
               setEditingItem(null);
             }}>Annuler</Button>
-            <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={updateMenuItem}>
+            <Button className="bg-gradient-to-r from-orange-500 to-red-600" onClick={updateMenuItem} disabled={isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
               Enregistrer
             </Button>
           </div>

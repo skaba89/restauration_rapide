@@ -31,6 +31,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useRealTime } from '@/hooks/use-realtime';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   ShoppingCart,
   Search,
@@ -175,8 +176,6 @@ interface OrderItem {
   quantity: number;
 }
 
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
-
 const getStatusColor = (status: OrderStatus) => {
   const colors: Record<OrderStatus, string> = {
     PENDING: 'bg-yellow-100 text-yellow-700 border-yellow-200',
@@ -215,6 +214,7 @@ const getTypeIcon = (type: OrderType) => {
 
 export default function OrdersPage() {
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
   
   // Real-time connection
   const { isConnected, newOrders, clearNewOrders } = useRealTime({

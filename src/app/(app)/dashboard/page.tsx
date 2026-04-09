@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { SalesChart } from '@/components/dashboard/sales-chart';
 import { dashboardApi } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Demo data for charts (fallback)
 const DEMO_SALES_DATA = [
@@ -61,9 +62,6 @@ const DEMO_RECENT_ORDERS = [
   { id: 'ORD-2024-0142', customer: 'Diallo Fatou', total: 6000, status: 'OUT_FOR_DELIVERY', type: 'DELIVERY', time: '12:00' },
   { id: 'ORD-2024-0141', customer: 'Touré Amadou', total: 10500, status: 'COMPLETED', type: 'DINE_IN', time: '11:45' },
 ];
-
-// Format currency for FCFA
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 
 // Dashboard data type
 interface DashboardData {
@@ -104,6 +102,7 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { formatCurrency } = useCurrencySafe();
 
   // Fetch dashboard data
   useEffect(() => {

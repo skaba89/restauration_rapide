@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useCartStore } from '@/lib/cart-store';
 import { useRouter } from 'next/navigation';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const DELIVERY_FEE = 500;
 
@@ -33,6 +34,7 @@ export default function CartPage() {
   const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const { formatCurrency } = useCurrencySafe();
 
   const subtotal = getTotal();
   const total = subtotal + (subtotal > 0 ? DELIVERY_FEE : 0);
@@ -123,7 +125,7 @@ export default function CartPage() {
                     </div>
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
-                      <p className="text-orange-600 font-semibold">{item.price.toLocaleString()} FCFA</p>
+                      <p className="text-orange-600 font-semibold">{formatCurrency(item.price)}</p>
                       {item.notes && (
                         <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>
                       )}
@@ -147,7 +149,7 @@ export default function CartPage() {
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    <p className="font-bold w-24 text-right">{(item.price * item.quantity).toLocaleString()} FCFA</p>
+                    <p className="font-bold w-24 text-right">{formatCurrency(item.price * item.quantity)}</p>
                     <Button 
                       variant="ghost" 
                       size="icon" 
@@ -203,7 +205,7 @@ export default function CartPage() {
                 {items.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span>{item.quantity}x {item.name}</span>
-                    <span>{(item.price * item.quantity).toLocaleString()} FCFA</span>
+                    <span>{formatCurrency(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -213,11 +215,11 @@ export default function CartPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Sous-total</span>
-                  <span>{subtotal.toLocaleString()} FCFA</span>
+                  <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Livraison</span>
-                  <span>{subtotal > 0 ? DELIVERY_FEE.toLocaleString() : 0} FCFA</span>
+                  <span>{subtotal > 0 ? formatCurrency(DELIVERY_FEE) : formatCurrency(0)}</span>
                 </div>
               </div>
 
@@ -225,7 +227,7 @@ export default function CartPage() {
 
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span className="text-orange-600">{total.toLocaleString()} FCFA</span>
+                <span className="text-orange-600">{formatCurrency(total)}</span>
               </div>
 
               {/* Payment Methods */}
@@ -285,7 +287,7 @@ export default function CartPage() {
                 disabled={items.length === 0}
               >
                 <CreditCard className="h-4 w-4 mr-2" />
-                Commander {total.toLocaleString()} FCFA
+                Commander {formatCurrency(total)}
               </Button>
 
               <Link href="/customer/menu">

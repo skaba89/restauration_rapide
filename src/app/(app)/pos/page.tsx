@@ -31,6 +31,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const MENU_CATEGORIES = [
   { id: 'all', name: 'Tout' },
@@ -90,6 +91,7 @@ export default function POSPage() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
 
   const filteredItems = useMemo(() => {
     return MENU_ITEMS.filter(item => {
@@ -213,7 +215,7 @@ export default function POSPage() {
                     <p className="font-medium text-sm line-clamp-2">{item.name}</p>
                     {item.popular && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
                   </div>
-                  <p className="text-orange-600 font-semibold mt-1">{item.price.toLocaleString()} FCFA</p>
+                  <p className="text-orange-600 font-semibold mt-1">{formatCurrency(item.price)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -253,7 +255,7 @@ export default function POSPage() {
                 <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-900">
                   <div className="flex-1">
                     <p className="font-medium text-sm">{item.name}</p>
-                    <p className="text-sm text-orange-600">{item.price.toLocaleString()} FCFA</p>
+                    <p className="text-sm text-orange-600">{formatCurrency(item.price)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}><Minus className="h-3 w-3" /></Button>
@@ -270,7 +272,7 @@ export default function POSPage() {
         <div className="p-4 border-t space-y-4">
           <div className="flex justify-between font-bold text-lg">
             <span>Total</span>
-            <span className="text-orange-600">{total.toLocaleString()} FCFA</span>
+            <span className="text-orange-600">{formatCurrency(total)}</span>
           </div>
 
           <Button size="lg" className="w-full bg-orange-500 hover:bg-orange-600" disabled={cart.length === 0} onClick={openPaymentModal}>
@@ -288,7 +290,7 @@ export default function POSPage() {
               <DialogHeader>
                 <DialogTitle>Paiement</DialogTitle>
                 <DialogDescription>
-                  Total à payer: <span className="font-bold text-orange-600">{total.toLocaleString()} FCFA</span>
+                  Total à payer: <span className="font-bold text-orange-600">{formatCurrency(total)}</span>
                 </DialogDescription>
               </DialogHeader>
 
@@ -299,7 +301,7 @@ export default function POSPage() {
                   {cart.map((item) => (
                     <div key={item.id} className="flex justify-between text-sm">
                       <span>{item.quantity}x {item.name}</span>
-                      <span>{(item.price * item.quantity).toLocaleString()} FCFA</span>
+                      <span>{formatCurrency(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
@@ -327,7 +329,7 @@ export default function POSPage() {
                 {selectedPayment === 'cash' && (
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm font-medium mb-2">Montant reçu (FCFA)</p>
+                      <p className="text-sm font-medium mb-2">Montant reçu</p>
                       <Input
                         type="number"
                         placeholder="Entrez le montant reçu"
@@ -346,7 +348,7 @@ export default function POSPage() {
                           size="sm"
                           onClick={() => setCashReceived(amount.toString())}
                         >
-                          {Math.ceil(amount / 500) * 500 >= total ? Math.ceil(amount / 500) * 500 : amount + 500} FCFA
+                          {formatCurrency(Math.ceil(amount / 500) * 500 >= total ? Math.ceil(amount / 500) * 500 : amount + 500)}
                         </Button>
                       ))}
                     </div>
@@ -356,7 +358,7 @@ export default function POSPage() {
                       <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
                         <div className="flex justify-between items-center">
                           <span className="text-green-700 dark:text-green-400 font-medium">Monnaie à rendre</span>
-                          <span className="text-2xl font-bold text-green-600">{change.toLocaleString()} FCFA</span>
+                          <span className="text-2xl font-bold text-green-600">{formatCurrency(change)}</span>
                         </div>
                       </div>
                     )}
@@ -365,7 +367,7 @@ export default function POSPage() {
                       <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
                         <div className="flex justify-between items-center">
                           <span className="text-red-700 dark:text-red-400 font-medium">Montant manquant</span>
-                          <span className="text-xl font-bold text-red-600">{Math.abs(change).toLocaleString()} FCFA</span>
+                          <span className="text-xl font-bold text-red-600">{formatCurrency(Math.abs(change))}</span>
                         </div>
                       </div>
                     )}
@@ -448,17 +450,17 @@ export default function POSPage() {
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>{total.toLocaleString()} FCFA</span>
+                    <span>{formatCurrency(total)}</span>
                   </div>
                   {selectedPayment === 'cash' && parseFloat(cashReceived) > total && (
                     <>
                       <div className="flex justify-between">
                         <span>Reçu</span>
-                        <span>{parseFloat(cashReceived).toLocaleString()} FCFA</span>
+                        <span>{formatCurrency(parseFloat(cashReceived))}</span>
                       </div>
                       <div className="flex justify-between text-green-600 font-bold">
                         <span>Monnaie rendue</span>
-                        <span>{change.toLocaleString()} FCFA</span>
+                        <span>{formatCurrency(change)}</span>
                       </div>
                     </>
                   )}

@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useCartStore } from '@/lib/cart-store';
 import { useRouter } from 'next/navigation';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const DELIVERY_FEE = 500;
 
@@ -37,6 +38,7 @@ export default function CustomerOrderPage() {
   const { items, increaseQuantity, decreaseQuantity, removeItem, getTotal, clearCart } = useCartStore();
   const { toast } = useToast();
   const router = useRouter();
+  const { formatCurrency } = useCurrencySafe();
   
   const subtotal = getTotal();
   const total = orderType === 'delivery' ? subtotal + DELIVERY_FEE : subtotal;
@@ -116,7 +118,7 @@ export default function CustomerOrderPage() {
               </div>
               <div className="flex-1">
                 <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-orange-600">{item.price.toLocaleString()} FCFA</p>
+                <p className="text-sm text-orange-600">{formatCurrency(item.price)}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button 
@@ -137,7 +139,7 @@ export default function CustomerOrderPage() {
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="font-bold w-24 text-right">{(item.price * item.quantity).toLocaleString()} FCFA</p>
+              <p className="font-bold w-24 text-right">{formatCurrency(item.price * item.quantity)}</p>
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -170,7 +172,7 @@ export default function CustomerOrderPage() {
                 >
                   <MapPin className="h-6 w-6 mb-2" />
                   <span className="text-sm font-medium">Livraison</span>
-                  <span className="text-xs text-muted-foreground">+{DELIVERY_FEE} FCFA</span>
+                  <span className="text-xs text-muted-foreground">+{formatCurrency(DELIVERY_FEE)}</span>
                 </Label>
               </div>
               <div>
@@ -317,24 +319,24 @@ export default function CustomerOrderPage() {
             {items.map((item) => (
               <div key={item.id} className="flex justify-between text-sm">
                 <span>{item.quantity}x {item.name}</span>
-                <span>{(item.price * item.quantity).toLocaleString()} FCFA</span>
+                <span>{formatCurrency(item.price * item.quantity)}</span>
               </div>
             ))}
             <Separator className="my-2" />
             <div className="flex justify-between">
               <span className="text-muted-foreground">Sous-total</span>
-              <span>{subtotal.toLocaleString()} FCFA</span>
+              <span>{formatCurrency(subtotal)}</span>
             </div>
             {orderType === 'delivery' && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Livraison</span>
-                <span>{DELIVERY_FEE.toLocaleString()} FCFA</span>
+                <span>{formatCurrency(DELIVERY_FEE)}</span>
               </div>
             )}
             <Separator className="my-2" />
             <div className="flex justify-between font-bold text-lg">
               <span>Total</span>
-              <span className="text-orange-600">{total.toLocaleString()} FCFA</span>
+              <span className="text-orange-600">{formatCurrency(total)}</span>
             </div>
           </div>
 

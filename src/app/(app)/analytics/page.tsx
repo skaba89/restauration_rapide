@@ -35,6 +35,7 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const SALES_DATA = [
   { name: 'Jan', ventes: 4200000, commandes: 320 },
@@ -79,9 +80,13 @@ const TOP_ITEMS = [
   { name: 'Riz Gras', orders: 98, revenue: 490000 },
 ];
 
-const formatCurrency = (amount: number) => `${(amount / 1000000).toFixed(1)}M FCFA`;
+const formatCurrency = (amount: number) => `${(amount / 1000000).toFixed(1)}M`;
 
 export default function AnalyticsPage() {
+  const { formatCurrency: formatCurrencyBase } = useCurrencySafe();
+  
+  // Format for chart values (in millions)
+  const formatMillions = (amount: number) => `${(amount / 1000000).toFixed(1)}M`;
   return (
     <div className="space-y-6">
       {/* Header */}

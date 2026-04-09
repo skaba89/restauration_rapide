@@ -20,6 +20,7 @@ import {
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useCartStore } from '@/lib/cart-store';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const CATEGORIES = [
   { id: 'all', name: 'Tout', icon: '🍽️' },
@@ -54,6 +55,7 @@ export default function CustomerMenuPage() {
   
   const { items, addItem, increaseQuantity, decreaseQuantity, getItemCount, getTotal } = useCartStore();
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
 
   const filteredItems = MENU_ITEMS.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -182,7 +184,7 @@ export default function CustomerMenuPage() {
 
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-3">
-                        <p className="font-bold text-orange-600">{item.price.toLocaleString()} FCFA</p>
+                        <p className="font-bold text-orange-600">{formatCurrency(item.price)}</p>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
                           {item.prepTime} min
@@ -246,7 +248,7 @@ export default function CustomerMenuPage() {
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <div>
               <p className="font-semibold">{cartCount} article{cartCount > 1 ? 's' : ''}</p>
-              <p className="text-orange-600 font-bold">{cartTotal.toLocaleString()} FCFA</p>
+              <p className="text-orange-600 font-bold">{formatCurrency(cartTotal)}</p>
             </div>
             <Link href="/customer/cart">
               <Button className="bg-orange-500 hover:bg-orange-600">

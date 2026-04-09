@@ -33,6 +33,7 @@ import {
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const ORDERS = [
   {
@@ -104,6 +105,7 @@ export default function CustomerOrdersPage() {
   const [showDetails, setShowDetails] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const { formatCurrency } = useCurrencySafe();
 
   const filteredOrders = ORDERS.filter(order => {
     if (filter === 'active') {
@@ -205,7 +207,7 @@ export default function CustomerOrdersPage() {
                     {order.items.slice(0, 2).map((item, idx) => (
                       <div key={idx} className="flex justify-between text-sm">
                         <span>{item.quantity}x {item.name}</span>
-                        <span className="text-muted-foreground">{(item.price * item.quantity).toLocaleString()} FCFA</span>
+                        <span className="text-muted-foreground">{formatCurrency(item.price * item.quantity)}</span>
                       </div>
                     ))}
                     {order.items.length > 2 && (
@@ -248,7 +250,7 @@ export default function CustomerOrdersPage() {
 
                   {/* Total and Actions */}
                   <div className="flex items-center justify-between pt-3 border-t">
-                    <p className="font-bold text-lg">{order.total.toLocaleString()} FCFA</p>
+                    <p className="font-bold text-lg">{formatCurrency(order.total)}</p>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => handleDetails(order)}>
                         <Eye className="h-4 w-4 mr-1" />
@@ -311,7 +313,7 @@ export default function CustomerOrdersPage() {
                   {selectedOrder.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-sm">
                       <span>{item.quantity}x {item.name}</span>
-                      <span>{(item.price * item.quantity).toLocaleString()} FCFA</span>
+                      <span>{formatCurrency(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
@@ -322,7 +324,7 @@ export default function CustomerOrdersPage() {
                   <Separator />
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Livraison</span>
-                    <span>{selectedOrder.deliveryFee?.toLocaleString()} FCFA</span>
+                    <span>{formatCurrency(selectedOrder.deliveryFee || 0)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -335,7 +337,7 @@ export default function CustomerOrdersPage() {
 
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span className="text-orange-600">{selectedOrder.total.toLocaleString()} FCFA</span>
+                <span className="text-orange-600">{formatCurrency(selectedOrder.total)}</span>
               </div>
 
               {selectedOrder.cancelReason && (

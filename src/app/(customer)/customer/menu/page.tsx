@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,43 +22,79 @@ import { useToast } from '@/hooks/use-toast';
 import { useCartStore } from '@/lib/cart-store';
 import { useCurrencySafe } from '@/lib/currency-context';
 
-const CATEGORIES = [
-  { id: 'all', name: 'Tout', icon: '🍽️' },
-  { id: 'plats', name: 'Plats Principaux', icon: '🍚' },
-  { id: 'grillades', name: 'Grillades', icon: '🍖' },
-  { id: 'accompagnements', name: 'Accompagnements', icon: '🥗' },
-  { id: 'boissons', name: 'Boissons', icon: '🥤' },
-  { id: 'desserts', name: 'Desserts', icon: '🍰' },
-];
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  isAvailable: boolean;
+  preparationTime: number;
+  isPopular: boolean;
+  image?: string | null;
+}
 
-const MENU_ITEMS = [
-  { id: '1', name: 'Attieké Poisson Grillé', description: 'Semoule de manioc accompagnée de poisson grillé et sauce tomate', price: 3500, category: 'plats', image: '🐟', popular: true, spicy: false, vegetarian: false, prepTime: 20 },
-  { id: '2', name: 'Kedjenou de Poulet', description: 'Poulet braisé aux légumes dans une sauce épaisse', price: 4500, category: 'plats', image: '🍗', popular: true, spicy: false, vegetarian: false, prepTime: 25 },
-  { id: '3', name: 'Thiéboudienne', description: 'Riz au poisson et légumes, plat national sénégalais', price: 4000, category: 'plats', image: '🍚', popular: true, spicy: false, vegetarian: false, prepTime: 30 },
-  { id: '4', name: 'Garba', description: 'Attieké avec poisson frit et piment', price: 2500, category: 'plats', image: '🐟', popular: true, spicy: true, vegetarian: false, prepTime: 15 },
-  { id: '5', name: 'Foutou Banane', description: 'Pâte de banane plantain avec sauce graine', price: 3500, category: 'plats', image: '🍌', popular: false, spicy: false, vegetarian: true, prepTime: 20 },
-  { id: '6', name: 'Riz Gras', description: 'Riz à la viande et légumes', price: 3000, category: 'plats', image: '🍚', popular: false, spicy: false, vegetarian: false, prepTime: 15 },
-  { id: '7', name: 'Poulet Braisé', description: 'Poulet grillé mariné aux épices', price: 3500, category: 'grillades', image: '🍗', popular: true, spicy: false, vegetarian: false, prepTime: 20 },
-  { id: '8', name: 'Suya', description: 'Brochettes de viande épicées grillées', price: 2000, category: 'grillades', image: '🍢', popular: true, spicy: true, vegetarian: false, prepTime: 15 },
-  { id: '9', name: 'Brochettes de Poisson', description: 'Poisson grillé en brochettes', price: 3000, category: 'grillades', image: '🐟', popular: false, spicy: false, vegetarian: false, prepTime: 15 },
-  { id: '10', name: 'Alloco', description: 'Banane plantain frite', price: 1500, category: 'accompagnements', image: '🍌', popular: true, spicy: false, vegetarian: true, prepTime: 10 },
-  { id: '11', name: 'Jus de Bissap', description: 'Jus naturel d\'hibiscus', price: 1000, category: 'boissons', image: '🧃', popular: true, spicy: false, vegetarian: true, prepTime: 5 },
-  { id: '12', name: 'Jus de Gingembre', description: 'Jus de gingembre frais', price: 1000, category: 'boissons', image: '🧃', popular: false, spicy: false, vegetarian: true, prepTime: 5 },
-  { id: '13', name: 'Café Touba', description: 'Café épicé sénégalais', price: 800, category: 'boissons', image: '☕', popular: false, spicy: false, vegetarian: true, prepTime: 5 },
-  { id: '14', name: 'Banane Flambée', description: 'Banane plantain flambée au rhum', price: 2000, category: 'desserts', image: '🍌', popular: false, spicy: false, vegetarian: true, prepTime: 10 },
-];
+const CATEGORY_ICONS: Record<string, string> = {
+  'Plats': '🍽️',
+  'Boissons': '🥤',
+  'Accompagnements': '🥗',
+  'Entrées': '🥗',
+  'Desserts': '🍰',
+};
 
 export default function CustomerMenuPage() {
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string; icon: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const { items, addItem, increaseQuantity, decreaseQuantity, getItemCount, getTotal } = useCartStore();
   const { toast } = useToast();
   const { formatCurrency } = useCurrencySafe();
 
-  const filteredItems = MENU_ITEMS.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+  // Fetch menu items from API
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/public/menu?availableOnly=true');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          setMenuItems(result.data);
+          
+          // Extract unique categories
+          const uniqueCategories = [...new Set(result.data.map((item: MenuItem) => item.category))];
+          const categoryList = [
+            { id: 'all', name: 'Tout', icon: '🍽️' },
+            ...uniqueCategories.map((cat: string) => ({
+              id: cat,
+              name: cat,
+              icon: CATEGORY_ICONS[cat] || '🍽️',
+            })),
+          ];
+          setCategories(categoryList);
+        }
+      } catch (error) {
+        console.error('Error fetching menu:', error);
+        toast({
+          title: 'Erreur',
+          description: 'Impossible de charger le menu',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchMenu();
+  }, [toast]);
+
+  const filteredItems = menuItems.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -68,12 +104,12 @@ export default function CustomerMenuPage() {
     return item ? item.quantity : 0;
   };
 
-  const handleAddToCart = (item: typeof MENU_ITEMS[0]) => {
+  const handleAddToCart = (item: MenuItem) => {
     addItem({
       id: item.id,
       name: item.name,
       price: item.price,
-      image: item.image,
+      image: item.image || '🍽️',
       quantity: 1,
     });
     toast({
@@ -88,7 +124,7 @@ export default function CustomerMenuPage() {
         ? prev.filter(id => id !== itemId)
         : [...prev, itemId]
     );
-    const item = MENU_ITEMS.find(i => i.id === itemId);
+    const item = menuItems.find(i => i.id === itemId);
     toast({
       title: favorites.includes(itemId) ? 'Retiré des favoris' : 'Ajouté aux favoris',
       description: favorites.includes(itemId) 
@@ -127,7 +163,7 @@ export default function CustomerMenuPage() {
       {/* Categories */}
       <ScrollArea className="w-full">
         <div className="flex gap-2 pb-2">
-          {CATEGORIES.map(cat => (
+          {categories.map(cat => (
             <Button
               key={cat.id}
               variant={selectedCategory === cat.id ? 'default' : 'outline'}
@@ -142,105 +178,120 @@ export default function CustomerMenuPage() {
         </div>
       </ScrollArea>
 
-      {/* Menu Items */}
-      <div className="grid gap-4">
-        {filteredItems.map(item => {
-          const quantity = getItemQuantity(item.id);
-          const isFavorite = favorites.includes(item.id);
-          
-          return (
-            <Card key={item.id} className="overflow-hidden">
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="grid gap-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="animate-pulse">
               <CardContent className="p-4">
                 <div className="flex gap-4">
-                  {/* Image */}
-                  <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center text-4xl flex-shrink-0">
-                    {item.image}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{item.name}</h3>
-                          {item.popular && (
-                            <Badge variant="secondary" className="text-xs">
-                              <Flame className="h-3 w-3 mr-1 text-orange-500" />
-                              Populaire
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={`flex-shrink-0 ${isFavorite ? 'text-red-500' : ''}`}
-                        onClick={() => toggleFavorite(item.id)}
-                      >
-                        <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500' : ''}`} />
-                      </Button>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-3">
-                        <p className="font-bold text-orange-600">{formatCurrency(item.price)}</p>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {item.prepTime} min
-                        </div>
-                        {item.vegetarian && (
-                          <Badge variant="outline" className="text-xs">
-                            <Leaf className="h-3 w-3 mr-1 text-green-500" />
-                            Végétarien
-                          </Badge>
-                        )}
-                        {item.spicy && (
-                          <Badge variant="outline" className="text-xs text-red-500">
-                            🌶️ Épicé
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Add/Remove buttons */}
-                      {quantity > 0 ? (
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            className="h-8 w-8" 
-                            onClick={() => decreaseQuantity(item.id)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="font-bold w-6 text-center">{quantity}</span>
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            className="h-8 w-8" 
-                            onClick={() => increaseQuantity(item.id)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button 
-                          size="sm" 
-                          className="bg-orange-500 hover:bg-orange-600" 
-                          onClick={() => handleAddToCart(item)}
-                        >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Ajouter
-                        </Button>
-                      )}
-                    </div>
+                  <div className="w-20 h-20 rounded-lg bg-gray-200 dark:bg-gray-700" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
                   </div>
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-muted-foreground">Aucun article trouvé</p>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Menu Items */
+        <div className="grid gap-4">
+          {filteredItems.map(item => {
+            const quantity = getItemQuantity(item.id);
+            const isFavorite = favorites.includes(item.id);
+            
+            return (
+              <Card key={item.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex gap-4">
+                    {/* Image */}
+                    <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center text-4xl flex-shrink-0">
+                      {item.image || CATEGORY_ICONS[item.category] || '🍽️'}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{item.name}</h3>
+                            {item.isPopular && (
+                              <Badge variant="secondary" className="text-xs">
+                                <Flame className="h-3 w-3 mr-1 text-orange-500" />
+                                Populaire
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className={`flex-shrink-0 ${isFavorite ? 'text-red-500' : ''}`}
+                          onClick={() => toggleFavorite(item.id)}
+                        >
+                          <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500' : ''}`} />
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-orange-600">{formatCurrency(item.price)}</p>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {item.preparationTime} min
+                          </div>
+                        </div>
+
+                        {/* Add/Remove buttons */}
+                        {quantity > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              className="h-8 w-8" 
+                              onClick={() => decreaseQuantity(item.id)}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="font-bold w-6 text-center">{quantity}</span>
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              className="h-8 w-8" 
+                              onClick={() => increaseQuantity(item.id)}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            className="bg-orange-500 hover:bg-orange-600" 
+                            onClick={() => handleAddToCart(item)}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Ajouter
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Cart Summary - Fixed at bottom */}
       {cartCount > 0 && (

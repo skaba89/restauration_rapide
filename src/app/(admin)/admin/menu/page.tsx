@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,16 +31,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, RefreshCw, Save, X } from 'lucide-react';
-
-// Simple currency formatter for GNF (Guinean Franc)
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('fr-GN', {
-    style: 'decimal',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount) + ' GNF';
-};
+import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, RefreshCw, Save, X, Loader2 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
+import { useToast } from '@/hooks/use-toast';
 
 interface MenuItem {
   id: string;
@@ -51,29 +44,20 @@ interface MenuItem {
   costPrice: number;
   isAvailable: boolean;
   preparationTime: number;
-  image?: string;
+  isPopular: boolean;
   allergens: string[];
+  image?: string | null;
 }
-
-const DEMO_MENU_ITEMS: MenuItem[] = [
-  { id: '1', name: 'Poulet Grillé', description: 'Poulet grillé mariné aux épices', category: 'Plats', price: 25000, costPrice: 15000, isAvailable: true, preparationTime: 25, allergens: [] },
-  { id: '2', name: 'Poisson Braisé', description: 'Poisson frais braisé avec sauce', category: 'Plats', price: 30000, costPrice: 18000, isAvailable: true, preparationTime: 20, allergens: ['Poisson'] },
-  { id: '3', name: 'Riz Sauce', description: 'Riz accompagné de sauce tomate', category: 'Plats', price: 15000, costPrice: 8000, isAvailable: true, preparationTime: 15, allergens: [] },
-  { id: '4', name: 'Attieké Poisson', description: 'Attieké avec poisson grillé', category: 'Plats', price: 20000, costPrice: 12000, isAvailable: false, preparationTime: 20, allergens: ['Poisson'] },
-  { id: '5', name: 'Riz Gras', description: 'Riz gras traditionnel', category: 'Plats', price: 18000, costPrice: 10000, isAvailable: true, preparationTime: 30, allergens: [] },
-  { id: '6', name: 'Coca-Cola', description: 'Boisson gazeuse', category: 'Boissons', price: 2000, costPrice: 1000, isAvailable: true, preparationTime: 1, allergens: [] },
-  { id: '7', name: 'Jus de Bissap', description: 'Jus naturel de bissap', category: 'Boissons', price: 3000, costPrice: 1500, isAvailable: true, preparationTime: 2, allergens: [] },
-  { id: '8', name: 'Frites', description: 'Pommes de terre frites', category: 'Accompagnements', price: 5000, costPrice: 2500, isAvailable: true, preparationTime: 10, allergens: [] },
-];
 
 const CATEGORIES = ['Plats', 'Boissons', 'Accompagnements', 'Desserts', 'Entrées'];
 const ALLERGENS = ['Gluten', 'Poisson', 'Arachides', 'Lait', 'Œufs', 'Soja', 'Fruits de mer'];
 
 export default function MenuPage() {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(DEMO_MENU_ITEMS);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Dialogs
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -92,6 +76,35 @@ export default function MenuPage() {
     isAvailable: true,
     allergens: [] as string[],
   });
+
+  const { formatCurrency } = useCurrencySafe();
+  const { toast } = useToast();
+
+  // Fetch menu items from API
+  const fetchMenuItems = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/admin/menu');
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        setMenuItems(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching menu:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger le menu',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMenuItems();
+  }, []);
 
   const categories = ['all', ...new Set(menuItems.map(item => item.category))];
   
@@ -141,67 +154,148 @@ export default function MenuPage() {
     setShowDeleteDialog(true);
   };
 
-  const handleAddItem = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const newItem: MenuItem = {
-        id: Date.now().toString(),
-        name: formData.name,
-        description: formData.description,
-        category: formData.category,
-        price: parseFloat(formData.price) || 0,
-        costPrice: parseFloat(formData.costPrice) || 0,
-        preparationTime: parseInt(formData.preparationTime) || 15,
-        isAvailable: formData.isAvailable,
-        allergens: formData.allergens,
-      };
-      setMenuItems(prev => [...prev, newItem]);
-      setShowAddDialog(false);
-      resetForm();
-      setIsLoading(false);
-    }, 500);
+  const handleAddItem = async () => {
+    if (!formData.name || !formData.price) {
+      toast({
+        title: 'Erreur',
+        description: 'Le nom et le prix sont requis',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/admin/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => [...prev, result.data]);
+        setShowAddDialog(false);
+        resetForm();
+        toast({
+          title: 'Succès',
+          description: 'Article ajouté avec succès',
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Erreur lors de l\'ajout',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleEditItem = () => {
+  const handleEditItem = async () => {
     if (!editingItem) return;
-    setIsLoading(true);
-    setTimeout(() => {
-      setMenuItems(prev => prev.map(item => 
-        item.id === editingItem.id
-          ? {
-              ...item,
-              name: formData.name,
-              description: formData.description,
-              category: formData.category,
-              price: parseFloat(formData.price) || 0,
-              costPrice: parseFloat(formData.costPrice) || 0,
-              preparationTime: parseInt(formData.preparationTime) || 15,
-              isAvailable: formData.isAvailable,
-              allergens: formData.allergens,
-            }
-          : item
-      ));
-      setShowEditDialog(false);
-      resetForm();
-      setIsLoading(false);
-    }, 500);
+    if (!formData.name || !formData.price) {
+      toast({
+        title: 'Erreur',
+        description: 'Le nom et le prix sont requis',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/admin/menu', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingItem.id, ...formData }),
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => prev.map(item => 
+          item.id === editingItem.id ? result.data : item
+        ));
+        setShowEditDialog(false);
+        resetForm();
+        toast({
+          title: 'Succès',
+          description: 'Article mis à jour',
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Erreur lors de la mise à jour',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDeleteItem = () => {
+  const handleDeleteItem = async () => {
     if (!editingItem) return;
-    setIsLoading(true);
-    setTimeout(() => {
-      setMenuItems(prev => prev.filter(item => item.id !== editingItem.id));
-      setShowDeleteDialog(false);
-      resetForm();
-      setIsLoading(false);
-    }, 500);
+
+    setIsSaving(true);
+    try {
+      const response = await fetch(`/api/admin/menu?id=${editingItem.id}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => prev.filter(item => item.id !== editingItem.id));
+        setShowDeleteDialog(false);
+        resetForm();
+        toast({
+          title: 'Succès',
+          description: 'Article supprimé',
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Erreur lors de la suppression',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const toggleAvailability = (item: MenuItem) => {
-    setMenuItems(prev => prev.map(i => 
-      i.id === item.id ? { ...i, isAvailable: !i.isAvailable } : i
-    ));
+  const toggleAvailability = async (item: MenuItem) => {
+    try {
+      const response = await fetch('/api/admin/menu', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, isAvailable: !item.isAvailable }),
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setMenuItems(prev => prev.map(i => 
+          i.id === item.id ? { ...i, isAvailable: !i.isAvailable } : i
+        ));
+        toast({
+          title: 'Succès',
+          description: `Article ${!item.isAvailable ? 'disponible' : 'indisponible'}`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de la mise à jour',
+        variant: 'destructive',
+      });
+    }
   };
 
   const toggleAllergen = (allergen: string) => {
@@ -327,10 +421,16 @@ export default function MenuPage() {
           <h1 className="text-2xl font-bold text-gray-900">Gestion du Menu</h1>
           <p className="text-gray-500">Gérer les articles du menu</p>
         </div>
-        <Button onClick={openAddDialog}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nouvel article
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchMenuItems} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
+          <Button onClick={openAddDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvel article
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -394,91 +494,101 @@ export default function MenuPage() {
         </div>
       </div>
 
-      {/* Menu Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Article</TableHead>
-                <TableHead>Catégorie</TableHead>
-                <TableHead>Prix</TableHead>
-                <TableHead>Marge</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredItems.length === 0 ? (
+      {/* Loading State */}
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Chargement du menu...</p>
+          </CardContent>
+        </Card>
+      ) : (
+        /* Menu Table */
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                    Aucun article trouvé
-                  </TableCell>
+                  <TableHead>Article</TableHead>
+                  <TableHead>Catégorie</TableHead>
+                  <TableHead>Prix</TableHead>
+                  <TableHead>Marge</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : (
-                filteredItems.map((item) => {
-                  const margin = item.price - item.costPrice;
-                  const marginPercent = item.costPrice > 0 ? Math.round((margin / item.costPrice) * 100) : 0;
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-sm text-gray-500 max-w-xs truncate">{item.description}</p>
-                          {item.allergens.length > 0 && (
-                            <div className="flex gap-1 mt-1">
-                              {item.allergens.map(a => (
-                                <Badge key={a} variant="outline" className="text-xs">{a}</Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{item.category}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <p className="font-medium">{formatCurrency(item.price)}</p>
-                        <p className="text-xs text-gray-500">Coût: {formatCurrency(item.costPrice)}</p>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-green-600">{formatCurrency(margin)}</p>
-                        <p className="text-xs text-gray-500">({marginPercent}%)</p>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={item.isAvailable ? 'default' : 'secondary'}
-                          className={item.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
-                        >
-                          {item.isAvailable ? 'Disponible' : 'Indisponible'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => toggleAvailability(item)}
-                            title={item.isAvailable ? 'Rendre indisponible' : 'Rendre disponible'}
+              </TableHeader>
+              <TableBody>
+                {filteredItems.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      Aucun article trouvé
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredItems.map((item) => {
+                    const margin = item.price - item.costPrice;
+                    const marginPercent = item.costPrice > 0 ? Math.round((margin / item.costPrice) * 100) : 0;
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-sm text-gray-500 max-w-xs truncate">{item.description}</p>
+                            {item.allergens && item.allergens.length > 0 && (
+                              <div className="flex gap-1 mt-1">
+                                {item.allergens.map(a => (
+                                  <Badge key={a} variant="outline" className="text-xs">{a}</Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{item.category}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <p className="font-medium">{formatCurrency(item.price)}</p>
+                          <p className="text-xs text-gray-500">Coût: {formatCurrency(item.costPrice)}</p>
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-green-600">{formatCurrency(margin)}</p>
+                          <p className="text-xs text-gray-500">({marginPercent}%)</p>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={item.isAvailable ? 'default' : 'secondary'}
+                            className={item.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
                           >
-                            {item.isAvailable ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(item)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(item)} className="text-red-500">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                            {item.isAvailable ? 'Disponible' : 'Indisponible'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => toggleAvailability(item)}
+                              title={item.isAvailable ? 'Rendre indisponible' : 'Rendre disponible'}
+                            >
+                              {item.isAvailable ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(item)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(item)} className="text-red-500">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Add Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -493,8 +603,8 @@ export default function MenuPage() {
               <X className="h-4 w-4 mr-2" />
               Annuler
             </Button>
-            <Button onClick={handleAddItem} disabled={!formData.name || !formData.price || isLoading}>
-              {isLoading ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+            <Button onClick={handleAddItem} disabled={!formData.name || !formData.price || isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               Enregistrer
             </Button>
           </DialogFooter>
@@ -514,8 +624,8 @@ export default function MenuPage() {
               <X className="h-4 w-4 mr-2" />
               Annuler
             </Button>
-            <Button onClick={handleEditItem} disabled={!formData.name || !formData.price || isLoading}>
-              {isLoading ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+            <Button onClick={handleEditItem} disabled={!formData.name || !formData.price || isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               Enregistrer
             </Button>
           </DialogFooter>
@@ -535,8 +645,8 @@ export default function MenuPage() {
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
               Annuler
             </Button>
-            <Button variant="destructive" onClick={handleDeleteItem} disabled={isLoading}>
-              {isLoading ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+            <Button variant="destructive" onClick={handleDeleteItem} disabled={isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
               Supprimer
             </Button>
           </DialogFooter>

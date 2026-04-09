@@ -1,17 +1,74 @@
 // Settings API - Restaurant/Organization settings management
-import { db } from '@/lib/db';
-import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
+import { db, isDatabaseAvailable } from '@/lib/db';
+import { NextResponse } from 'next/server';
+
+// Helper to get or create default organization
+async function getOrCreateDefaultOrganization() {
+  let organization = await db.organization.findFirst();
+  
+  if (!organization) {
+    // Create required reference data
+    let currency = await db.currency.findUnique({ where: { code: 'GNF' } });
+    if (!currency) {
+      currency = await db.currency.create({
+        data: { code: 'GNF', name: 'Franc Guinéen', symbol: 'GNF', decimalPlaces: 0 },
+      });
+    }
+    
+    let country = await db.country.findUnique({ where: { code: 'GN' } });
+    if (!country) {
+      country = await db.country.create({
+        data: {
+          code: 'GN',
+          name: 'Guinée',
+          dialCode: '+224',
+          currencyId: currency.id,
+          isActive: true,
+        },
+      });
+    }
+    
+    organization = await db.organization.create({
+      data: {
+        name: 'KFM DELICE',
+        slug: 'kfm-delice-org',
+        email: 'contact@kfm-delice.com',
+        phone: '+224623217240',
+        city: 'Conakry',
+        countryId: country.id,
+        currencyId: currency.id,
+        plan: 'BUSINESS',
+        settings: {
+          create: {
+            minOrderAmount: 10000,
+            defaultDeliveryFee: 5000,
+            orderPrepTime: 20,
+            loyaltyEnabled: true,
+            acceptsCash: true,
+            acceptsMobileMoney: true,
+          },
+        },
+      },
+      include: { settings: true },
+    });
+  }
+  
+  return organization;
+}
 
 // GET /api/settings - Get organization/restaurant settings
 export async function GET(request: Request) {
-  return withErrorHandler(async () => {
+  try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json({
+        success: false,
+        error: 'Base de données non disponible',
+      }, { status: 503 });
+    }
+
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
     const restaurantId = searchParams.get('restaurantId');
-
-    if (!organizationId && !restaurantId) {
-      return apiError('organizationId ou restaurantId est requis');
-    }
 
     // Get organization settings
     if (organizationId) {
@@ -44,20 +101,18 @@ export async function GET(request: Request) {
               isOpen: true,
             },
           },
-          _count: {
-            select: {
-              restaurants: true,
-              users: true,
-            },
-          },
         },
       });
 
       if (!organization) {
-        return apiError('Organisation non trouvee', 404);
+        return NextResponse.json({
+          success: false,
+          error: 'Organisation non trouvée',
+        }, { status: 404 });
       }
 
-      return apiSuccess({
+      return NextResponse.json({
+        success: true,
         organization,
         settings: organization.settings,
       });
@@ -69,36 +124,20 @@ export async function GET(request: Request) {
         where: { id: restaurantId },
         include: {
           settings: true,
-          hours: {
-            orderBy: { dayOfWeek: 'asc' },
-          },
-          deliveryZones: {
-            where: { isActive: true },
-            orderBy: { sortOrder: 'asc' },
-          },
-          tables: {
-            select: {
-              id: true,
-              number: true,
-              capacity: true,
-              status: true,
-            },
-          },
-          _count: {
-            select: {
-              menus: true,
-              tables: true,
-              orders: true,
-            },
-          },
+          hours: { orderBy: { dayOfWeek: 'asc' } },
+          deliveryZones: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } },
         },
       });
 
       if (!restaurant) {
-        return apiError('Restaurant non trouve', 404);
+        return NextResponse.json({
+          success: false,
+          error: 'Restaurant non trouvé',
+        }, { status: 404 });
       }
 
-      return apiSuccess({
+      return NextResponse.json({
+        success: true,
         restaurant,
         settings: restaurant.settings,
         hours: restaurant.hours,
@@ -106,45 +145,75 @@ export async function GET(request: Request) {
       });
     }
 
-    return apiError('Erreur de parametres');
-  });
+    // No ID provided - return default organization
+    const organization = await getOrCreateDefaultOrganization();
+    
+    return NextResponse.json({
+      success: true,
+      organization,
+      settings: organization.settings,
+    });
+  } catch (error) {
+    console.error('Error in settings GET:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Erreur lors du chargement des paramètres',
+    }, { status: 500 });
+  }
 }
 
 // PATCH /api/settings - Update settings
 export async function PATCH(request: Request) {
-  return withErrorHandler(async () => {
+  try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json({
+        success: false,
+        error: 'Base de données non disponible',
+      }, { status: 503 });
+    }
+
     const body = await request.json();
     const { type, organizationId, restaurantId, settings } = body;
 
-    if (type === 'organization' && organizationId) {
-      // Update organization settings
+    // Update organization settings
+    if (type === 'organization' || !type) {
+      let orgId = organizationId;
+      
+      // If no organizationId provided, get or create default
+      if (!orgId) {
+        const org = await getOrCreateDefaultOrganization();
+        orgId = org.id;
+      }
+
       const organization = await db.organization.findUnique({
-        where: { id: organizationId },
+        where: { id: orgId },
       });
 
       if (!organization) {
-        return apiError('Organisation non trouvee', 404);
+        return NextResponse.json({
+          success: false,
+          error: 'Organisation non trouvée',
+        }, { status: 404 });
       }
 
       // Update organization basic info
-      if (settings.organization) {
+      if (settings?.organization) {
         await db.organization.update({
-          where: { id: organizationId },
+          where: { id: orgId },
           data: {
             name: settings.organization.name,
             email: settings.organization.email,
             phone: settings.organization.phone,
             address: settings.organization.address,
             city: settings.organization.city,
-            countryId: settings.organization.countryId,
           },
         });
       }
 
       // Update or create organization settings
-      if (settings.config) {
+      if (settings?.config) {
         await db.organizationSettings.upsert({
-          where: { organizationId },
+          where: { organizationId: orgId },
           update: {
             minOrderAmount: settings.config.minOrderAmount,
             maxDeliveryRadius: settings.config.maxDeliveryRadius,
@@ -152,60 +221,45 @@ export async function PATCH(request: Request) {
             autoAcceptOrders: settings.config.autoAcceptOrders,
             orderPrepTime: settings.config.orderPrepTime,
             reservationEnabled: settings.config.reservationEnabled,
-            autoConfirmReservations: settings.config.autoConfirmReservations,
-            defaultTableTime: settings.config.defaultTableTime,
-            noShowFee: settings.config.noShowFee,
             acceptsCash: settings.config.acceptsCash,
             acceptsMobileMoney: settings.config.acceptsMobileMoney,
             acceptsCard: settings.config.acceptsCard,
-            acceptsWallet: settings.config.acceptsWallet,
             deliveryEnabled: settings.config.deliveryEnabled,
-            selfDelivery: settings.config.selfDelivery,
-            thirdPartyDelivery: settings.config.thirdPartyDelivery,
             loyaltyEnabled: settings.config.loyaltyEnabled,
-            pointsPerAmount: settings.config.pointsPerAmount,
-            pointValue: settings.config.pointValue,
           },
           create: {
-            organizationId,
+            organizationId: orgId,
             minOrderAmount: settings.config.minOrderAmount || 0,
-            maxDeliveryRadius: settings.config.maxDeliveryRadius || 10,
             defaultDeliveryFee: settings.config.defaultDeliveryFee || 0,
-            autoAcceptOrders: settings.config.autoAcceptOrders || false,
-            orderPrepTime: settings.config.orderPrepTime || 15,
-            reservationEnabled: settings.config.reservationEnabled ?? true,
-            autoConfirmReservations: settings.config.autoConfirmReservations ?? true,
-            defaultTableTime: settings.config.defaultTableTime || 120,
-            noShowFee: settings.config.noShowFee || 0,
+            orderPrepTime: settings.config.orderPrepTime || 20,
             acceptsCash: settings.config.acceptsCash ?? true,
             acceptsMobileMoney: settings.config.acceptsMobileMoney ?? true,
-            acceptsCard: settings.config.acceptsCard ?? false,
-            acceptsWallet: settings.config.acceptsWallet ?? false,
-            deliveryEnabled: settings.config.deliveryEnabled ?? true,
-            selfDelivery: settings.config.selfDelivery ?? true,
-            thirdPartyDelivery: settings.config.thirdPartyDelivery ?? false,
             loyaltyEnabled: settings.config.loyaltyEnabled ?? true,
-            pointsPerAmount: settings.config.pointsPerAmount || 1,
-            pointValue: settings.config.pointValue || 10,
           },
         });
       }
 
-      return apiSuccess({ updated: true }, 'Parametres mis a jour');
+      return NextResponse.json({
+        success: true,
+        message: 'Paramètres mis à jour',
+      });
     }
 
+    // Update restaurant settings
     if (type === 'restaurant' && restaurantId) {
-      // Update restaurant settings
       const restaurant = await db.restaurant.findUnique({
         where: { id: restaurantId },
       });
 
       if (!restaurant) {
-        return apiError('Restaurant non trouve', 404);
+        return NextResponse.json({
+          success: false,
+          error: 'Restaurant non trouvé',
+        }, { status: 404 });
       }
 
       // Update restaurant basic info
-      if (settings.restaurant) {
+      if (settings?.restaurant) {
         await db.restaurant.update({
           where: { id: restaurantId },
           data: {
@@ -216,9 +270,6 @@ export async function PATCH(request: Request) {
             city: settings.restaurant.city,
             deliveryFee: settings.restaurant.deliveryFee,
             minOrderAmount: settings.restaurant.minOrderAmount,
-            maxDeliveryRadius: settings.restaurant.maxDeliveryRadius,
-            deliveryTime: settings.restaurant.deliveryTime,
-            acceptsReservations: settings.restaurant.acceptsReservations,
             acceptsDelivery: settings.restaurant.acceptsDelivery,
             acceptsTakeaway: settings.restaurant.acceptsTakeaway,
             acceptsDineIn: settings.restaurant.acceptsDineIn,
@@ -227,7 +278,7 @@ export async function PATCH(request: Request) {
       }
 
       // Update hours if provided
-      if (settings.hours && Array.isArray(settings.hours)) {
+      if (settings?.hours && Array.isArray(settings.hours)) {
         for (const hour of settings.hours) {
           await db.restaurantHour.upsert({
             where: {
@@ -240,8 +291,6 @@ export async function PATCH(request: Request) {
               openTime: hour.openTime,
               closeTime: hour.closeTime,
               isClosed: hour.isClosed,
-              breakStart: hour.breakStart,
-              breakEnd: hour.breakEnd,
             },
             create: {
               restaurantId,
@@ -249,15 +298,13 @@ export async function PATCH(request: Request) {
               openTime: hour.openTime,
               closeTime: hour.closeTime,
               isClosed: hour.isClosed || false,
-              breakStart: hour.breakStart,
-              breakEnd: hour.breakEnd,
             },
           });
         }
       }
 
       // Update or create restaurant settings
-      if (settings.config) {
+      if (settings?.config) {
         await db.restaurantSettings.upsert({
           where: { restaurantId },
           update: {
@@ -276,59 +323,21 @@ export async function PATCH(request: Request) {
         });
       }
 
-      return apiSuccess({ updated: true }, 'Parametres du restaurant mis a jour');
-    }
-
-    return apiError('Type ou ID manquant');
-  });
-}
-
-// POST /api/settings - Create delivery zone or other settings
-export async function POST(request: Request) {
-  return withErrorHandler(async () => {
-    const body = await request.json();
-    const { action, restaurantId, deliveryZone } = body;
-
-    // Create delivery zone
-    if (action === 'create-delivery-zone' && restaurantId && deliveryZone) {
-      const zone = await db.deliveryZone.create({
-        data: {
-          restaurantId,
-          name: deliveryZone.name,
-          description: deliveryZone.description,
-          districts: deliveryZone.districts ? JSON.stringify(deliveryZone.districts) : null,
-          baseFee: deliveryZone.baseFee || 0,
-          perKmFee: deliveryZone.perKmFee || 0,
-          minOrder: deliveryZone.minOrder || 0,
-          minTime: deliveryZone.minTime || 15,
-          maxTime: deliveryZone.maxTime || 45,
-          isActive: true,
-        },
+      return NextResponse.json({
+        success: true,
+        message: 'Paramètres du restaurant mis à jour',
       });
-
-      return apiSuccess(zone, 'Zone de livraison creee', 201);
     }
 
-    return apiError('Action non reconnue');
-  });
-}
-
-// DELETE /api/settings - Delete delivery zone
-export async function DELETE(request: Request) {
-  return withErrorHandler(async () => {
-    const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action');
-    const id = searchParams.get('id');
-
-    if (action === 'delete-delivery-zone' && id) {
-      await db.deliveryZone.update({
-        where: { id },
-        data: { isActive: false },
-      });
-
-      return apiSuccess({ deleted: true }, 'Zone de livraison supprimee');
-    }
-
-    return apiError('Action ou ID manquant');
-  });
+    return NextResponse.json({
+      success: false,
+      error: 'Type ou ID manquant',
+    }, { status: 400 });
+  } catch (error) {
+    console.error('Error in settings PATCH:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Erreur lors de la mise à jour',
+    }, { status: 500 });
+  }
 }

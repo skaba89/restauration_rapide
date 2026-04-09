@@ -123,6 +123,7 @@ const NAV_CATEGORIES: NavCategory[] = [
     title: 'Paramètres',
     icon: Settings,
     items: [
+      { title: 'Mon Restaurant', href: '/admin/restaurant', icon: Store },
       { title: 'Général', href: '/admin/settings', icon: Settings },
       { title: 'Notifications', href: '/admin/settings/notifications', icon: Bell },
       { title: 'Sécurité', href: '/admin/settings/security', icon: Shield },

@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 
 // Default menu items for demo mode
-const DEFAULT_MENU_ITEMS = [
+const DEFAULT_MENU_ITEMS = [  
   // PLATS IVOIRIENS
   { id: '1', name: 'Attieké Poisson Grillé', description: 'Semoule de manioc avec poisson grillé, sauce tomate et légumes frais', category: 'Plats Ivoiriens', price: 45000, costPrice: 25000, isAvailable: true, preparationTime: 20, isPopular: true, isNew: false, allergens: [], image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80', orderCount: 150 },
   { id: '2', name: 'Alloco Sauce Graine', description: 'Bananes plantains frites avec sauce graine de palme', category: 'Plats Ivoiriens', price: 25000, costPrice: 12000, isAvailable: true, preparationTime: 15, isPopular: true, isNew: false, allergens: [], image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80', orderCount: 120 },

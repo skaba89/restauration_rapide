@@ -23,11 +23,20 @@ else
     echo ""
     echo "🔍 Testing database connection..."
     
-    # Try to generate Prisma client
+    # Generate Prisma client
     if [ -f "prisma/schema.production.prisma" ]; then
         npx prisma generate --schema=./prisma/schema.production.prisma 2>&1 || echo "⚠️ Prisma generate skipped"
     else
         npx prisma generate 2>&1 || echo "⚠️ Prisma generate skipped"
+    fi
+
+    # Auto-create missing tables (SimpleMenuItem, etc.)
+    echo ""
+    echo "🔄 Syncing database schema (prisma db push)..."
+    if [ -f "prisma/schema.production.prisma" ]; then
+        npx prisma db push --schema=./prisma/schema.production.prisma --accept-data-loss 2>&1 || echo "⚠️ Prisma db push skipped"
+    else
+        npx prisma db push --accept-data-loss 2>&1 || echo "⚠️ Prisma db push skipped"
     fi
 fi
 

@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -444,6 +445,7 @@ export default function OrdersManagementPage() {
                     {STATUS_CONFIG[selectedOrder.status].label}
                   </Badge>
                 </DialogTitle>
+                <DialogDescription className="sr-only">Détails et gestion de la commande {selectedOrder.orderNumber}.</DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4 mt-4">

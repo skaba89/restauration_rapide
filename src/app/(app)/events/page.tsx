@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Calendar,
@@ -183,6 +184,7 @@ function QuotesTab() {
       {/* Quote Builder Dialog */}
       <Dialog open={showQuoteBuilder} onOpenChange={setShowQuoteBuilder}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogDescription className="sr-only">Créer un nouveau devis pour un événement.</DialogDescription>
           <QuoteBuilder
             onClose={() => setShowQuoteBuilder(false)}
             onSuccess={() => {
@@ -282,6 +284,7 @@ export default function EventsPage() {
       {/* New Event Dialog */}
       <Dialog open={showNewEvent} onOpenChange={setShowNewEvent}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogDescription className="sr-only">Créer un nouvel événement avec les détails de la demande.</DialogDescription>
           <QuoteBuilder
             onClose={() => setShowNewEvent(false)}
             onSuccess={() => {

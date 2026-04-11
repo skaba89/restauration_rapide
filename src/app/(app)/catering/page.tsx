@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Calendar,
@@ -315,6 +316,7 @@ function CustomerPortalTab() {
       {/* Booking Form Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogDescription className="sr-only">Formulaire de réservation pour un événement traiteur.</DialogDescription>
           <QuoteBuilder
             onClose={() => setShowBookingForm(false)}
             onSuccess={() => {
@@ -430,6 +432,7 @@ export default function CateringPage() {
       {/* New Event Dialog */}
       <Dialog open={showNewEvent} onOpenChange={setShowNewEvent}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogDescription className="sr-only">Créer une nouvelle réservation d'événement traiteur.</DialogDescription>
           <QuoteBuilder
             onClose={() => setShowNewEvent(false)}
             onSuccess={() => {

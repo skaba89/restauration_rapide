@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { UsersRound, Plus, Clock, Phone, User, RefreshCw, Trash2, Check, UserPlus, Bell } from 'lucide-react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface WaitlistEntry {
   id: string;
@@ -124,7 +124,7 @@ export default function WaitlistPage() {
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Ajouter à la liste d'attente</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Ajouter à la liste d'attente</DialogTitle><DialogDescription className="sr-only">Entrez les informations du client à ajouter à la file d'attente.</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Nom *</Label><Input value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} /></div>
             <div className="space-y-2"><Label>Téléphone *</Label><Input value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))} /></div>

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -220,6 +221,7 @@ export default function MyRestaurantsPage() {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Créer un nouveau restaurant</DialogTitle>
+                <DialogDescription className="sr-only">Remplissez les informations pour créer un nouveau restaurant.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div>

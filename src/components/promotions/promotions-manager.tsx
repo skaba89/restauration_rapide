@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Gift,
   Percent,
@@ -378,6 +378,7 @@ export function PromotionsManager() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingPromo ? 'Modifier la promotion' : 'Nouvelle Promotion'}</DialogTitle>
+            <DialogDescription className="sr-only">{editingPromo ? 'Modifier les détails de la promotion existante.' : 'Remplissez les informations pour créer une nouvelle promotion.'}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div><Label>Nom *</Label><Input value={newPromo.name} onChange={(e) => setNewPromo(prev => ({ ...prev, name: e.target.value }))} /></div>

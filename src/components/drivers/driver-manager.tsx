@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Bike,
   Phone,
@@ -407,7 +407,7 @@ export function DriverManager() {
       {/* Add Driver Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Nouveau Livreur</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Nouveau Livreur</DialogTitle><DialogDescription className="sr-only">Remplissez les informations pour ajouter un nouveau livreur.</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Prénom *</Label><Input value={newDriver.firstName} onChange={(e) => setNewDriver(prev => ({ ...prev, firstName: e.target.value }))} /></div>
@@ -442,7 +442,7 @@ export function DriverManager() {
       {/* Driver Details Modal */}
       <Dialog open={!!selectedDriver} onOpenChange={() => setSelectedDriver(null)}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Détails du livreur</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Détails du livreur</DialogTitle><DialogDescription className="sr-only">Informations détaillées sur le livreur sélectionné.</DialogDescription></DialogHeader>
           {selectedDriver && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">

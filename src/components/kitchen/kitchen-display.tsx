@@ -221,7 +221,7 @@ export function KitchenDisplay() {
       const response = await fetch('/api/orders?demo=true&status=PENDING,CONFIRMED,PREPARING,READY');
       const data = await response.json();
       
-      if (data.success && data.data) {
+      if (data.success && data.data && Array.isArray(data.data.data) && data.data.data.length > 0) {
         const previousIds = previousOrdersRef.current.map(o => o.id);
         const newOrders = data.data.data.filter((o: KitchenOrder) => !previousIds.includes(o.id));
         
@@ -260,6 +260,7 @@ export function KitchenDisplay() {
         previousOrdersRef.current = kitchenOrders;
         setOrders(kitchenOrders);
       }
+      // If API returns no orders or fails, keep using current/demo data
       setLastUpdate(new Date());
     } catch (error) {
       console.error('Failed to fetch orders:', error);

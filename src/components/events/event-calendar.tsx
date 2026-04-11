@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   ChevronLeft,
@@ -438,6 +439,7 @@ export function EventCalendar() {
       {/* Event Detail Dialog */}
       <Dialog open={showEventDetail} onOpenChange={setShowEventDetail}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogDescription className="sr-only">Détails de l'événement sélectionné avec options de gestion.</DialogDescription>
           {selectedEvent && (
             <EventDetail
               event={selectedEvent}

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   CalendarDays,
   Clock,
@@ -337,7 +337,7 @@ export function ReservationsManager() {
       {/* New Reservation Dialog */}
       <Dialog open={showNewReservation} onOpenChange={setShowNewReservation}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nouvelle Réservation</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Nouvelle Réservation</DialogTitle><DialogDescription className="sr-only">Remplissez les informations pour créer une nouvelle réservation.</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Nom *</Label><Input value={newRes.customerName} onChange={(e) => setNewRes(prev => ({ ...prev, customerName: e.target.value }))} placeholder="Nom du client" /></div>
@@ -382,7 +382,7 @@ export function ReservationsManager() {
       {/* Reminder Dialog */}
       <Dialog open={!!showReminderDialog} onOpenChange={() => setShowReminderDialog(null)}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Envoyer un rappel</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Envoyer un rappel</DialogTitle><DialogDescription className="sr-only">Choisissez le canal pour envoyer le rappel au client.</DialogDescription></DialogHeader>
           <div className="flex gap-4">
             <Button className="flex-1 bg-blue-500 hover:bg-blue-600" onClick={() => showReminderDialog && handleSendReminder(showReminderDialog, 'sms')}>
               <MessageSquare className="w-4 h-4 mr-2" /> SMS

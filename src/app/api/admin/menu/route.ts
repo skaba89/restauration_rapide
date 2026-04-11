@@ -1,5 +1,5 @@
 // Menu Items Management API - Uses Prisma Database (SimpleMenuItem)
-// Falls back to demo data when database is unavailable
+// Falls back to demo data when database is unavailable or table doesn't exist
 import { NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 
@@ -36,12 +36,32 @@ const DEFAULT_MENU_ITEMS = [
   { id: '18', name: 'Ataya', description: 'Thé à la menthe guinéen', category: 'Boissons', price: 3000, costPrice: 1000, isAvailable: true, preparationTime: 10, isPopular: false, isNew: false, allergens: [], image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=800&q=80', orderCount: 180 },
 ];
 
+// Helper: check if an ID is a demo item ID
+function isDemoId(id: string): boolean {
+  return DEFAULT_MENU_ITEMS.some(item => item.id === id);
+}
+
+// Helper: get a demo item by ID
+function getDemoItem(id: string) {
+  return DEFAULT_MENU_ITEMS.find(item => item.id === id) || null;
+}
+
+// Helper: merge update data into a demo item with proper type conversion
+function mergeDemoUpdate(demoItem: typeof DEFAULT_MENU_ITEMS[0], updateData: Record<string, unknown>) {
+  return {
+    ...demoItem,
+    ...updateData,
+    price: updateData.price !== undefined ? parseFloat(String(updateData.price)) : demoItem.price,
+    costPrice: updateData.costPrice !== undefined ? parseFloat(String(updateData.costPrice)) : demoItem.costPrice,
+    preparationTime: updateData.preparationTime !== undefined ? parseInt(String(updateData.preparationTime)) : demoItem.preparationTime,
+  };
+}
+
 // GET - Fetch all menu items for admin
 export async function GET() {
   try {
     // Check if database is available
     if (!isDatabaseAvailable() || !db) {
-      // Return demo data when database is unavailable
       return NextResponse.json({
         success: true,
         data: DEFAULT_MENU_ITEMS,
@@ -51,7 +71,6 @@ export async function GET() {
     }
 
     try {
-      // Fetch from database
       const items = await db.simpleMenuItem.findMany({
         orderBy: [
           { category: 'asc' },
@@ -60,7 +79,6 @@ export async function GET() {
       });
 
       if (items.length === 0) {
-        // Return demo data if database is empty
         return NextResponse.json({
           success: true,
           data: DEFAULT_MENU_ITEMS,
@@ -69,7 +87,6 @@ export async function GET() {
         });
       }
 
-      // Transform to match expected format
       const menuItems = items.map(item => ({
         id: item.id,
         name: item.name,
@@ -93,7 +110,6 @@ export async function GET() {
       });
     } catch (dbError) {
       console.error('Database error:', dbError);
-      // Return demo data on database error
       return NextResponse.json({
         success: true,
         data: DEFAULT_MENU_ITEMS,
@@ -125,18 +141,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if database is available
     if (!isDatabaseAvailable() || !db) {
-      return NextResponse.json({
-        success: false,
-        error: 'Mode démonstration - Les modifications ne sont pas sauvegardées. Connectez la base de données.',
-        demo: true,
-      }, { status: 503 });
-    }
-
-    // Create in database
-    const newItem = await db.simpleMenuItem.create({
-      data: {
+      // Demo mode: create a mock item with generated ID
+      const mockItem = {
+        id: `demo-${Date.now()}`,
         name,
         description: description || '',
         category: category || 'Plats',
@@ -146,30 +154,79 @@ export async function POST(request: Request) {
         preparationTime: parseInt(preparationTime) || 15,
         isPopular: isPopular || false,
         isNew: isNew || false,
-        allergens: allergens && allergens.length > 0 ? JSON.stringify(allergens) : null,
+        allergens: allergens || [],
         image: image || null,
-      },
-    });
+        orderCount: 0,
+      };
+      return NextResponse.json({
+        success: true,
+        data: mockItem,
+        message: 'Article créé (mode démo)',
+        demo: true,
+      });
+    }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: newItem.id,
-        name: newItem.name,
-        description: newItem.description,
-        category: newItem.category,
-        price: newItem.price,
-        costPrice: newItem.costPrice,
-        isAvailable: newItem.isAvailable,
-        preparationTime: newItem.preparationTime,
-        isPopular: newItem.isPopular,
-        isNew: newItem.isNew,
-        allergens: newItem.allergens ? JSON.parse(newItem.allergens) : [],
-        image: newItem.image,
-        orderCount: newItem.orderCount,
-      },
-      message: 'Article créé avec succès',
-    });
+    try {
+      const newItem = await db.simpleMenuItem.create({
+        data: {
+          name,
+          description: description || '',
+          category: category || 'Plats',
+          price: parseFloat(price) || 0,
+          costPrice: parseFloat(costPrice) || 0,
+          isAvailable: isAvailable !== false,
+          preparationTime: parseInt(preparationTime) || 15,
+          isPopular: isPopular || false,
+          isNew: isNew || false,
+          allergens: allergens && allergens.length > 0 ? JSON.stringify(allergens) : null,
+          image: image || null,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: newItem.id,
+          name: newItem.name,
+          description: newItem.description,
+          category: newItem.category,
+          price: newItem.price,
+          costPrice: newItem.costPrice,
+          isAvailable: newItem.isAvailable,
+          preparationTime: newItem.preparationTime,
+          isPopular: newItem.isPopular,
+          isNew: newItem.isNew,
+          allergens: newItem.allergens ? JSON.parse(newItem.allergens) : [],
+          image: newItem.image,
+          orderCount: newItem.orderCount,
+        },
+        message: 'Article créé avec succès',
+      });
+    } catch (dbError) {
+      console.error('Database error creating menu item:', dbError);
+      // Fallback to demo mode
+      const mockItem = {
+        id: `demo-${Date.now()}`,
+        name,
+        description: description || '',
+        category: category || 'Plats',
+        price: parseFloat(price) || 0,
+        costPrice: parseFloat(costPrice) || 0,
+        isAvailable: isAvailable !== false,
+        preparationTime: parseInt(preparationTime) || 15,
+        isPopular: isPopular || false,
+        isNew: isNew || false,
+        allergens: allergens || [],
+        image: image || null,
+        orderCount: 0,
+      };
+      return NextResponse.json({
+        success: true,
+        data: mockItem,
+        message: 'Article créé (mode démo - erreur base de données)',
+        demo: true,
+      });
+    }
   } catch (error) {
     console.error('Error creating menu item:', error);
     return NextResponse.json(
@@ -192,18 +249,11 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Check if database is available
-    if (!isDatabaseAvailable() || !db) {
-      // Demo mode: simulate success by returning the updated demo item
-      const demoItem = DEFAULT_MENU_ITEMS.find(item => item.id === id);
+    // If the item ID is a demo ID, handle it entirely in demo mode (no DB call)
+    if (isDemoId(id)) {
+      const demoItem = getDemoItem(id);
       if (demoItem) {
-        const updatedDemoItem = {
-          ...demoItem,
-          ...updateData,
-          price: updateData.price !== undefined ? parseFloat(updateData.price) : demoItem.price,
-          costPrice: updateData.costPrice !== undefined ? parseFloat(updateData.costPrice) : demoItem.costPrice,
-          preparationTime: updateData.preparationTime !== undefined ? parseInt(updateData.preparationTime) : demoItem.preparationTime,
-        };
+        const updatedDemoItem = mergeDemoUpdate(demoItem, updateData);
         return NextResponse.json({
           success: true,
           data: updatedDemoItem,
@@ -211,34 +261,37 @@ export async function PATCH(request: Request) {
           demo: true,
         });
       }
+    }
+
+    // For non-demo IDs, try the database
+    if (!isDatabaseAvailable() || !db) {
       return NextResponse.json({
         success: false,
-        error: 'Mode démonstration - Article non trouvé',
+        error: 'Base de données non disponible',
         demo: true,
-      }, { status: 404 });
+      }, { status: 503 });
     }
 
     // Prepare update data
-    const prismaUpdateData: any = {};
+    const prismaUpdateData: Record<string, unknown> = {};
     
     if (updateData.name !== undefined) prismaUpdateData.name = updateData.name;
     if (updateData.description !== undefined) prismaUpdateData.description = updateData.description;
     if (updateData.category !== undefined) prismaUpdateData.category = updateData.category;
-    if (updateData.price !== undefined) prismaUpdateData.price = parseFloat(updateData.price);
-    if (updateData.costPrice !== undefined) prismaUpdateData.costPrice = parseFloat(updateData.costPrice);
+    if (updateData.price !== undefined) prismaUpdateData.price = parseFloat(String(updateData.price));
+    if (updateData.costPrice !== undefined) prismaUpdateData.costPrice = parseFloat(String(updateData.costPrice));
     if (updateData.isAvailable !== undefined) prismaUpdateData.isAvailable = updateData.isAvailable;
     if (updateData.isPopular !== undefined) prismaUpdateData.isPopular = updateData.isPopular;
     if (updateData.isNew !== undefined) prismaUpdateData.isNew = updateData.isNew;
-    if (updateData.preparationTime !== undefined) prismaUpdateData.preparationTime = parseInt(updateData.preparationTime);
+    if (updateData.preparationTime !== undefined) prismaUpdateData.preparationTime = parseInt(String(updateData.preparationTime));
     if (updateData.image !== undefined) prismaUpdateData.image = updateData.image;
     if (updateData.allergens !== undefined) {
-      prismaUpdateData.allergens = updateData.allergens && updateData.allergens.length > 0 
+      prismaUpdateData.allergens = updateData.allergens && (updateData.allergens as unknown[]).length > 0 
         ? JSON.stringify(updateData.allergens) 
         : null;
     }
 
     try {
-      // Update in database
       const updatedItem = await db.simpleMenuItem.update({
         where: { id },
         data: prismaUpdateData,
@@ -263,32 +316,22 @@ export async function PATCH(request: Request) {
         },
         message: 'Article mis à jour',
       });
-    } catch (dbError: any) {
-      // Handle case where record doesn't exist (demo IDs used with real DB)
-      if (dbError?.code === 'P2025') {
-        // Record not found - try to match with demo data
-        const demoItem = DEFAULT_MENU_ITEMS.find(item => item.id === id);
-        if (demoItem) {
-          const updatedDemoItem = {
-            ...demoItem,
-            ...updateData,
-            price: updateData.price !== undefined ? parseFloat(updateData.price) : demoItem.price,
-            costPrice: updateData.costPrice !== undefined ? parseFloat(updateData.costPrice) : demoItem.costPrice,
-            preparationTime: updateData.preparationTime !== undefined ? parseInt(updateData.preparationTime) : demoItem.preparationTime,
-          };
-          return NextResponse.json({
-            success: true,
-            data: updatedDemoItem,
-            message: 'Article mis à jour (mode démo - non trouvé en base)',
-            demo: true,
-          });
-        }
-        return NextResponse.json(
-          { success: false, error: 'Article non trouvé dans la base de données' },
-          { status: 404 }
-        );
+    } catch (dbError: unknown) {
+      const err = dbError as { code?: string; message?: string };
+      console.error('Database error updating menu item:', err.message || err);
+      
+      // Fallback: if it's a demo-looking ID or any DB error, check demo data
+      const demoItem = getDemoItem(id);
+      if (demoItem) {
+        const updatedDemoItem = mergeDemoUpdate(demoItem, updateData);
+        return NextResponse.json({
+          success: true,
+          data: updatedDemoItem,
+          message: 'Article mis à jour (mode démo - fallback)',
+          demo: true,
+        });
       }
-      console.error('Database error updating menu item:', dbError);
+      
       return NextResponse.json(
         { success: false, error: 'Erreur lors de la mise à jour en base de données' },
         { status: 500 }
@@ -316,25 +359,25 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Check if database is available
+    // If the item ID is a demo ID, handle it entirely in demo mode (no DB call)
+    if (isDemoId(id)) {
+      return NextResponse.json({
+        success: true,
+        message: 'Article supprimé (mode démo)',
+        demo: true,
+      });
+    }
+
+    // For non-demo IDs, try the database
     if (!isDatabaseAvailable() || !db) {
-      // Demo mode: simulate success
-      const demoItem = DEFAULT_MENU_ITEMS.find(item => item.id === id);
-      if (demoItem) {
-        return NextResponse.json({
-          success: true,
-          message: 'Article supprimé (mode démo)',
-          demo: true,
-        });
-      }
-      return NextResponse.json(
-        { success: false, error: 'Article non trouvé' },
-        { status: 404 }
-      );
+      return NextResponse.json({
+        success: false,
+        error: 'Base de données non disponible',
+        demo: true,
+      }, { status: 503 });
     }
 
     try {
-      // Delete from database
       await db.simpleMenuItem.delete({
         where: { id },
       });
@@ -343,23 +386,19 @@ export async function DELETE(request: Request) {
         success: true,
         message: 'Article supprimé',
       });
-    } catch (dbError: any) {
-      // Handle case where record doesn't exist (demo IDs used with real DB)
-      if (dbError?.code === 'P2025') {
-        const demoItem = DEFAULT_MENU_ITEMS.find(item => item.id === id);
-        if (demoItem) {
-          return NextResponse.json({
-            success: true,
-            message: 'Article supprimé (mode démo - non trouvé en base)',
-            demo: true,
-          });
-        }
-        return NextResponse.json(
-          { success: false, error: 'Article non trouvé dans la base de données' },
-          { status: 404 }
-        );
+    } catch (dbError: unknown) {
+      const err = dbError as { code?: string; message?: string };
+      console.error('Database error deleting menu item:', err.message || err);
+      
+      // Fallback: if it's a demo-looking ID, return success
+      if (isDemoId(id)) {
+        return NextResponse.json({
+          success: true,
+          message: 'Article supprimé (mode démo - fallback)',
+          demo: true,
+        });
       }
-      console.error('Database error deleting menu item:', dbError);
+      
       return NextResponse.json(
         { success: false, error: 'Erreur lors de la suppression en base de données' },
         { status: 500 }

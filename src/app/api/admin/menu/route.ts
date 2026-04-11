@@ -194,11 +194,28 @@ export async function PATCH(request: Request) {
 
     // Check if database is available
     if (!isDatabaseAvailable() || !db) {
+      // Demo mode: simulate success by returning the updated demo item
+      const demoItem = DEFAULT_MENU_ITEMS.find(item => item.id === id);
+      if (demoItem) {
+        const updatedDemoItem = {
+          ...demoItem,
+          ...updateData,
+          price: updateData.price !== undefined ? parseFloat(updateData.price) : demoItem.price,
+          costPrice: updateData.costPrice !== undefined ? parseFloat(updateData.costPrice) : demoItem.costPrice,
+          preparationTime: updateData.preparationTime !== undefined ? parseInt(updateData.preparationTime) : demoItem.preparationTime,
+        };
+        return NextResponse.json({
+          success: true,
+          data: updatedDemoItem,
+          message: 'Article mis à jour (mode démo)',
+          demo: true,
+        });
+      }
       return NextResponse.json({
         success: false,
-        error: 'Mode démonstration - Les modifications ne sont pas sauvegardées. Connectez la base de données.',
+        error: 'Mode démonstration - Article non trouvé',
         demo: true,
-      }, { status: 503 });
+      }, { status: 404 });
     }
 
     // Prepare update data
@@ -220,31 +237,63 @@ export async function PATCH(request: Request) {
         : null;
     }
 
-    // Update in database
-    const updatedItem = await db.simpleMenuItem.update({
-      where: { id },
-      data: prismaUpdateData,
-    });
+    try {
+      // Update in database
+      const updatedItem = await db.simpleMenuItem.update({
+        where: { id },
+        data: prismaUpdateData,
+      });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: updatedItem.id,
-        name: updatedItem.name,
-        description: updatedItem.description,
-        category: updatedItem.category,
-        price: updatedItem.price,
-        costPrice: updatedItem.costPrice,
-        isAvailable: updatedItem.isAvailable,
-        preparationTime: updatedItem.preparationTime,
-        isPopular: updatedItem.isPopular,
-        isNew: updatedItem.isNew,
-        allergens: updatedItem.allergens ? JSON.parse(updatedItem.allergens) : [],
-        image: updatedItem.image,
-        orderCount: updatedItem.orderCount,
-      },
-      message: 'Article mis à jour',
-    });
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: updatedItem.id,
+          name: updatedItem.name,
+          description: updatedItem.description,
+          category: updatedItem.category,
+          price: updatedItem.price,
+          costPrice: updatedItem.costPrice,
+          isAvailable: updatedItem.isAvailable,
+          preparationTime: updatedItem.preparationTime,
+          isPopular: updatedItem.isPopular,
+          isNew: updatedItem.isNew,
+          allergens: updatedItem.allergens ? JSON.parse(updatedItem.allergens) : [],
+          image: updatedItem.image,
+          orderCount: updatedItem.orderCount,
+        },
+        message: 'Article mis à jour',
+      });
+    } catch (dbError: any) {
+      // Handle case where record doesn't exist (demo IDs used with real DB)
+      if (dbError?.code === 'P2025') {
+        // Record not found - try to match with demo data
+        const demoItem = DEFAULT_MENU_ITEMS.find(item => item.id === id);
+        if (demoItem) {
+          const updatedDemoItem = {
+            ...demoItem,
+            ...updateData,
+            price: updateData.price !== undefined ? parseFloat(updateData.price) : demoItem.price,
+            costPrice: updateData.costPrice !== undefined ? parseFloat(updateData.costPrice) : demoItem.costPrice,
+            preparationTime: updateData.preparationTime !== undefined ? parseInt(updateData.preparationTime) : demoItem.preparationTime,
+          };
+          return NextResponse.json({
+            success: true,
+            data: updatedDemoItem,
+            message: 'Article mis à jour (mode démo - non trouvé en base)',
+            demo: true,
+          });
+        }
+        return NextResponse.json(
+          { success: false, error: 'Article non trouvé dans la base de données' },
+          { status: 404 }
+        );
+      }
+      console.error('Database error updating menu item:', dbError);
+      return NextResponse.json(
+        { success: false, error: 'Erreur lors de la mise à jour en base de données' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Error updating menu item:', error);
     return NextResponse.json(
@@ -269,22 +318,53 @@ export async function DELETE(request: Request) {
 
     // Check if database is available
     if (!isDatabaseAvailable() || !db) {
-      return NextResponse.json({
-        success: false,
-        error: 'Mode démonstration - Les modifications ne sont pas sauvegardées. Connectez la base de données.',
-        demo: true,
-      }, { status: 503 });
+      // Demo mode: simulate success
+      const demoItem = DEFAULT_MENU_ITEMS.find(item => item.id === id);
+      if (demoItem) {
+        return NextResponse.json({
+          success: true,
+          message: 'Article supprimé (mode démo)',
+          demo: true,
+        });
+      }
+      return NextResponse.json(
+        { success: false, error: 'Article non trouvé' },
+        { status: 404 }
+      );
     }
 
-    // Delete from database
-    await db.simpleMenuItem.delete({
-      where: { id },
-    });
+    try {
+      // Delete from database
+      await db.simpleMenuItem.delete({
+        where: { id },
+      });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Article supprimé',
-    });
+      return NextResponse.json({
+        success: true,
+        message: 'Article supprimé',
+      });
+    } catch (dbError: any) {
+      // Handle case where record doesn't exist (demo IDs used with real DB)
+      if (dbError?.code === 'P2025') {
+        const demoItem = DEFAULT_MENU_ITEMS.find(item => item.id === id);
+        if (demoItem) {
+          return NextResponse.json({
+            success: true,
+            message: 'Article supprimé (mode démo - non trouvé en base)',
+            demo: true,
+          });
+        }
+        return NextResponse.json(
+          { success: false, error: 'Article non trouvé dans la base de données' },
+          { status: 404 }
+        );
+      }
+      console.error('Database error deleting menu item:', dbError);
+      return NextResponse.json(
+        { success: false, error: 'Erreur lors de la suppression en base de données' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Error deleting menu item:', error);
     return NextResponse.json(

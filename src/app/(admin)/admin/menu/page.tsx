@@ -332,7 +332,7 @@ export default function MenuPage() {
         <div className="space-y-2">
           <Label htmlFor="category">Catégorie *</Label>
           <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-            <SelectTrigger>
+            <SelectTrigger id="category">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

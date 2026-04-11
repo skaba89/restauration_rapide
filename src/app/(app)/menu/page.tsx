@@ -695,7 +695,7 @@ export default function MenuPage() {
             <div className="space-y-2">
               <Label htmlFor="category">Catégorie *</Label>
               <Select value={newItem.category} onValueChange={(v) => setNewItem({ ...newItem, category: v })}>
-                <SelectTrigger>
+                <SelectTrigger id="category">
                   <SelectValue placeholder="Sélectionner une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
@@ -875,7 +875,7 @@ export default function MenuPage() {
                   value={editingItem.category} 
                   onValueChange={(v) => setEditingItem({ ...editingItem, category: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="edit-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

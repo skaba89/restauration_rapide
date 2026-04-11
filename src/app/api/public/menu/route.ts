@@ -1,10 +1,10 @@
-// Public Menu API - Uses the shared demo menu store for consistency with admin
-// Falls back to demo data when database is unavailable or table doesn't exist
+// Public Menu API - Uses the database (auto-creates SimpleMenuItem table if missing)
+// Falls back to demo data when database is unavailable
 import { NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
+import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
 import { getDemoMenuItems } from '@/lib/demo-menu-store';
 
-// Helper: apply filters to items (works for both DB and demo items)
 function filterItems(items: Array<{ category: string; isAvailable: boolean }>, category?: string | null, availableOnly?: boolean) {
   return items.filter(item => {
     if (category && item.category !== category) return false;
@@ -13,131 +13,79 @@ function filterItems(items: Array<{ category: string; isAvailable: boolean }>, c
   });
 }
 
-// GET - Fetch all menu items (public) - reads from shared store for demo consistency
+function formatPublicItem(item: any) {
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description || '',
+    category: item.category,
+    price: item.price,
+    isAvailable: item.isAvailable,
+    preparationTime: item.preparationTime,
+    isPopular: item.isPopular,
+    image: item.image,
+  };
+}
+
+function makeResponse(data: any, source: string) {
+  return NextResponse.json({
+    success: true,
+    data,
+    source,
+    timestamp: new Date().toISOString(),
+  }, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      'Pragma': 'no-cache',
+    },
+  });
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const availableOnly = searchParams.get('availableOnly') === 'true';
 
-    // If database is not available, return demo data from shared store
     if (!isDatabaseAvailable() || !db) {
       const allItems = getDemoMenuItems();
       const filtered = filterItems(allItems, category, availableOnly);
-      const menuItems = filtered.map(({ id, name, description, category: cat, price, isAvailable, preparationTime, isPopular, image }) => ({
-        id, name, description, category: cat, price, isAvailable, preparationTime, isPopular, image,
-      }));
-      return NextResponse.json({
-        success: true,
-        data: menuItems,
-        source: 'demo',
-        timestamp: new Date().toISOString(),
-      }, {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Pragma': 'no-cache',
-        },
-      });
+      return makeResponse(filtered.map(formatPublicItem), 'demo');
     }
 
-    // Try to fetch from database
     try {
+      const tableReady = await ensureSimpleMenuItemTable();
+      if (!tableReady) {
+        const allItems = getDemoMenuItems();
+        const filtered = filterItems(allItems, category, availableOnly);
+        return makeResponse(filtered.map(formatPublicItem), 'demo');
+      }
+
       const where: Record<string, unknown> = {};
-      
-      if (category) {
-        where.category = category;
-      }
-      
-      if (availableOnly) {
-        where.isAvailable = true;
-      }
+      if (category) where.category = category;
+      if (availableOnly) where.isAvailable = true;
 
       const items = await db.simpleMenuItem.findMany({
         where,
-        orderBy: [
-          { category: 'asc' },
-          { name: 'asc' },
-        ],
+        orderBy: [{ category: 'asc' }, { name: 'asc' }],
       });
 
-      // If database table exists but is empty, fallback to demo data from shared store
       if (items.length === 0) {
         const allItems = getDemoMenuItems();
         const filtered = filterItems(allItems, category, availableOnly);
-        const menuItems = filtered.map(({ id, name, description, category: cat, price, isAvailable, preparationTime, isPopular, image }) => ({
-          id, name, description, category: cat, price, isAvailable, preparationTime, isPopular, image,
-        }));
-        return NextResponse.json({
-          success: true,
-          data: menuItems,
-          source: 'demo',
-          timestamp: new Date().toISOString(),
-        }, {
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
-            'Pragma': 'no-cache',
-          },
-        });
+        return makeResponse(filtered.map(formatPublicItem), 'demo');
       }
 
-      const menuItems = items.map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description || '',
-        category: item.category,
-        price: item.price,
-        isAvailable: item.isAvailable,
-        preparationTime: item.preparationTime,
-        isPopular: item.isPopular,
-        image: item.image,
-      }));
-
-      return NextResponse.json({
-        success: true,
-        data: menuItems,
-        source: 'database',
-        timestamp: new Date().toISOString(),
-      }, {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Pragma': 'no-cache',
-        },
-      });
+      return makeResponse(items.map(formatPublicItem), 'database');
     } catch (dbError) {
-      // Database query failed (table doesn't exist, etc.) - fallback to shared store
-      console.error('Database query failed, using demo data from shared store:', dbError);
+      console.error('Database query failed, using demo data:', dbError);
       const allItems = getDemoMenuItems();
       const filtered = filterItems(allItems, category, availableOnly);
-      const menuItems = filtered.map(({ id, name, description, category: cat, price, isAvailable, preparationTime, isPopular, image }) => ({
-        id, name, description, category: cat, price, isAvailable, preparationTime, isPopular, image,
-      }));
-      return NextResponse.json({
-        success: true,
-        data: menuItems,
-        source: 'demo',
-        timestamp: new Date().toISOString(),
-      }, {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Pragma': 'no-cache',
-        },
-      });
+      return makeResponse(filtered.map(formatPublicItem), 'demo');
     }
   } catch (error) {
     console.error('Error fetching public menu:', error);
     const allItems = getDemoMenuItems();
-    return NextResponse.json({
-      success: true,
-      data: allItems.map(({ id, name, description, category, price, isAvailable, preparationTime, isPopular, image }) => ({
-        id, name, description, category, price, isAvailable, preparationTime, isPopular, image,
-      })),
-      source: 'demo',
-      timestamp: new Date().toISOString(),
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Pragma': 'no-cache',
-      },
-    });
+    return makeResponse(allItems.map(formatPublicItem), 'demo');
   }
 }

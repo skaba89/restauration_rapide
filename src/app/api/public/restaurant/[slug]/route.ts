@@ -1,8 +1,9 @@
 // Public Restaurant API - Get restaurant by slug with full menu data
-// This API fetches from the database for real-time menu synchronization
-// Falls back to shared demo store for consistency with admin modifications
+// Auto-creates SimpleMenuItem table if missing for persistence
+// Falls back to demo store when database is unavailable
 import { NextRequest, NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
+import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
 import { getDemoMenuByCategory } from '@/lib/demo-menu-store';
 
 // Default KFM DELICE restaurant info
@@ -60,154 +61,148 @@ const DEFAULT_RESTAURANT = {
   ],
 };
 
-// GET /api/public/restaurant/[slug] - Get restaurant with menus for public view
+// Build categories from SimpleMenuItem DB records
+function buildCategoriesFromDb(items: any[]) {
+  const categoryMap = new Map<string, any[]>();
+  const categoryOrder = ['Plats Ivoiriens', 'Plats Sénégalais', 'Plats Guinéens', 'Grillades', 'Fast Food', 'Boissons'];
+
+  for (const item of items) {
+    if (!item.isAvailable) continue;
+    const cat = item.category;
+    if (!categoryMap.has(cat)) categoryMap.set(cat, []);
+    categoryMap.get(cat)!.push({
+      id: item.id,
+      name: item.name,
+      slug: item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      description: item.description || '',
+      image: item.image,
+      price: item.price,
+      discountPrice: null,
+      prepTime: item.preparationTime,
+      calories: null,
+      isAvailable: item.isAvailable,
+      isFeatured: item.isPopular || false,
+      isPopular: item.isPopular,
+      isNew: item.isNew,
+      isVegetarian: false,
+      isVegan: false,
+      isHalal: true,
+      isGlutenFree: false,
+      isSpicy: false,
+      spicyLevel: 0,
+      rating: 0,
+      reviewCount: 0,
+      variants: [],
+      options: [],
+    });
+  }
+
+  return categoryOrder
+    .filter(name => categoryMap.has(name))
+    .map((name, index) => ({
+      id: `cat-${index}`,
+      name,
+      slug: name.toLowerCase().replace(/\s+/g, '-'),
+      description: `Spécialités ${name.toLowerCase()}`,
+      image: null,
+      icon: null,
+      items: categoryMap.get(name) || [],
+    }));
+}
+
+// GET /api/public/restaurant/[slug]
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    // Resolve params
     const resolvedParams = await params;
     const slug = resolvedParams?.slug;
 
     if (!slug) {
-      return NextResponse.json(
-        { success: false, error: 'Slug requis', code: 'MISSING_SLUG' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Slug requis', code: 'MISSING_SLUG' }, { status: 400 });
     }
 
-    // Only support kfm-delice for now
     if (slug !== 'kfm-delice') {
-      return NextResponse.json(
-        { success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Restaurant non trouvé', code: 'NOT_FOUND' }, { status: 404 });
     }
 
-    // Check if database is available
+    // Try to read SimpleMenuItem from database (auto-creates table if needed)
     if (isDatabaseAvailable() && db) {
       try {
-        // Try to fetch restaurant from database
+        const tableReady = await ensureSimpleMenuItemTable();
+        if (tableReady) {
+          const items = await db.simpleMenuItem.findMany({
+            where: { isAvailable: true },
+            orderBy: [{ category: 'asc' }, { name: 'asc' }],
+          });
+
+          if (items.length > 0) {
+            // Build menu from SimpleMenuItem table data
+            const categories = buildCategoriesFromDb(items);
+            const defaultRestaurant = {
+              ...DEFAULT_RESTAURANT,
+              menus: [{
+                id: 'main-menu',
+                name: 'Menu Principal',
+                slug: 'menu-principal',
+                description: 'Menu complet KFM DELICE',
+                menuType: 'main',
+                categories,
+              }],
+            };
+
+            return NextResponse.json({
+              success: true,
+              data: defaultRestaurant,
+              timestamp: new Date().toISOString(),
+              source: 'database',
+            }, {
+              headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+              },
+            });
+          }
+        }
+      } catch (dbError) {
+        console.warn('SimpleMenuItem query error, using demo fallback:', dbError);
+      }
+
+      // Also try the full restaurant hierarchy (for multi-tenant future)
+      try {
         const restaurant = await db.restaurant.findFirst({
-          where: { 
-            slug,
-            isActive: true,
-          },
+          where: { slug, isActive: true },
           select: {
-            id: true,
-            name: true,
-            slug: true,
-            description: true,
-            logo: true,
-            coverImage: true,
-            phone: true,
-            email: true,
-            address: true,
-            city: true,
-            district: true,
-            isOpen: true,
-            isBusy: true,
-            acceptsDelivery: true,
-            acceptsTakeaway: true,
-            acceptsDineIn: true,
-            deliveryFee: true,
-            minOrderAmount: true,
-            deliveryTime: true,
-            rating: true,
-            reviewCount: true,
+            id: true, name: true, slug: true, description: true, logo: true,
+            coverImage: true, phone: true, email: true, address: true, city: true,
+            district: true, isOpen: true, isBusy: true, acceptsDelivery: true,
+            acceptsTakeaway: true, acceptsDineIn: true, deliveryFee: true,
+            minOrderAmount: true, deliveryTime: true, rating: true, reviewCount: true,
             organizationId: true,
-            organization: {
-              select: {
-                currency: {
-                  select: {
-                    code: true,
-                    symbol: true,
-                    name: true,
-                  }
-                }
-              }
-            },
+            organization: { select: { currency: { select: { code: true, symbol: true, name: true } } } },
             settings: true,
-            hours: {
-              orderBy: { dayOfWeek: 'asc' },
-            },
-            deliveryZones: {
-              where: { isActive: true },
-              orderBy: { name: 'asc' },
-            },
+            hours: { orderBy: { dayOfWeek: 'asc' } },
+            deliveryZones: { where: { isActive: true }, orderBy: { name: 'asc' } },
             menus: {
-              where: { isActive: true },
-              orderBy: { sortOrder: 'asc' },
+              where: { isActive: true }, orderBy: { sortOrder: 'asc' },
               select: {
-                id: true,
-                name: true,
-                slug: true,
-                description: true,
-                menuType: true,
+                id: true, name: true, slug: true, description: true, menuType: true,
                 categories: {
-                  where: { isActive: true },
-                  orderBy: { sortOrder: 'asc' },
+                  where: { isActive: true }, orderBy: { sortOrder: 'asc' },
                   select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    description: true,
-                    image: true,
-                    icon: true,
+                    id: true, name: true, slug: true, description: true, image: true, icon: true,
                     items: {
-                      where: { isAvailable: true },
-                      orderBy: { sortOrder: 'asc' },
+                      where: { isAvailable: true }, orderBy: { sortOrder: 'asc' },
                       select: {
-                        id: true,
-                        name: true,
-                        slug: true,
-                        description: true,
-                        image: true,
-                        price: true,
-                        discountPrice: true,
-                        prepTime: true,
-                        calories: true,
-                        isAvailable: true,
-                        isFeatured: true,
-                        isPopular: true,
-                        isNew: true,
-                        isVegetarian: true,
-                        isVegan: true,
-                        isHalal: true,
-                        isGlutenFree: true,
-                        isSpicy: true,
-                        spicyLevel: true,
-                        rating: true,
-                        reviewCount: true,
-                        variants: {
-                          orderBy: { sortOrder: 'asc' },
-                          select: {
-                            id: true,
-                            name: true,
-                            price: true,
-                            isDefault: true,
-                          },
-                        },
-                        options: {
-                          orderBy: { sortOrder: 'asc' },
-                          select: {
-                            id: true,
-                            name: true,
-                            required: true,
-                            multiSelect: true,
-                            maxSelect: true,
-                            values: {
-                              orderBy: { sortOrder: 'asc' },
-                              select: {
-                                id: true,
-                                name: true,
-                                price: true,
-                                isDefault: true,
-                              },
-                            },
-                          },
-                        },
+                        id: true, name: true, slug: true, description: true, image: true,
+                        price: true, discountPrice: true, prepTime: true, calories: true,
+                        isAvailable: true, isFeatured: true, isPopular: true, isNew: true,
+                        isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true,
+                        isSpicy: true, spicyLevel: true, rating: true, reviewCount: true,
+                        variants: { orderBy: { sortOrder: 'asc' }, select: { id: true, name: true, price: true, isDefault: true } },
+                        options: { orderBy: { sortOrder: 'asc' }, select: { id: true, name: true, required: true, multiSelect: true, maxSelect: true, values: { orderBy: { sortOrder: 'asc' }, select: { id: true, name: true, price: true, isDefault: true } } },
                       },
                     },
                   },
@@ -218,57 +213,29 @@ export async function GET(
         });
 
         if (restaurant && restaurant.menus.length > 0) {
-          // Transform database result to match expected format
           const formattedRestaurant = {
             ...restaurant,
             currency: restaurant.organization?.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
             organization: undefined,
             settings: restaurant.settings as any,
-            hours: restaurant.hours.map((h: any) => ({
-              dayOfWeek: h.dayOfWeek,
-              openTime: h.openTime,
-              closeTime: h.closeTime,
-              isClosed: h.isClosed,
-            })),
-            deliveryZones: restaurant.deliveryZones.map((z: any) => ({
-              id: z.id,
-              name: z.name,
-              baseFee: z.baseFee,
-              minTime: z.minTime,
-              maxTime: z.maxTime,
-            })),
+            hours: restaurant.hours.map((h: any) => ({ dayOfWeek: h.dayOfWeek, openTime: h.openTime, closeTime: h.closeTime, isClosed: h.isClosed })),
+            deliveryZones: restaurant.deliveryZones.map((z: any) => ({ id: z.id, name: z.name, baseFee: z.baseFee, minTime: z.minTime, maxTime: z.maxTime })),
             menus: restaurant.menus.map((menu: any) => ({
               ...menu,
-              categories: menu.categories.map((cat: any) => ({
-                ...cat,
-                items: cat.items.map((item: any) => ({
-                  ...item,
-                  variants: item.variants || [],
-                  options: item.options || [],
-                })),
-              })),
+              categories: menu.categories.map((cat: any) => ({ ...cat, items: cat.items.map((item: any) => ({ ...item, variants: item.variants || [], options: item.options || [] })) })),
             })),
           };
 
-          // Return with no-cache headers for real-time menu sync
-          return NextResponse.json({ 
-            success: true, 
-            data: formattedRestaurant,
-            timestamp: new Date().toISOString(),
-          }, {
-            headers: {
-              'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0',
-            },
+          return NextResponse.json({ success: true, data: formattedRestaurant, timestamp: new Date().toISOString() }, {
+            headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' },
           });
         }
       } catch (dbError) {
-        console.warn('Database query error:', dbError);
+        console.warn('Restaurant hierarchy query error:', dbError);
       }
     }
 
-    // Fall back to default data - use shared demo store for menu items
+    // Fall back to demo store
     const defaultRestaurant = {
       ...DEFAULT_RESTAURANT,
       menus: [{
@@ -281,24 +248,11 @@ export async function GET(
       }],
     };
 
-    return NextResponse.json({ 
-      success: true, 
-      data: defaultRestaurant,
-      timestamp: new Date().toISOString(),
-      source: 'default',
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
+    return NextResponse.json({ success: true, data: defaultRestaurant, timestamp: new Date().toISOString(), source: 'default' }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' },
     });
-
   } catch (error) {
     console.error('Error in public restaurant API:', error);
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur', code: 'SERVER_ERROR' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Erreur serveur', code: 'SERVER_ERROR' }, { status: 500 });
   }
 }

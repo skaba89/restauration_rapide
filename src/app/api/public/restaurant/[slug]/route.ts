@@ -97,7 +97,8 @@ function buildCategoriesFromDb(items: any[]) {
     });
   }
 
-  return categoryOrder
+  // Show known categories in order first, then any new categories added via admin
+  const orderedCategories = categoryOrder
     .filter(name => categoryMap.has(name))
     .map((name, index) => ({
       id: `cat-${index}`,
@@ -108,6 +109,24 @@ function buildCategoriesFromDb(items: any[]) {
       icon: null,
       items: categoryMap.get(name) || [],
     }));
+
+  // Add any categories not in the predefined order (e.g. added by admin)
+  const extraCategories: any[] = [];
+  categoryMap.forEach((items, name) => {
+    if (!categoryOrder.includes(name)) {
+      extraCategories.push({
+        id: `cat-${orderedCategories.length + extraCategories.length}`,
+        name,
+        slug: name.toLowerCase().replace(/\s+/g, '-'),
+        description: `Spécialités ${name.toLowerCase()}`,
+        image: null,
+        icon: null,
+        items,
+      });
+    }
+  });
+
+  return [...orderedCategories, ...extraCategories];
 }
 
 // GET /api/public/restaurant/[slug]
@@ -202,7 +221,7 @@ export async function GET(
                         isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true,
                         isSpicy: true, spicyLevel: true, rating: true, reviewCount: true,
                         variants: { orderBy: { sortOrder: 'asc' }, select: { id: true, name: true, price: true, isDefault: true } },
-                        options: { orderBy: { sortOrder: 'asc' }, select: { id: true, name: true, required: true, multiSelect: true, maxSelect: true, values: { orderBy: { sortOrder: 'asc' }, select: { id: true, name: true, price: true, isDefault: true } } },
+                        options: { orderBy: { sortOrder: 'asc' }, select: { id: true, name: true, required: true, multiSelect: true, maxSelect: true, values: { orderBy: { sortOrder: 'asc' }, select: { id: true, name: true, price: true, isDefault: true } } } },
                       },
                     },
                   },

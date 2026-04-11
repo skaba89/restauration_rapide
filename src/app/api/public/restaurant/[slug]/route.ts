@@ -1,8 +1,9 @@
 // Public Restaurant API - Get restaurant by slug with full menu data
 // This API fetches from the database for real-time menu synchronization
-// Falls back to default data if database is empty
+// Falls back to shared demo store for consistency with admin modifications
 import { NextRequest, NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
+import { getDemoMenuByCategory } from '@/lib/demo-menu-store';
 
 // Default KFM DELICE restaurant info
 const DEFAULT_RESTAURANT = {
@@ -58,83 +59,6 @@ const DEFAULT_RESTAURANT = {
     { id: 'zone-matoto', name: 'Matoto', baseFee: 6000, minTime: 30, maxTime: 55 },
   ],
 };
-
-// Default menu items
-const DEFAULT_MENU_ITEMS = [
-  // PLATS IVOIRIENS
-  { id: '1', name: 'Attieké Poisson Grillé', slug: 'attieke-poisson', description: 'Semoule de manioc avec poisson grillé, sauce tomate et légumes frais', price: 45000, category: 'Plats Ivoiriens', prepTime: 20, isPopular: true, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80' },
-  { id: '2', name: 'Alloco Sauce Graine', slug: 'alloco-sauce', description: 'Bananes plantains frites avec sauce graine de palme', price: 25000, category: 'Plats Ivoiriens', prepTime: 15, isPopular: true, image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80' },
-  { id: '3', name: 'Garba', slug: 'garba', description: 'Attieké avec poisson frit, oignons et piment', price: 30000, category: 'Plats Ivoiriens', prepTime: 15, isPopular: true, image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80' },
-  
-  // PLATS SÉNÉGALAIS
-  { id: '4', name: 'Thiéboudienne', slug: 'thieboudienne', description: 'Riz au poisson et légumes, plat national sénégalais', price: 45000, category: 'Plats Sénégalais', prepTime: 45, isPopular: true, image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80' },
-  { id: '5', name: 'Yassa Poulet', slug: 'yassa-poulet', description: 'Poulet mariné au citron et oignons caramélisés', price: 40000, category: 'Plats Sénégalais', prepTime: 30, isPopular: true, image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&q=80' },
-  { id: '6', name: 'Mafé', slug: 'mafe', description: 'Ragoût de viande à la sauce d\'arachide crémeuse', price: 40000, category: 'Plats Sénégalais', prepTime: 35, isPopular: true, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80' },
-  
-  // PLATS GUINÉENS
-  { id: '7', name: 'Poulet Yassa Guinéen', slug: 'poulet-yassa-gn', description: 'Poulet mariné au citron style guinéen', price: 45000, category: 'Plats Guinéens', prepTime: 35, isPopular: true, image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&q=80' },
-  { id: '8', name: 'Konkoé', slug: 'konkoe', description: 'Pâte de manioc avec sauce aux arachides', price: 30000, category: 'Plats Guinéens', prepTime: 30, isPopular: true, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
-  
-  // GRILLADES
-  { id: '9', name: 'Mix Grill', slug: 'mix-grill', description: 'Assortiment de grillades (poulet, bœuf, agneau)', price: 65000, category: 'Grillades', prepTime: 30, isPopular: true, image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80' },
-  { id: '10', name: 'Poulet Braisé', slug: 'poulet-braise', description: 'Demi-poulet grillé aux épices africaines', price: 35000, category: 'Grillades', prepTime: 30, isPopular: true, image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&q=80' },
-  { id: '11', name: 'Brochettes de Bœuf', slug: 'brochettes-boeuf', description: '5 brochettes de bœuf marinées aux épices', price: 30000, category: 'Grillades', prepTime: 20, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80' },
-  
-  // FAST FOOD
-  { id: '12', name: 'Burger KFM', slug: 'burger-kfm', description: 'Burger maison avec viande fraîche et sauce spéciale', price: 25000, category: 'Fast Food', prepTime: 15, isPopular: true, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80' },
-  { id: '13', name: 'Chawarma Poulet', slug: 'chawarma-poulet', description: 'Chawarma au poulet grillé avec sauce blanche', price: 20000, category: 'Fast Food', prepTime: 10, isPopular: true, image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80' },
-  { id: '14', name: 'Chawarma Viande', slug: 'chawarma-viande', description: 'Chawarma à la viande épicée', price: 22000, category: 'Fast Food', prepTime: 10, image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=800&q=80' },
-  
-  // BOISSONS
-  { id: '15', name: 'Jus de Bissap', slug: 'jus-bissap', description: 'Jus naturel de fleur d\'hibiscus', price: 4000, category: 'Boissons', prepTime: 3, isPopular: true, image: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=800&q=80' },
-  { id: '16', name: 'Jus de Gingembre', slug: 'jus-gingembre', description: 'Jus de gingembre frais et épicé', price: 4000, category: 'Boissons', prepTime: 3, isPopular: true, image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80' },
-  { id: '17', name: 'Jus de Baobab', slug: 'jus-baobab', description: 'Jus de fruit de baobab', price: 5000, category: 'Boissons', prepTime: 3, image: 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=800&q=80' },
-  { id: '18', name: 'Ataya', slug: 'ataya', description: 'Thé à la menthe guinéen', price: 3000, category: 'Boissons', prepTime: 10, image: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=800&q=80' },
-];
-
-// Build categories from items
-function buildCategories(items: typeof DEFAULT_MENU_ITEMS) {
-  const categoryMap = new Map<string, typeof items>();
-  
-  for (const item of items) {
-    const cat = item.category;
-    if (!categoryMap.has(cat)) {
-      categoryMap.set(cat, []);
-    }
-    categoryMap.get(cat)!.push({
-      ...item,
-      isAvailable: true,
-      isFeatured: item.isPopular || false,
-      isNew: false,
-      isVegetarian: false,
-      isVegan: false,
-      isHalal: true,
-      isGlutenFree: false,
-      isSpicy: false,
-      spicyLevel: 0,
-      rating: 0,
-      reviewCount: 0,
-      variants: [],
-      options: [],
-      discountPrice: null,
-      calories: null,
-    });
-  }
-  
-  const categoryOrder = ['Plats Ivoiriens', 'Plats Sénégalais', 'Plats Guinéens', 'Grillades', 'Fast Food', 'Boissons'];
-  
-  return categoryOrder
-    .filter(name => categoryMap.has(name))
-    .map((name, index) => ({
-      id: `cat-${index}`,
-      name,
-      slug: name.toLowerCase().replace(/\s+/g, '-'),
-      description: `Spécialités ${name.toLowerCase()}`,
-      image: null,
-      icon: null,
-      items: categoryMap.get(name) || [],
-    }));
-}
 
 // GET /api/public/restaurant/[slug] - Get restaurant with menus for public view
 export async function GET(
@@ -344,7 +268,7 @@ export async function GET(
       }
     }
 
-    // Fall back to default data
+    // Fall back to default data - use shared demo store for menu items
     const defaultRestaurant = {
       ...DEFAULT_RESTAURANT,
       menus: [{
@@ -353,7 +277,7 @@ export async function GET(
         slug: 'menu-principal',
         description: 'Menu complet KFM DELICE',
         menuType: 'main',
-        categories: buildCategories(DEFAULT_MENU_ITEMS),
+        categories: getDemoMenuByCategory(),
       }],
     };
 

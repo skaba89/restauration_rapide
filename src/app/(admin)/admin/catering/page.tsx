@@ -68,6 +68,103 @@ const EVENT_TYPES = [
   { value: 'other', label: 'Autre' },
 ];
 
+// Extract OrderForm as a separate component to avoid creating components during render
+function CateringOrderForm({
+  formData,
+  setFormData,
+}: {
+  formData: typeof initialFormData;
+  setFormData: React.Dispatch<React.SetStateAction<typeof initialFormData>>;
+}) {
+  return (
+    <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Nom du client *</Label>
+          <Input value={formData.clientName} onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label>Téléphone *</Label>
+          <Input value={formData.clientPhone} onChange={(e) => setFormData(prev => ({ ...prev, clientPhone: e.target.value }))} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Email</Label>
+          <Input type="email" value={formData.clientEmail} onChange={(e) => setFormData(prev => ({ ...prev, clientEmail: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label>Type d'événement</Label>
+          <Select value={formData.eventType} onValueChange={(v) => setFormData(prev => ({ ...prev, eventType: v }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {EVENT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Nom de l'événement *</Label>
+          <Input value={formData.eventName} onChange={(e) => setFormData(prev => ({ ...prev, eventName: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label>Nombre d'invités</Label>
+          <Input type="number" value={formData.guestCount} onChange={(e) => setFormData(prev => ({ ...prev, guestCount: e.target.value }))} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Date *</Label>
+          <Input type="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label>Heure</Label>
+          <Input type="time" value={formData.time} onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))} />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Lieu *</Label>
+        <Input value={formData.location} onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))} placeholder="Adresse de l'événement" />
+      </div>
+      <div className="space-y-2">
+        <Label>Menu</Label>
+        <Input value={formData.menu} onChange={(e) => setFormData(prev => ({ ...prev, menu: e.target.value }))} placeholder="Description du menu" />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Montant total (GNF)</Label>
+          <Input type="number" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label>Accompte (GNF)</Label>
+          <Input type="number" value={formData.deposit} onChange={(e) => setFormData(prev => ({ ...prev, deposit: e.target.value }))} />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Notes</Label>
+        <Textarea value={formData.notes} onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))} placeholder="Informations complémentaires..." rows={2} />
+      </div>
+    </div>
+  );
+}
+
+const initialFormData = {
+  clientName: '',
+  clientPhone: '',
+  clientEmail: '',
+  eventName: '',
+  eventType: 'corporate' as const,
+  date: '',
+  time: '12:00',
+  guestCount: '50',
+  location: '',
+  menu: '',
+  amount: '',
+  deposit: '0',
+  notes: '',
+};
+
 export default function CateringPage() {
   const [orders, setOrders] = useState<CateringOrder[]>(DEMO_ORDERS);
   const [searchTerm, setSearchTerm] = useState('');
@@ -254,78 +351,7 @@ export default function CateringPage() {
     upcomingRevenue: orders.filter(o => o.status !== 'cancelled' && o.status !== 'completed').reduce((sum, o) => sum + o.amount, 0),
   };
 
-  // Form Component
-  const OrderForm = () => (
-    <div className="space-y-4 max-h-96 overflow-y-auto">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Nom du client *</Label>
-          <Input value={formData.clientName} onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))} />
-        </div>
-        <div className="space-y-2">
-          <Label>Téléphone *</Label>
-          <Input value={formData.clientPhone} onChange={(e) => setFormData(prev => ({ ...prev, clientPhone: e.target.value }))} />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Email</Label>
-          <Input type="email" value={formData.clientEmail} onChange={(e) => setFormData(prev => ({ ...prev, clientEmail: e.target.value }))} />
-        </div>
-        <div className="space-y-2">
-          <Label>Type d'événement</Label>
-          <Select value={formData.eventType} onValueChange={(v) => setFormData(prev => ({ ...prev, eventType: v }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {EVENT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Nom de l'événement *</Label>
-          <Input value={formData.eventName} onChange={(e) => setFormData(prev => ({ ...prev, eventName: e.target.value }))} />
-        </div>
-        <div className="space-y-2">
-          <Label>Nombre d'invités</Label>
-          <Input type="number" value={formData.guestCount} onChange={(e) => setFormData(prev => ({ ...prev, guestCount: e.target.value }))} />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Date *</Label>
-          <Input type="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} />
-        </div>
-        <div className="space-y-2">
-          <Label>Heure</Label>
-          <Input type="time" value={formData.time} onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))} />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Lieu *</Label>
-        <Input value={formData.location} onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))} placeholder="Adresse de l'événement" />
-      </div>
-      <div className="space-y-2">
-        <Label>Menu</Label>
-        <Input value={formData.menu} onChange={(e) => setFormData(prev => ({ ...prev, menu: e.target.value }))} placeholder="Description du menu" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Montant total (GNF)</Label>
-          <Input type="number" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))} />
-        </div>
-        <div className="space-y-2">
-          <Label>Accompte (GNF)</Label>
-          <Input type="number" value={formData.deposit} onChange={(e) => setFormData(prev => ({ ...prev, deposit: e.target.value }))} />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Notes</Label>
-        <Textarea value={formData.notes} onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))} placeholder="Informations complémentaires..." rows={2} />
-      </div>
-    </div>
-  );
+
 
   return (
     <div className="space-y-6">
@@ -402,11 +428,11 @@ export default function CateringPage() {
 
       {/* Dialogs */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-xl"><DialogHeader><DialogTitle>Nouvelle commande traiteur</DialogTitle></DialogHeader><OrderForm /><DialogFooter><Button variant="outline" onClick={() => setShowAddDialog(false)}>Annuler</Button><Button onClick={handleAddOrder} disabled={isLoading || !formData.clientName || !formData.eventName || !formData.date}>{isLoading ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}Créer</Button></DialogFooter></DialogContent>
+        <DialogContent className="max-w-xl"><DialogHeader><DialogTitle>Nouvelle commande traiteur</DialogTitle></DialogHeader><CateringOrderForm formData={formData} setFormData={setFormData} /><DialogFooter><Button variant="outline" onClick={() => setShowAddDialog(false)}>Annuler</Button><Button onClick={handleAddOrder} disabled={isLoading || !formData.clientName || !formData.eventName || !formData.date}>{isLoading ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}Créer</Button></DialogFooter></DialogContent>
       </Dialog>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-xl"><DialogHeader><DialogTitle>Modifier la commande</DialogTitle></DialogHeader><OrderForm /><DialogFooter><Button variant="outline" onClick={() => setShowEditDialog(false)}>Annuler</Button><Button onClick={handleEditOrder} disabled={isLoading}>{isLoading ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}Enregistrer</Button></DialogFooter></DialogContent>
+        <DialogContent className="max-w-xl"><DialogHeader><DialogTitle>Modifier la commande</DialogTitle></DialogHeader><CateringOrderForm formData={formData} setFormData={setFormData} /><DialogFooter><Button variant="outline" onClick={() => setShowEditDialog(false)}>Annuler</Button><Button onClick={handleEditOrder} disabled={isLoading}>{isLoading ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}Enregistrer</Button></DialogFooter></DialogContent>
       </Dialog>
 
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>

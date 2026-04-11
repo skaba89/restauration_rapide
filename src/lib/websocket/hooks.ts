@@ -27,6 +27,11 @@ export function useToastNotifications() {
   const { isConnected, subscribe } = useSocket();
   const [toasts, setToasts] = useState<ToastState[]>([]);
 
+  // Remove toast
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
   // Add toast
   const addToast = useCallback((toast: Omit<ToastState, 'id' | 'timestamp'>) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -46,12 +51,7 @@ export function useToastNotifications() {
     }
 
     return id;
-  }, []);
-
-  // Remove toast
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  }, [removeToast]);
 
   // Subscribe to toast events from socket
   useEffect(() => {
@@ -274,13 +274,12 @@ export function useReservationNotifications(restaurantId?: string) {
  * Hook to request browser notification permission
  */
 export function useNotificationPermission() {
-  const [permission, setPermission] = useState<NotificationPermission>('default');
-
-  useEffect(() => {
+  const [permission, setPermission] = useState<NotificationPermission>(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
-      setPermission(Notification.permission);
+      return Notification.permission;
     }
-  }, []);
+    return 'default';
+  });
 
   const requestPermission = useCallback(async () => {
     if (typeof window !== 'undefined' && 'Notification' in window) {

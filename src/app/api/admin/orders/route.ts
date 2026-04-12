@@ -1,44 +1,5 @@
 import { NextResponse } from 'next/server';
-
-// Demo data for admin orders
-const DEMO_ORDERS = [
-  {
-    id: '1',
-    orderNumber: 'ORD-001',
-    customerName: 'Amadou Diallo',
-    customerPhone: '+224 622 00 00 01',
-    restaurant: { name: 'KFM DELICE' },
-    orderType: 'DELIVERY',
-    status: 'PREPARING',
-    paymentStatus: 'PAID',
-    total: 45000,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-002',
-    customerName: 'Fatou Ndiaye',
-    customerPhone: '+224 622 00 00 02',
-    restaurant: { name: 'KFM DELICE' },
-    orderType: 'DINE_IN',
-    status: 'PENDING',
-    paymentStatus: 'PENDING',
-    total: 25000,
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-003',
-    customerName: 'Kofi Mensah',
-    customerPhone: '+224 622 00 00 03',
-    restaurant: { name: 'KFM DELICE' },
-    orderType: 'TAKEAWAY',
-    status: 'COMPLETED',
-    paymentStatus: 'PAID',
-    total: 35000,
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-  },
-];
+import { getDemoOrders } from '@/lib/demo-order-store';
 
 export async function GET() {
   try {
@@ -46,21 +7,62 @@ export async function GET() {
     const { db, isDatabaseAvailable } = await import('@/lib/db');
     
     if (isDatabaseAvailable() && db) {
-      const orders = await db.order.findMany({
-        take: 50,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          restaurant: { select: { name: true } },
-          customer: { select: { firstName: true, lastName: true, phone: true } },
-          items: { select: { name: true, quantity: true, price: true } },
-        },
-      });
-      return NextResponse.json({ data: orders, total: orders.length });
+      try {
+        const orders = await db.order.findMany({
+          take: 50,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            restaurant: { select: { name: true } },
+            customer: { select: { firstName: true, lastName: true, phone: true } },
+            items: true,
+          },
+        });
+        if (orders.length > 0) {
+          return NextResponse.json({ data: orders, total: orders.length });
+        }
+      } catch (dbError) {
+        console.warn('Database error in admin orders:', dbError);
+      }
     }
   } catch (error) {
-    console.error('Database error:', error);
+    console.error('Admin orders error:', error);
   }
   
-  // Return demo data
-  return NextResponse.json({ data: DEMO_ORDERS, total: DEMO_ORDERS.length });
+  // Return demo data from SHARED store (same as kitchen)
+  const demoOrders = getDemoOrders().map(o => ({
+    id: o.id,
+    orderNumber: o.orderNumber,
+    customerName: o.customerName,
+    customerPhone: o.customerPhone,
+    restaurant: { name: 'KFM DELICE' },
+    orderType: o.orderType,
+    status: o.status,
+    paymentStatus: o.paymentStatus,
+    subtotal: o.subtotal,
+    total: o.total,
+    deliveryFee: o.deliveryFee,
+    deliveryAddress: o.deliveryAddress,
+    deliveryCity: o.deliveryCity,
+    tableNumber: o.tableNumber,
+    notes: o.notes,
+    priority: o.priority,
+    driverName: o.driverName,
+    driverPhone: o.driverPhone,
+    items: o.items.map(item => ({
+      id: item.id,
+      itemName: item.itemName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice,
+      status: item.status,
+      notes: item.notes,
+    })),
+    createdAt: o.createdAt,
+    updatedAt: o.updatedAt,
+    completedAt: o.completedAt,
+    cancelledAt: o.cancelledAt,
+    cancellationReason: o.cancellationReason,
+  }));
+
+  return NextResponse.json({ data: demoOrders, total: demoOrders.length });
 }

@@ -52,15 +52,26 @@ interface KitchenOrder {
   notes?: string;
 }
 
-// Sound notification class
+// Sound notification class - lazy AudioContext to avoid autoplay restrictions
 class KitchenSoundNotifier {
   private audioContext: AudioContext | null = null;
   private enabled: boolean = true;
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  private getContext(): AudioContext | null {
+    if (!this.enabled) return null;
+    if (typeof window === 'undefined') return null;
+    if (!this.audioContext) {
+      try {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (this.audioContext.state === 'suspended') {
+          this.audioContext.resume();
+        }
+      } catch (e) {
+        console.warn('AudioContext not available:', e);
+        return null;
+      }
     }
+    return this.audioContext;
   }
 
   setEnabled(enabled: boolean) {
@@ -68,45 +79,44 @@ class KitchenSoundNotifier {
   }
 
   playNewOrder() {
-    if (!this.enabled || !this.audioContext) return;
-    this.playTone(800, 0.1, 0);
-    this.playTone(1000, 0.1, 100);
-    this.playTone(1200, 0.15, 200);
+    const ctx = this.getContext();
+    if (!ctx) return;
+    this.playTone(ctx, 800, 0.1, 0);
+    this.playTone(ctx, 1000, 0.1, 100);
+    this.playTone(ctx, 1200, 0.15, 200);
   }
 
   playReady() {
-    if (!this.enabled || !this.audioContext) return;
-    this.playTone(600, 0.15, 0);
-    this.playTone(800, 0.15, 150);
-    this.playTone(1000, 0.2, 300);
+    const ctx = this.getContext();
+    if (!ctx) return;
+    this.playTone(ctx, 600, 0.15, 0);
+    this.playTone(ctx, 800, 0.15, 150);
+    this.playTone(ctx, 1000, 0.2, 300);
   }
 
   playUrgent() {
-    if (!this.enabled || !this.audioContext) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
     for (let i = 0; i < 3; i++) {
-      this.playTone(1000, 0.1, i * 150);
-      this.playTone(1200, 0.1, i * 150 + 75);
+      this.playTone(ctx, 1000, 0.1, i * 150);
+      this.playTone(ctx, 1200, 0.1, i * 150 + 75);
     }
   }
 
-  private playTone(frequency: number, duration: number, delay: number) {
-    if (!this.audioContext) return;
-    
+  private playTone(ctx: AudioContext, frequency: number, duration: number, delay: number) {
     setTimeout(() => {
-      const oscillator = this.audioContext!.createOscillator();
-      const gainNode = this.audioContext!.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(this.audioContext!.destination);
-      
-      oscillator.frequency.value = frequency;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.3, this.audioContext!.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext!.currentTime + duration);
-      
-      oscillator.start(this.audioContext!.currentTime);
-      oscillator.stop(this.audioContext!.currentTime + duration);
+      try {
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + duration);
+      } catch (e) { /* ignore audio errors */ }
     }, delay);
   }
 }
@@ -192,9 +202,10 @@ const DEMO_ORDERS: KitchenOrder[] = [
 ];
 
 export function KitchenDisplay() {
-  const [orders, setOrders] = useState<KitchenOrder[]>(DEMO_ORDERS);
+  const [orders, setOrders] = useState<KitchenOrder[]>([]);
+  const [mounted, setMounted] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [lastUpdate, setLastUpdate] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<'all' | 'normal' | 'high' | 'urgent'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const soundRef = useRef<KitchenSoundNotifier | null>(null);
@@ -261,9 +272,10 @@ export function KitchenDisplay() {
         setOrders(kitchenOrders);
       }
       // If API returns no orders or fails, keep using current/demo data
-      setLastUpdate(new Date());
+      setLastUpdate(new Date().toLocaleTimeString('fr-FR'));
     } catch (error) {
       console.error('Failed to fetch orders:', error);
+      setLastUpdate(new Date().toLocaleTimeString('fr-FR'));
       // Keep using demo data on error
     }
   }, []);
@@ -275,15 +287,19 @@ export function KitchenDisplay() {
     return () => clearInterval(interval);
   }, [fetchOrders]);
 
-  // Update elapsed time every minute
+  // Client-only mount to avoid hydration mismatch
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Update elapsed time every minute (only on client)
+  useEffect(() => {
+    if (!mounted) return;
     const interval = setInterval(() => {
-      setOrders(prev => prev.map(order => ({
-        ...order,
-      })));
+      setOrders(prev => [...prev]); // trigger re-render for elapsed time
     }, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [mounted]);
 
   // Calculate elapsed minutes
   const getElapsedMinutes = (createdAt: string) => {
@@ -376,6 +392,8 @@ export function KitchenDisplay() {
           <div className="flex items-center gap-1 ml-4">
             <Filter className="w-4 h-4 text-gray-400" />
             <select
+              name="kitchen-priority-filter"
+              id="kitchen-priority-filter"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value as any)}
               className="bg-gray-700 text-white text-sm rounded px-2 py-1 border border-gray-600"
@@ -401,7 +419,7 @@ export function KitchenDisplay() {
             {/* Last update */}
             <div className="flex items-center gap-1 text-gray-400">
               <RefreshCw className="w-4 h-4" />
-              <span>{lastUpdate.toLocaleTimeString('fr-FR')}</span>
+              <span>{mounted ? lastUpdate : '--:--:--'}</span>
             </div>
             
             {/* Sound toggle */}

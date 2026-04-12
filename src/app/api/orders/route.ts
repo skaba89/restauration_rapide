@@ -2,173 +2,10 @@
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/lib/api-responses';
 import { generateOrderNumber, calculateLoyaltyPoints } from '@/lib/utils-helpers';
+import { getDemoOrders, updateDemoOrderStatus, removeDemoOrder, assignDriverToOrder, getDemoOrderById } from '@/lib/demo-order-store';
 
-// Demo orders data
-const DEMO_ORDERS = [
-  {
-    id: 'demo-ord-1',
-    orderNumber: 'ORD-2024-0145',
-    restaurantId: 'demo-rest-1',
-    customerName: 'Kouamé Jean',
-    customerPhone: '+2250700000001',
-    customerEmail: 'kouame@email.com',
-    orderType: 'DELIVERY',
-    source: 'web',
-    status: 'PENDING',
-    paymentStatus: 'PENDING',
-    subtotal: 8000,
-    total: 8500,
-    deliveryFee: 500,
-    deliveryAddress: 'Cocody, Riviera 3',
-    deliveryCity: 'Abidjan',
-    notes: 'Pas trop de piment',
-    createdAt: new Date(),
-    items: [
-      { id: 'item-1', itemName: 'Attieké Poisson Grillé', quantity: 1, unitPrice: 8000, totalPrice: 8000, status: 'pending' },
-    ],
-  },
-  {
-    id: 'demo-ord-2',
-    orderNumber: 'ORD-2024-0144',
-    restaurantId: 'demo-rest-1',
-    customerId: 'demo-cust-2',
-    customerName: 'Aya Marie',
-    customerPhone: '+2250700000002',
-    customerEmail: 'aya@email.com',
-    orderType: 'DINE_IN',
-    source: 'pos',
-    tableNumber: 'T5',
-    status: 'PREPARING',
-    paymentStatus: 'PENDING',
-    subtotal: 4500,
-    total: 4500,
-    createdAt: new Date(Date.now() - 5 * 60 * 1000),
-    items: [
-      { id: 'item-2', itemName: 'Alloco', quantity: 2, unitPrice: 2250, totalPrice: 4500, status: 'preparing' },
-    ],
-  },
-  {
-    id: 'demo-ord-3',
-    orderNumber: 'ORD-2024-0143',
-    restaurantId: 'demo-rest-1',
-    customerName: 'Koné Ibrahim',
-    customerPhone: '+2250700000003',
-    orderType: 'TAKEAWAY',
-    source: 'app',
-    status: 'READY',
-    paymentStatus: 'PAID',
-    subtotal: 12000,
-    total: 12000,
-    createdAt: new Date(Date.now() - 15 * 60 * 1000),
-    items: [
-      { id: 'item-3', itemName: 'Kedjenou de Poulet', quantity: 1, unitPrice: 7000, totalPrice: 7000, status: 'ready' },
-      { id: 'item-4', itemName: 'Jus de Bissap', quantity: 2, unitPrice: 2500, totalPrice: 5000, status: 'ready' },
-    ],
-  },
-  {
-    id: 'demo-ord-4',
-    orderNumber: 'ORD-2024-0142',
-    restaurantId: 'demo-rest-1',
-    customerName: 'Diallo Fatou',
-    customerPhone: '+2250700000004',
-    orderType: 'DELIVERY',
-    source: 'web',
-    status: 'OUT_FOR_DELIVERY',
-    paymentStatus: 'PAID',
-    subtotal: 6000,
-    total: 6500,
-    deliveryFee: 500,
-    deliveryAddress: 'Plateau, Rue du Commerce',
-    deliveryCity: 'Abidjan',
-    createdAt: new Date(Date.now() - 30 * 60 * 1000),
-    items: [
-      { id: 'item-5', itemName: 'Thiéboudienne', quantity: 1, unitPrice: 6000, totalPrice: 6000, status: 'ready' },
-    ],
-    delivery: {
-      id: 'del-1',
-      status: 'PICKED_UP',
-      driver: { id: 'driver-1', firstName: 'Amadou', lastName: 'Touré', phone: '+2250700000100' },
-    },
-  },
-  {
-    id: 'demo-ord-5',
-    orderNumber: 'ORD-2024-0141',
-    restaurantId: 'demo-rest-1',
-    customerName: 'Touré Amadou',
-    customerPhone: '+2250700000005',
-    orderType: 'DINE_IN',
-    source: 'pos',
-    tableNumber: 'T12',
-    status: 'COMPLETED',
-    paymentStatus: 'PAID',
-    subtotal: 10500,
-    total: 10500,
-    createdAt: new Date(Date.now() - 45 * 60 * 1000),
-    completedAt: new Date(Date.now() - 30 * 60 * 1000),
-    items: [
-      { id: 'item-6', itemName: 'Riz Gras', quantity: 1, unitPrice: 5000, totalPrice: 5000, status: 'served' },
-      { id: 'item-7', itemName: 'Jus de Bissap', quantity: 2, unitPrice: 2750, totalPrice: 5500, status: 'served' },
-    ],
-  },
-  {
-    id: 'demo-ord-6',
-    orderNumber: 'ORD-2024-0140',
-    restaurantId: 'demo-rest-1',
-    customerName: 'Bamba Ismaël',
-    customerPhone: '+2250700000006',
-    orderType: 'DELIVERY',
-    source: 'app',
-    status: 'CONFIRMED',
-    paymentStatus: 'PAID',
-    subtotal: 15000,
-    total: 15500,
-    deliveryFee: 500,
-    deliveryAddress: 'Yopougon, Sicogi',
-    deliveryCity: 'Abidjan',
-    createdAt: new Date(Date.now() - 10 * 60 * 1000),
-    items: [
-      { id: 'item-8', itemName: 'Garba', quantity: 3, unitPrice: 3500, totalPrice: 10500, status: 'pending' },
-      { id: 'item-9', itemName: 'Jus de Gingembre', quantity: 3, unitPrice: 1500, totalPrice: 4500, status: 'pending' },
-    ],
-  },
-  {
-    id: 'demo-ord-7',
-    orderNumber: 'ORD-2024-0139',
-    restaurantId: 'demo-rest-1',
-    customerName: 'Koffi Emmanuel',
-    customerPhone: '+2250700000007',
-    orderType: 'TAKEAWAY',
-    source: 'web',
-    status: 'PENDING',
-    paymentStatus: 'PENDING',
-    subtotal: 3500,
-    total: 3500,
-    createdAt: new Date(Date.now() - 2 * 60 * 1000),
-    items: [
-      { id: 'item-10', itemName: 'Garba', quantity: 1, unitPrice: 3500, totalPrice: 3500, status: 'pending' },
-    ],
-  },
-  {
-    id: 'demo-ord-8',
-    orderNumber: 'ORD-2024-0138',
-    restaurantId: 'demo-rest-1',
-    customerName: 'Adjoua Rose',
-    customerPhone: '+2250700000008',
-    orderType: 'DELIVERY',
-    source: 'phone',
-    status: 'CANCELLED',
-    paymentStatus: 'REFUNDED',
-    subtotal: 14000,
-    total: 14000,
-    cancellationReason: 'Client injoignable',
-    createdAt: new Date(Date.now() - 60 * 60 * 1000),
-    cancelledAt: new Date(Date.now() - 55 * 60 * 1000),
-    items: [
-      { id: 'item-11', itemName: 'Foutou Banane', quantity: 2, unitPrice: 6000, totalPrice: 12000, status: 'cancelled' },
-      { id: 'item-12', itemName: 'Jus de Bissap', quantity: 2, unitPrice: 1000, totalPrice: 2000, status: 'cancelled' },
-    ],
-  },
-];
+// Demo orders are now managed via shared store (demo-order-store.ts)
+// Both kitchen and admin read/write from the same source of truth
 
 // GET /api/orders - List orders with pagination
 export async function GET(request: Request) {
@@ -187,7 +24,7 @@ export async function GET(request: Request) {
 
     // Return demo data if demo mode or no organization/restaurant specified
     if (demo === 'true' || (!restaurantId && !organizationId)) {
-      let filteredOrders = [...DEMO_ORDERS];
+      let filteredOrders = [...getDemoOrders()];
       
       // Apply filters
       if (status) {
@@ -198,7 +35,7 @@ export async function GET(request: Request) {
         filteredOrders = filteredOrders.filter(o => o.orderType === orderType);
       }
       if (customerId) {
-        filteredOrders = filteredOrders.filter(o => o.customerId === customerId);
+        filteredOrders = filteredOrders.filter(o => 'customerId' in o && (o as any).customerId === customerId);
       }
       if (search) {
         const searchLower = search.toLowerCase();
@@ -552,14 +389,24 @@ export async function PATCH(request: Request) {
       return apiError('ID est requis');
     }
 
-    // Demo fallback: update in-memory demo orders
+    // Demo fallback: update in shared store
     if (id.startsWith('demo-')) {
-      const demoOrder = DEMO_ORDERS.find(o => o.id === id);
+      const demoOrder = getDemoOrderById(id);
       if (!demoOrder) return apiError('Commande non trouvée', 404);
-      if (status) demoOrder.status = status;
-      if (paymentStatus) demoOrder.paymentStatus = paymentStatus;
-      if (cancellationReason) demoOrder.cancellationReason = cancellationReason;
-      return apiSuccess(demoOrder, 'Commande mise à jour (démo)');
+      if (status) {
+        // Also handle driver assignment
+        if (status === 'OUT_FOR_DELIVERY' && body.driverName && body.driverPhone) {
+          const updated = assignDriverToOrder(id, body.driverName, body.driverPhone);
+          if (!updated) return apiError('Commande non trouvée', 404);
+          return apiSuccess(updated, 'Livreur assigné (démo)');
+        }
+        const updated = updateDemoOrderStatus(id, status as any);
+        if (!updated) return apiError('Commande non trouvée', 404);
+        if (paymentStatus) (updated as any).paymentStatus = paymentStatus;
+        if (cancellationReason) (updated as any).cancellationReason = cancellationReason;
+        return apiSuccess(updated, 'Commande mise à jour (démo)');
+      }
+      return apiSuccess(demoOrder);
     }
 
     const order = await db.order.findUnique({
@@ -656,11 +503,10 @@ export async function DELETE(request: Request) {
       return apiError('ID est requis');
     }
 
-    // Demo fallback: remove from in-memory demo orders
+    // Demo fallback: remove from shared store
     if (id.startsWith('demo-')) {
-      const idx = DEMO_ORDERS.findIndex(o => o.id === id);
-      if (idx === -1) return apiError('Commande non trouvée', 404);
-      DEMO_ORDERS.splice(idx, 1);
+      const removed = removeDemoOrder(id);
+      if (!removed) return apiError('Commande non trouvée', 404);
       return apiSuccess({ cancelled: true }, 'Commande annulée (démo)');
     }
 

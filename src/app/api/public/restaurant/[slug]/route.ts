@@ -64,11 +64,11 @@ const DEFAULT_RESTAURANT = {
 // Build categories from SimpleMenuItem DB records
 function buildCategoriesFromDb(items: any[]) {
   const categoryMap = new Map<string, any[]>();
-  const categoryOrder = ['Plats Ivoiriens', 'Plats Sénégalais', 'Plats Guinéens', 'Grillades', 'Fast Food', 'Boissons'];
+  const categoryOrder = ['Plats Ivoiriens', 'Plats Sénégalais', 'Plats Guinéens', 'Grillades', 'Fast Food', 'Boissons', 'Autres'];
 
   for (const item of items) {
     if (!item.isAvailable) continue;
-    const cat = item.category;
+    const cat = item.category || 'Autres';
     if (!categoryMap.has(cat)) categoryMap.set(cat, []);
     categoryMap.get(cat)!.push({
       id: item.id,

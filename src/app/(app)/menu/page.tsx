@@ -75,13 +75,17 @@ interface MenuItem {
   orderCount?: number;
 }
 
-const CATEGORIES = [
-  { id: '1', name: 'Plats', icon: UtensilsCrossed },
-  { id: '2', name: 'Accompagnements', icon: Salad },
-  { id: '3', name: 'Boissons', icon: Coffee },
-  { id: '4', name: 'Desserts', icon: Cake },
-  { id: '5', name: 'Entrées', icon: Salad },
-];
+const DEFAULT_CATEGORY_NAMES = ['Plats Ivoiriens', 'Plats Sénégalais', 'Plats Guinéens', 'Grillades', 'Fast Food', 'Boissons', 'Plats', 'Accompagnements', 'Desserts', 'Entrées'];
+
+const CATEGORY_ICONS: Record<string, any> = {
+  'Plats Ivoiriens': UtensilsCrossed, 'Plats Sénégalais': UtensilsCrossed, 'Plats Guinéens': UtensilsCrossed,
+  'Grillades': UtensilsCrossed, 'Fast Food': UtensilsCrossed, 'Boissons': Coffee,
+  'Plats': UtensilsCrossed, 'Accompagnements': Salad, 'Desserts': Cake, 'Entrées': Salad,
+};
+
+function getCategoryIcon(name: string) {
+  return CATEGORY_ICONS[name] || UtensilsCrossed;
+}
 
 const ALLERGENS = ['Gluten', 'Poisson', 'Arachides', 'Lait', 'Œufs', 'Soja', 'Fruits de mer'];
 
@@ -143,12 +147,18 @@ export default function MenuPage() {
     fetchMenuItems();
   }, []);
 
-  // Calculate category item counts
-  const categories = CATEGORIES.map(cat => ({
-    ...cat,
-    itemCount: menuItems.filter(item => item.category === cat.name).length,
-    active: menuItems.filter(item => item.category === cat.name && item.isAvailable).length > 0,
+  // Dynamic categories: combine defaults with categories from loaded items
+  const allCategoryNames = [...new Set([...DEFAULT_CATEGORY_NAMES, ...menuItems.map(item => item.category)])];
+  const categories = allCategoryNames.map((name, index) => ({
+    id: String(index + 1),
+    name,
+    icon: getCategoryIcon(name),
+    itemCount: menuItems.filter(item => item.category === name).length,
+    active: menuItems.filter(item => item.category === name && item.isAvailable).length > 0,
   }));
+
+  // Flat list of category names for form dropdowns
+  const formCategories = allCategoryNames;
 
   const filteredItems = menuItems.filter((item) => {
     if (selectedCategory !== 'all' && item.category !== selectedCategory) return false;
@@ -699,8 +709,8 @@ export default function MenuPage() {
                   <SelectValue placeholder="Sélectionner une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                  {formCategories.map((catName) => (
+                    <SelectItem key={catName} value={catName}>{catName}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -879,8 +889,8 @@ export default function MenuPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    {formCategories.map((catName) => (
+                      <SelectItem key={catName} value={catName}>{catName}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

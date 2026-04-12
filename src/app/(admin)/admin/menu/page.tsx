@@ -49,7 +49,7 @@ interface MenuItem {
   image?: string | null;
 }
 
-const CATEGORIES = ['Plats', 'Boissons', 'Accompagnements', 'Desserts', 'Entrées'];
+const DEFAULT_CATEGORIES = ['Plats Ivoiriens', 'Plats Sénégalais', 'Plats Guinéens', 'Grillades', 'Fast Food', 'Boissons', 'Plats', 'Accompagnements', 'Desserts', 'Entrées'];
 const ALLERGENS = ['Gluten', 'Poisson', 'Arachides', 'Lait', 'Œufs', 'Soja', 'Fruits de mer'];
 
 export default function MenuPage() {
@@ -107,6 +107,10 @@ export default function MenuPage() {
   }, []);
 
   const categories = ['all', ...new Set(menuItems.map(item => item.category))];
+
+  // Dynamic form categories: include all categories from loaded items + defaults
+  const allKnown = [...new Set([...DEFAULT_CATEGORIES, ...menuItems.map(item => item.category)])];
+  const formCategories = allKnown.filter((c, i, arr) => arr.indexOf(c) === i);
   
   const filteredItems = menuItems.filter(item => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
@@ -336,7 +340,7 @@ export default function MenuPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {CATEGORIES.map(cat => (
+              {formCategories.map(cat => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               ))}
             </SelectContent>

@@ -191,7 +191,8 @@ export async function GET(request: Request) {
       
       // Apply filters
       if (status) {
-        filteredOrders = filteredOrders.filter(o => o.status === status);
+        const statusList = status.split(',').map(s => s.trim().toUpperCase());
+        filteredOrders = filteredOrders.filter(o => statusList.includes(o.status));
       }
       if (orderType) {
         filteredOrders = filteredOrders.filter(o => o.orderType === orderType);
@@ -226,10 +227,12 @@ export async function GET(request: Request) {
       });
     }
 
+    const statusList = status ? status.split(',').map(s => s.trim()) : null;
+
     const where = {
       ...(restaurantId && { restaurantId }),
       ...(organizationId && { restaurant: { organizationId } }),
-      ...(status && { status }),
+      ...(statusList && { status: { in: statusList } }),
       ...(customerId && { customerId }),
       ...(orderType && { orderType }),
       ...(dateFrom || dateTo
@@ -549,6 +552,16 @@ export async function PATCH(request: Request) {
       return apiError('ID est requis');
     }
 
+    // Demo fallback: update in-memory demo orders
+    if (id.startsWith('demo-')) {
+      const demoOrder = DEMO_ORDERS.find(o => o.id === id);
+      if (!demoOrder) return apiError('Commande non trouvée', 404);
+      if (status) demoOrder.status = status;
+      if (paymentStatus) demoOrder.paymentStatus = paymentStatus;
+      if (cancellationReason) demoOrder.cancellationReason = cancellationReason;
+      return apiSuccess(demoOrder, 'Commande mise à jour (démo)');
+    }
+
     const order = await db.order.findUnique({
       where: { id },
       include: { delivery: true },
@@ -641,6 +654,14 @@ export async function DELETE(request: Request) {
 
     if (!id) {
       return apiError('ID est requis');
+    }
+
+    // Demo fallback: remove from in-memory demo orders
+    if (id.startsWith('demo-')) {
+      const idx = DEMO_ORDERS.findIndex(o => o.id === id);
+      if (idx === -1) return apiError('Commande non trouvée', 404);
+      DEMO_ORDERS.splice(idx, 1);
+      return apiSuccess({ cancelled: true }, 'Commande annulée (démo)');
     }
 
     const order = await db.order.findUnique({

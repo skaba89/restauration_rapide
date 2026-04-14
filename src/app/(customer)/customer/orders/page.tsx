@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -24,69 +24,19 @@ import {
   Phone,
   ChefHat,
   XCircle,
-  ChevronRight,
   RefreshCw,
   Eye,
   Navigation,
   MessageCircle,
+  Wifi,
+  WifiOff,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useCurrencySafe } from '@/lib/currency-context';
-
-const ORDERS = [
-  {
-    id: 'ORD-2024-0145',
-    status: 'PREPARING',
-    date: '2024-01-15 12:30',
-    total: 8500,
-    items: [
-      { name: 'Attieké Poisson Grillé', quantity: 2, price: 3500 },
-      { name: 'Jus de Bissap', quantity: 1, price: 1500 },
-    ],
-    type: 'DELIVERY',
-    address: 'Cocody, Riviera 2',
-    deliveryFee: 500,
-    driver: { name: 'Amadou Touré', phone: '+2250700000100', rating: 4.8 },
-  },
-  {
-    id: 'ORD-2024-0144',
-    status: 'DELIVERED',
-    date: '2024-01-14 19:45',
-    total: 12000,
-    items: [
-      { name: 'Kedjenou de Poulet', quantity: 2, price: 4500 },
-      { name: 'Jus de Gingembre', quantity: 3, price: 1000 },
-    ],
-    type: 'DINE_IN',
-    table: 'T5',
-  },
-  {
-    id: 'ORD-2024-0143',
-    status: 'CANCELLED',
-    date: '2024-01-13 13:00',
-    total: 4000,
-    items: [{ name: 'Thiéboudienne', quantity: 1, price: 4000 }],
-    type: 'TAKEAWAY',
-    cancelReason: 'Délai trop long',
-  },
-  {
-    id: 'ORD-2024-0142',
-    status: 'OUT_FOR_DELIVERY',
-    date: '2024-01-15 13:00',
-    total: 6500,
-    items: [
-      { name: 'Poulet Braisé', quantity: 1, price: 4000 },
-      { name: 'Alloco', quantity: 2, price: 1250 },
-    ],
-    type: 'DELIVERY',
-    address: 'Plateau, Rue du Commerce',
-    deliveryFee: 500,
-    driver: { name: 'Ibrahim Koné', phone: '+2250700000101', rating: 4.6 },
-    estimatedArrival: '13:25',
-  },
-];
+import { useOrderSync } from '@/hooks/use-order-sync';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   PENDING: { label: 'En attente', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
@@ -99,15 +49,106 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   CANCELLED: { label: 'Annulée', color: 'bg-red-100 text-red-700', icon: XCircle },
 };
 
+interface Order {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerPhone: string;
+  status: string;
+  orderType: string;
+  items: Array<{ id: string; name: string; quantity: number; price: number }>;
+  total: number;
+  deliveryFee?: number;
+  deliveryAddress?: string;
+  tableNumber?: string;
+  createdAt: string;
+  notes?: string;
+  driverName?: string;
+  driverPhone?: string;
+  cancellationReason?: string;
+}
+
 export default function CustomerOrdersPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'past'>('all');
-  const [selectedOrder, setSelectedOrder] = useState<typeof ORDERS[0] | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
   const { formatCurrency } = useCurrencySafe();
 
-  const filteredOrders = ORDERS.filter(order => {
+  // Real-time sync - subscribe to the same channel as admin/kitchen
+  const { isConnected: isSynced, lastEvent, clearLastEvent } = useOrderSync({
+    restaurantId: 'demo-rest-1',
+    enabled: true,
+  });
+
+  // Fetch orders from shared API (same data as admin and kitchen)
+  const fetchOrders = useCallback(async () => {
+    try {
+      const response = await fetch('/api/orders?demo=true&limit=50');
+      const result = await response.json();
+      if (result.success && result.data?.data && Array.isArray(result.data.data)) {
+        const apiOrders: Order[] = result.data.data.map((o: any) => ({
+          id: o.id,
+          orderNumber: o.orderNumber,
+          customerName: o.customerName,
+          customerPhone: o.customerPhone,
+          status: o.status,
+          orderType: o.orderType,
+          items: (o.items || []).map((item: any) => ({
+            id: item.id,
+            name: item.itemName,
+            quantity: item.quantity,
+            price: item.unitPrice || item.totalPrice / Math.max(item.quantity, 1),
+          })),
+          total: o.total,
+          deliveryFee: o.deliveryFee || 0,
+          deliveryAddress: o.deliveryAddress || '',
+          tableNumber: o.tableNumber || undefined,
+          createdAt: o.createdAt,
+          notes: o.notes || '',
+          driverName: o.driverName,
+          driverPhone: o.driverPhone,
+          cancellationReason: o.cancellationReason,
+        }));
+        setOrders(apiOrders);
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Initial fetch + polling
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 5000);
+    return () => clearInterval(interval);
+  }, [fetchOrders]);
+
+  // React to sync events from admin/kitchen changes
+  useEffect(() => {
+    if (lastEvent) {
+      fetchOrders();
+      if (lastEvent.status === 'PREPARING') {
+        toast({ title: 'Commande en préparation', description: `${lastEvent.orderNumber} est en cours de préparation` });
+      } else if (lastEvent.status === 'READY') {
+        toast({ title: 'Commande prête !', description: `${lastEvent.orderNumber} est prête` });
+      } else if (lastEvent.status === 'OUT_FOR_DELIVERY') {
+        toast({ title: 'En livraison', description: `${lastEvent.orderNumber} est en route` });
+      } else if (lastEvent.status === 'DELIVERED' || lastEvent.status === 'COMPLETED') {
+        toast({ title: 'Commande livrée !', description: `${lastEvent.orderNumber} a été livrée` });
+      } else if (lastEvent.status === 'CANCELLED') {
+        toast({ title: 'Commande annulée', description: `${lastEvent.orderNumber} a été annulée`, variant: 'destructive' });
+      }
+      clearLastEvent();
+    }
+  }, [lastEvent, fetchOrders, toast, clearLastEvent]);
+
+  const filteredOrders = orders.filter(order => {
     if (filter === 'active') {
       return !['DELIVERED', 'COMPLETED', 'CANCELLED'].includes(order.status);
     }
@@ -117,22 +158,19 @@ export default function CustomerOrdersPage() {
     return true;
   });
 
-  const handleDetails = (order: typeof ORDERS[0]) => {
+  const handleDetails = (order: Order) => {
     setSelectedOrder(order);
     setShowDetails(true);
   };
 
-  const handleReorder = (order: typeof ORDERS[0]) => {
-    toast({ 
-      title: 'Articles ajoutés au panier', 
-      description: `${order.items.length} article(s) de ${order.id}` 
-    });
+  const handleReorder = (order: Order) => {
+    toast({ title: 'Articles ajoutés au panier', description: `${order.items.length} article(s) de ${order.orderNumber}` });
     router.push('/customer/cart');
   };
 
-  const handleTrack = (order: typeof ORDERS[0]) => {
-    if (order.type === 'DELIVERY' && (order.status === 'OUT_FOR_DELIVERY' || order.status === 'PREPARING')) {
-      router.push('/customer/tracking');
+  const handleTrack = (order: Order) => {
+    if (order.orderType === 'DELIVERY' && ['OUT_FOR_DELIVERY', 'PREPARING', 'READY'].includes(order.status)) {
+      router.push(`/customer/tracking?id=${order.id}`);
     } else {
       toast({ title: 'Suivi non disponible', description: 'Cette commande ne peut pas être suivie en temps réel' });
     }
@@ -148,11 +186,29 @@ export default function CustomerOrdersPage() {
     toast({ title: 'Message', description: `Envoi d'un message au ${phone}` });
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <span className="ml-3 text-muted-foreground">Chargement des commandes...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Mes Commandes</h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">Mes Commandes</h1>
+            <Badge variant={isSynced ? 'default' : 'secondary'} className={`text-xs ${isSynced ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}`}>
+              {isSynced ? <><Wifi className="h-3 w-3 mr-1" /> Synchro</> : <><WifiOff className="h-3 w-3 mr-1" /> Hors ligne</>}
+            </Badge>
+          </div>
+          <p className="text-muted-foreground text-sm">Synchronisé en temps réel avec le restaurant</p>
+        </div>
+      </div>
 
-      {/* Filter Tabs */}
       <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
         <TabsList>
           <TabsTrigger value="all">Toutes</TabsTrigger>
@@ -161,7 +217,6 @@ export default function CustomerOrdersPage() {
         </TabsList>
       </Tabs>
 
-      {/* Orders List */}
       <div className="space-y-4">
         {filteredOrders.length === 0 ? (
           <Card>
@@ -173,7 +228,7 @@ export default function CustomerOrdersPage() {
         ) : (
           filteredOrders.map(order => {
             const statusConfig = STATUS_CONFIG[order.status];
-            const StatusIcon = statusConfig.icon;
+            const StatusIcon = statusConfig?.icon || Clock;
 
             return (
               <Card key={order.id}>
@@ -181,31 +236,27 @@ export default function CustomerOrdersPage() {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-bold">{order.id}</p>
+                        <p className="font-bold">{order.orderNumber}</p>
                         <Badge variant="outline">
-                          {order.type === 'DELIVERY' ? '🚗 Livraison' : 
-                           order.type === 'TAKEAWAY' ? '📦 À emporter' : '🍽️ Sur place'}
+                          {order.orderType === 'DELIVERY' ? 'Livraison' :
+                           order.orderType === 'TAKEAWAY' ? 'A emporter' : 'Sur place'}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(order.date).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'long',
-                          hour: '2-digit',
-                          minute: '2-digit',
+                        {new Date(order.createdAt).toLocaleDateString('fr-FR', {
+                          day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
                         })}
                       </p>
                     </div>
-                    <Badge className={statusConfig.color}>
+                    <Badge className={statusConfig?.color || 'bg-gray-100 text-gray-700'}>
                       <StatusIcon className="h-3 w-3 mr-1" />
-                      {statusConfig.label}
+                      {statusConfig?.label || order.status}
                     </Badge>
                   </div>
 
-                  {/* Items preview */}
                   <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-3">
-                    {order.items.slice(0, 2).map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-sm">
+                    {order.items.slice(0, 2).map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm">
                         <span>{item.quantity}x {item.name}</span>
                         <span className="text-muted-foreground">{formatCurrency(item.price * item.quantity)}</span>
                       </div>
@@ -217,44 +268,43 @@ export default function CustomerOrdersPage() {
                     )}
                   </div>
 
-                  {/* Delivery info */}
-                  {order.type === 'DELIVERY' && order.address && (
+                  {order.orderType === 'DELIVERY' && order.deliveryAddress && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                       <MapPin className="h-4 w-4" />
-                      {order.address}
+                      {order.deliveryAddress}
                     </div>
                   )}
 
-                  {/* Driver info */}
-                  {order.driver && (
+                  {order.driverName && (
                     <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg mb-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">
-                          {order.driver.name.split(' ').map(n => n[0]).join('')}
+                          {order.driverName.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{order.driver.name}</p>
-                          <p className="text-xs text-muted-foreground">⭐ {order.driver.rating}</p>
+                          <p className="font-medium text-sm">{order.driverName}</p>
+                          <p className="text-xs text-muted-foreground">Livreur</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleCall(order.driver!.phone)}>
-                          <Phone className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleMessage(order.driver!.phone)}>
-                          <MessageCircle className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {order.driverPhone && (
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleCall(order.driverPhone!)}>
+                            <Phone className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleMessage(order.driverPhone!)}>
+                            <MessageCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {/* Total and Actions */}
                   <div className="flex items-center justify-between pt-3 border-t">
                     <p className="font-bold text-lg">{formatCurrency(order.total)}</p>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => handleDetails(order)}>
                         <Eye className="h-4 w-4 mr-1" />
-                        Détails
+                        Details
                       </Button>
                       {order.status !== 'CANCELLED' && (
                         <Button variant="outline" size="sm" onClick={() => handleReorder(order)}>
@@ -262,7 +312,7 @@ export default function CustomerOrdersPage() {
                           Commander
                         </Button>
                       )}
-                      {order.type === 'DELIVERY' && ['PREPARING', 'OUT_FOR_DELIVERY'].includes(order.status) && (
+                      {order.orderType === 'DELIVERY' && ['PREPARING', 'OUT_FOR_DELIVERY', 'READY'].includes(order.status) && (
                         <Button size="sm" className="bg-orange-500 hover:bg-orange-600" onClick={() => handleTrack(order)}>
                           <Navigation className="h-4 w-4 mr-1" />
                           Suivi
@@ -281,45 +331,36 @@ export default function CustomerOrdersPage() {
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Détails de la commande</DialogTitle>
-            <DialogDescription>{selectedOrder?.id}</DialogDescription>
+            <DialogTitle>Details de la commande</DialogTitle>
+            <DialogDescription>{selectedOrder?.orderNumber}</DialogDescription>
           </DialogHeader>
-
           {selectedOrder && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Statut</span>
-                <Badge className={STATUS_CONFIG[selectedOrder.status].color}>
-                  {STATUS_CONFIG[selectedOrder.status].label}
+                <Badge className={STATUS_CONFIG[selectedOrder.status]?.color || 'bg-gray-100'}>
+                  {STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}
                 </Badge>
               </div>
-
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Date</span>
-                <span>{new Date(selectedOrder.date).toLocaleDateString('fr-FR', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
+                <span>{new Date(selectedOrder.createdAt).toLocaleDateString('fr-FR', {
+                  day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
                 })}</span>
               </div>
-
               <Separator />
-
               <div>
-                <p className="font-medium mb-2">Articles commandés</p>
+                <p className="font-medium mb-2">Articles commandes</p>
                 <div className="space-y-2">
-                  {selectedOrder.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-sm">
+                  {selectedOrder.items.map((item) => (
+                    <div key={item.id} className="flex justify-between text-sm">
                       <span>{item.quantity}x {item.name}</span>
                       <span>{formatCurrency(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {selectedOrder.type === 'DELIVERY' && (
+              {selectedOrder.orderType === 'DELIVERY' && (
                 <>
                   <Separator />
                   <div className="flex justify-between text-sm">
@@ -328,27 +369,23 @@ export default function CustomerOrdersPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{selectedOrder.address}</span>
+                    <span className="text-sm">{selectedOrder.deliveryAddress}</span>
                   </div>
                 </>
               )}
-
               <Separator />
-
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
                 <span className="text-orange-600">{formatCurrency(selectedOrder.total)}</span>
               </div>
-
-              {selectedOrder.cancelReason && (
+              {selectedOrder.cancellationReason && (
                 <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-sm">
-                  <p className="font-medium text-red-700">Motif d'annulation</p>
-                  <p className="text-red-600">{selectedOrder.cancelReason}</p>
+                  <p className="font-medium text-red-700">Motif d&apos;annulation</p>
+                  <p className="text-red-600">{selectedOrder.cancellationReason}</p>
                 </div>
               )}
             </div>
           )}
-
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDetails(false)}>Fermer</Button>
             {selectedOrder && selectedOrder.status !== 'CANCELLED' && (
@@ -356,7 +393,7 @@ export default function CustomerOrdersPage() {
                 setShowDetails(false);
                 handleReorder(selectedOrder);
               }}>
-                Commander à nouveau
+                Commander a nouveau
               </Button>
             )}
           </DialogFooter>

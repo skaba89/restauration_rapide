@@ -1,26 +1,20 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
-  Truck,
-  CheckCircle,
-  Clock,
-  MapPin,
-  Phone,
-  MessageCircle,
-  ChefHat,
-  Package,
-  Home,
+  Truck, CheckCircle, Clock, MapPin, Phone, MessageCircle,
+  ChefHat, Package, Home, Wifi, WifiOff, Loader2, Navigation,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useOrderTracking } from '@/hooks/use-order-sync';
 
-// Dynamically import the map component to avoid SSR issues
 const RealMap = dynamic(() => import('@/components/maps/real-map'), {
   ssr: false,
   loading: () => (
@@ -30,99 +24,174 @@ const RealMap = dynamic(() => import('@/components/maps/real-map'), {
   ),
 });
 
-const TRACKING_STEPS = [
-  { id: 1, title: 'Commande confirmée', time: '12:30', completed: true },
-  { id: 2, title: 'En préparation', time: '12:35', completed: true },
-  { id: 3, title: 'Prête', time: '12:55', completed: true },
-  { id: 4, title: 'En livraison', time: '13:00', completed: true, active: true },
-  { id: 5, title: 'Livrée', time: '', completed: false },
+interface OrderData {
+  id: string;
+  orderNumber: string;
+  status: string;
+  customerName: string;
+  orderType: string;
+  total: number;
+  deliveryAddress?: string;
+  deliveryCity?: string;
+  driverName?: string;
+  driverPhone?: string;
+  createdAt: string;
+  items: Array<{ name: string; quantity: number }>;
+}
+
+const TRACKING_STEPS_CONFIG = [
+  { status: 'CONFIRMED', title: 'Commande confirmee', icon: CheckCircle },
+  { status: 'PREPARING', title: 'En preparation', icon: ChefHat },
+  { status: 'READY', title: 'Prete', icon: Package },
+  { status: 'OUT_FOR_DELIVERY', title: 'En livraison', icon: Truck },
+  { status: 'DELIVERED', title: 'Livree', icon: Home },
 ];
 
-const DRIVER_INFO = {
-  name: 'Amadou Touré',
-  phone: '+2250700000100',
-  rating: 4.8,
-  deliveries: 234,
-  vehicleType: 'Moto',
-  plateNumber: 'AB-123-CD',
-  avatar: null,
-};
-
-const DELIVERY_INFO = {
-  orderId: 'ORD-2024-0145',
-  address: 'Cocody, Riviera 2, Abidjan',
-  estimatedArrival: '13:25',
-  distance: '2.3 km',
-  minutesLeft: 15,
-};
+const STATUS_FLOW = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'COMPLETED'];
 
 // Abidjan coordinates
 const RESTAURANT_LOCATION = { lat: 5.3599, lng: -4.0083 };
 const DESTINATION_LOCATION = { lat: 5.3799, lng: -4.0283 };
 
-export default function TrackingPage() {
-  const [driverLocation, setDriverLocation] = useState({ 
-    lat: 5.3699, 
-    lng: -4.0183 
-  });
-  const [minutesLeft, setMinutesLeft] = useState(DELIVERY_INFO.minutesLeft);
+function TrackingContent() {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('id');
+  const [order, setOrder] = useState<OrderData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [driverLocation, setDriverLocation] = useState({ lat: 5.3699, lng: -4.0183 });
   const { toast } = useToast();
 
-  // Simulate driver moving towards destination
+  // Subscribe to real-time updates for this specific order
+  const { isTracking, isConnected, lastUpdate } = useOrderTracking(orderId);
+
+  // Fetch order from shared API
+  const fetchOrder = useCallback(async () => {
+    if (!orderId) {
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const response = await fetch(`/api/orders?demo=true`);
+      const result = await response.json();
+      if (result.success && result.data?.data) {
+        const found = result.data.data.find((o: any) => o.id === orderId);
+        if (found) {
+          setOrder({
+            id: found.id,
+            orderNumber: found.orderNumber,
+            status: found.status,
+            customerName: found.customerName,
+            orderType: found.orderType,
+            total: found.total,
+            deliveryAddress: found.deliveryAddress,
+            deliveryCity: found.deliveryCity,
+            driverName: found.driverName,
+            driverPhone: found.driverPhone,
+            createdAt: found.createdAt,
+            items: (found.items || []).map((i: any) => ({ name: i.itemName, quantity: i.quantity })),
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch order:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [orderId]);
+
+  // Initial fetch + polling
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDriverLocation(prev => {
-        // Move driver slightly towards destination
-        const newLat = prev.lat + (DESTINATION_LOCATION.lat - prev.lat) * 0.05;
-        const newLng = prev.lng + (DESTINATION_LOCATION.lng - prev.lng) * 0.05;
-        return { lat: newLat, lng: newLng };
-      });
-      setMinutesLeft(prev => Math.max(0, prev - 1));
-    }, 10000);
-
+    fetchOrder();
+    const interval = setInterval(fetchOrder, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchOrder]);
 
-  const currentStep = TRACKING_STEPS.findIndex(s => s.active) + 1;
-  const progress = (currentStep / TRACKING_STEPS.length) * 100;
+  // React to real-time updates (when admin changes status or assigns driver)
+  useEffect(() => {
+    if (lastUpdate) {
+      fetchOrder(); // Refetch to get latest data
+      if (lastUpdate.status === 'PREPARING') {
+        toast({ title: 'En preparation', description: 'Votre commande est en cours de preparation' });
+      } else if (lastUpdate.status === 'READY') {
+        toast({ title: 'Commande prete !', description: 'Votre commande est prete' });
+      } else if (lastUpdate.status === 'OUT_FOR_DELIVERY') {
+        toast({ title: 'En livraison !', description: 'Le livreur est en route' });
+      }
+    }
+  }, [lastUpdate, fetchOrder, toast]);
+
+  // Simulate driver movement when out for delivery
+  useEffect(() => {
+    if (order?.status !== 'OUT_FOR_DELIVERY') return;
+    const interval = setInterval(() => {
+      setDriverLocation(prev => ({
+        lat: prev.lat + (DESTINATION_LOCATION.lat - prev.lat) * 0.03,
+        lng: prev.lng + (DESTINATION_LOCATION.lng - prev.lng) * 0.03,
+      }));
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [order?.status]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <span className="ml-3 text-muted-foreground">Chargement du suivi...</span>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="space-y-6 pb-24">
+        <h1 className="text-2xl font-bold">Suivi de Livraison</h1>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Commande non trouvée</p>
+            <Link href="/customer/orders">
+              <Button className="mt-4 bg-orange-500 hover:bg-orange-600">Voir mes commandes</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const currentStepIndex = STATUS_FLOW.indexOf(order.status);
+  const progress = Math.max(0, (currentStepIndex / (TRACKING_STEPS_CONFIG.length)) * 100);
 
   const handleCall = () => {
-    window.open(`tel:${DRIVER_INFO.phone}`, '_self');
-    toast({ title: 'Appel en cours...', description: DRIVER_INFO.phone });
-  };
-
-  const handleMessage = () => {
-    toast({ title: 'Messages', description: 'Ouvrir la conversation avec le livreur' });
+    if (order.driverPhone) {
+      window.open(`tel:${order.driverPhone}`, '_self');
+      toast({ title: 'Appel en cours...', description: order.driverPhone });
+    }
   };
 
   return (
     <div className="space-y-6 pb-24">
-      <h1 className="text-2xl font-bold">Suivi de Livraison</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Suivi de Livraison</h1>
+        <Badge variant={isConnected ? 'default' : 'secondary'} className={`text-xs ${isConnected ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}`}>
+          {isConnected ? <><Wifi className="h-3 w-3 mr-1" /> Temps reel</> : <><WifiOff className="h-3 w-3 mr-1" /> Hors ligne</>}
+        </Badge>
+      </div>
 
       {/* Order Info */}
       <Card className="border-l-4 border-l-orange-500">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle>{DELIVERY_INFO.orderId}</CardTitle>
-            <Badge className="bg-purple-100 text-purple-700">
-              <Truck className="h-3 w-3 mr-1" />
-              En livraison
+            <CardTitle>{order.orderNumber}</CardTitle>
+            <Badge className="bg-orange-100 text-orange-700">
+              {order.status === 'OUT_FOR_DELIVERY' && <Truck className="h-3 w-3 mr-1" />}
+              {order.status === 'PREPARING' && <ChefHat className="h-3 w-3 mr-1" />}
+              {order.status === 'READY' && <Package className="h-3 w-3 mr-1" />}
+              {TRACKING_STEPS_CONFIG.find(s => s.status === order.status)?.title || order.status}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Arrivée estimée</p>
-              <p className="text-2xl font-bold text-orange-600">{DELIVERY_INFO.estimatedArrival}</p>
-              <p className="text-sm text-muted-foreground">Environ {minutesLeft} minutes</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Distance</p>
-              <p className="font-medium">{DELIVERY_INFO.distance}</p>
-            </div>
-          </div>
-          <Progress value={progress} className="mt-4 h-2" />
+          <Progress value={progress} className="mt-2 h-2" />
         </CardContent>
       </Card>
 
@@ -138,8 +207,8 @@ export default function TrackingPage() {
               driverLocation={driverLocation}
               restaurantLocation={RESTAURANT_LOCATION}
               destinationLocation={DESTINATION_LOCATION}
-              driverName={DRIVER_INFO.name}
-              destinationAddress={DELIVERY_INFO.address}
+              driverName={order.driverName || 'Livreur'}
+              destinationAddress={order.deliveryAddress || 'Destination'}
               showRoute={true}
               className="h-64"
             />
@@ -154,31 +223,25 @@ export default function TrackingPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {TRACKING_STEPS.map((step, idx) => {
-              const StepIcon = step.id === 1 ? CheckCircle :
-                              step.id === 2 ? ChefHat :
-                              step.id === 3 ? Package :
-                              step.id === 4 ? Truck : Home;
+            {TRACKING_STEPS_CONFIG.map((step) => {
+              const stepIndex = STATUS_FLOW.indexOf(step.status);
+              const isActive = order.status === step.status;
+              const isCompleted = currentStepIndex >= stepIndex;
+              const StepIcon = step.icon;
 
               return (
-                <div key={step.id} className="flex items-start gap-3">
+                <div key={step.status} className="flex items-start gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    step.completed 
-                      ? 'bg-green-100 text-green-600' 
+                    isCompleted
+                      ? 'bg-green-100 text-green-600'
                       : 'bg-gray-100 text-gray-400'
-                  } ${step.active ? 'ring-2 ring-orange-500 ring-offset-2' : ''}`}>
+                  } ${isActive ? 'ring-2 ring-orange-500 ring-offset-2' : ''}`}>
                     <StepIcon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className={`font-medium ${step.completed ? '' : 'text-muted-foreground'}`}>
-                        {step.title}
-                      </p>
-                      <span className="text-sm text-muted-foreground">{step.time}</span>
-                    </div>
-                    {idx < TRACKING_STEPS.length - 1 && (
-                      <div className={`w-0.5 h-6 ml-4 mt-1 ${step.completed ? 'bg-green-300' : 'bg-gray-200'}`} />
-                    )}
+                    <p className={`font-medium ${isCompleted ? '' : 'text-muted-foreground'}`}>
+                      {step.title}
+                    </p>
                   </div>
                 </div>
               );
@@ -188,74 +251,70 @@ export default function TrackingPage() {
       </Card>
 
       {/* Driver Info */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Votre livreur</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white text-xl font-bold">
-              AT
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold">{DRIVER_INFO.name}</p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="text-yellow-500">★</span>
-                <span>{DRIVER_INFO.rating}</span>
-                <span>•</span>
-                <span>{DRIVER_INFO.deliveries} livraisons</span>
+      {order.driverName && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Votre livreur</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white text-xl font-bold">
+                {order.driverName.split(' ').map(n => n[0]).join('')}
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                <span>🛵 {DRIVER_INFO.vehicleType}</span>
-                <span>•</span>
-                <span>{DRIVER_INFO.plateNumber}</span>
+              <div className="flex-1">
+                <p className="font-semibold">{order.driverName}</p>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <Button size="icon" variant="outline" className="h-10 w-10" onClick={handleCall}>
-                <Phone className="h-5 w-5" />
-              </Button>
-              <Link href="/customer/messages">
-                <Button size="icon" variant="outline" className="h-10 w-10" onClick={handleMessage}>
-                  <MessageCircle className="h-5 w-5" />
+              <div className="flex gap-2">
+                <Button size="icon" variant="outline" className="h-10 w-10" onClick={handleCall}>
+                  <Phone className="h-5 w-5" />
                 </Button>
-              </Link>
+                {order.driverPhone && (
+                  <Link href={`/customer/messages?to=${encodeURIComponent(order.driverPhone)}`}>
+                    <Button size="icon" variant="outline" className="h-10 w-10">
+                      <MessageCircle className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Delivery Address */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Adresse de livraison</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-start gap-3">
-            <MapPin className="h-5 w-5 text-orange-500 mt-0.5" />
-            <div>
-              <p className="font-medium">{DELIVERY_INFO.address}</p>
-              <p className="text-sm text-muted-foreground">Près de la pharmacie du quartier</p>
+      {order.deliveryAddress && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Adresse de livraison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-orange-500 mt-0.5" />
+              <p className="font-medium">{order.deliveryAddress}</p>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Fixed Actions at bottom */}
       <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white dark:bg-gray-950 border-t p-4 shadow-lg z-50">
         <div className="max-w-md mx-auto flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={handleCall}>
+          <Button variant="outline" className="flex-1" onClick={handleCall} disabled={!order.driverPhone}>
             <Phone className="h-4 w-4 mr-2" />
             Appeler
           </Button>
-          <Link href="/customer/messages" className="flex-1">
+          <Link href="/customer/orders" className="flex-1">
             <Button className="w-full bg-orange-500 hover:bg-orange-600">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Message
+              <Navigation className="h-4 w-4 mr-2" />
+              Mes Commandes
             </Button>
           </Link>
         </div>
       </div>
     </div>
   );
+}
+
+export default function TrackingPage() {
+  return <TrackingContent />;
 }

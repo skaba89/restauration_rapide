@@ -26,6 +26,7 @@ import {
   Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useKitchenSync } from '@/hooks/use-order-sync';
 
 interface KitchenOrderItem {
   id: string;
@@ -211,6 +212,9 @@ export function KitchenDisplay() {
   const soundRef = useRef<KitchenSoundNotifier | null>(null);
   const previousOrdersRef = useRef<KitchenOrder[]>([]);
 
+  // Real-time sync via Pusher (receives events from admin status changes + new orders from public)
+  const { isConnected: isPusherConnected, lastEvent: syncEvent, clearEvent: clearSyncEvent } = useKitchenSync();
+
   // Initialize sound notifier
   useEffect(() => {
     soundRef.current = new KitchenSoundNotifier();
@@ -280,12 +284,27 @@ export function KitchenDisplay() {
     }
   }, []);
 
-  // Polling for real-time updates
+  // Polling for real-time updates (fallback when Pusher is not configured)
   useEffect(() => {
     fetchOrders();
     const interval = setInterval(fetchOrders, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
   }, [fetchOrders]);
+
+  // React to Pusher sync events (instant updates from admin/public changes)
+  useEffect(() => {
+    if (syncEvent) {
+      fetchOrders(); // Refetch from API to get latest data
+      // Play sound for new orders
+      if (syncEvent.status === 'PENDING' && soundRef.current) {
+        soundRef.current.playNewOrder();
+        toast.info('Nouvelle commande reçue via temps réel!', { icon: '🔔' });
+      } else if (syncEvent.status === 'CANCELLED' && soundRef.current) {
+        toast.info(`Commande ${syncEvent.orderNumber} annulée`, { icon: '❌' });
+      }
+      clearSyncEvent();
+    }
+  }, [syncEvent, fetchOrders, clearSyncEvent]);
 
   // Client-only mount to avoid hydration mismatch
   useEffect(() => {

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/lib/api-responses';
 import { generateOrderNumber, calculateLoyaltyPoints } from '@/lib/utils-helpers';
 import { getDemoOrders, updateDemoOrderStatus, removeDemoOrder, assignDriverToOrder, getDemoOrderById } from '@/lib/demo-order-store';
+import { broadcastNewOrder, broadcastOrderStatusChange, broadcastOrderCancellation, broadcastDriverAssignment } from '@/lib/sync-engine';
 
 // Demo orders are now managed via shared store (demo-order-store.ts)
 // Both kitchen and admin read/write from the same source of truth
@@ -375,6 +376,29 @@ export async function POST(request: Request) {
       },
     });
 
+    // Broadcast new order to all roles (admin, cuisinier, client, public)
+    try {
+      await broadcastNewOrder({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        restaurantId,
+        customerName,
+        customerPhone,
+        orderType: orderType as string,
+        items: items.map((item: { itemName: string; quantity: number }) => ({
+          name: item.itemName,
+          quantity: item.quantity,
+        })),
+        total,
+        deliveryAddress,
+        tableNumber: tableNumber || undefined,
+        notes,
+      });
+    } catch (syncError) {
+      console.error('Sync broadcast error:', syncError);
+      // Don't fail the request if broadcast fails
+    }
+
     return apiSuccess(order, 'Commande créée avec succès', 201);
   });
 }
@@ -394,16 +418,57 @@ export async function PATCH(request: Request) {
       const demoOrder = getDemoOrderById(id);
       if (!demoOrder) return apiError('Commande non trouvée', 404);
       if (status) {
+        const previousStatus = demoOrder.status;
         // Also handle driver assignment
         if (status === 'OUT_FOR_DELIVERY' && body.driverName && body.driverPhone) {
           const updated = assignDriverToOrder(id, body.driverName, body.driverPhone);
           if (!updated) return apiError('Commande non trouvée', 404);
+          // Broadcast driver assignment to all roles
+          try {
+            await broadcastDriverAssignment({
+              orderId: id,
+              orderNumber: updated.orderNumber,
+              restaurantId: updated.restaurantId,
+              driverId: body.driverId || `driver-${body.driverName}`,
+              driverName: body.driverName,
+              driverPhone: body.driverPhone,
+              customerName: updated.customerName,
+              deliveryAddress: updated.deliveryAddress,
+              total: updated.total,
+            });
+          } catch (e) { console.error('Sync error:', e); }
           return apiSuccess(updated, 'Livreur assigné (démo)');
         }
         const updated = updateDemoOrderStatus(id, status as any);
         if (!updated) return apiError('Commande non trouvée', 404);
         if (paymentStatus) (updated as any).paymentStatus = paymentStatus;
         if (cancellationReason) (updated as any).cancellationReason = cancellationReason;
+        // Broadcast status change to all roles
+        try {
+          if (status === 'CANCELLED') {
+            await broadcastOrderCancellation({
+              orderId: id,
+              orderNumber: updated.orderNumber,
+              restaurantId: updated.restaurantId,
+              customerName: updated.customerName,
+              reason: cancellationReason,
+            });
+          } else {
+            await broadcastOrderStatusChange({
+              orderId: id,
+              orderNumber: updated.orderNumber,
+              restaurantId: updated.restaurantId,
+              status,
+              previousStatus,
+              customerName: updated.customerName,
+              customerPhone: updated.customerPhone,
+              driverName: updated.driverName,
+              orderType: updated.orderType,
+              items: updated.items.map(item => ({ name: item.itemName, quantity: item.quantity })),
+              total: updated.total,
+            });
+          }
+        } catch (e) { console.error('Sync error:', e); }
         return apiSuccess(updated, 'Commande mise à jour (démo)');
       }
       return apiSuccess(demoOrder);
@@ -459,6 +524,33 @@ export async function PATCH(request: Request) {
           notes: internalNotes,
         },
       });
+
+      // Broadcast status change to all roles (admin, cuisinier, driver, client)
+      try {
+        if (status === 'CANCELLED') {
+          await broadcastOrderCancellation({
+            orderId: id,
+            orderNumber: updatedOrder.orderNumber,
+            restaurantId: order.restaurantId,
+            customerName: order.customerName as string | undefined,
+            reason: cancellationReason as string | undefined,
+          });
+        } else {
+          await broadcastOrderStatusChange({
+            orderId: id,
+            orderNumber: updatedOrder.orderNumber,
+            restaurantId: order.restaurantId,
+            status,
+            previousStatus: order.status as string,
+            customerName: order.customerName as string | undefined,
+            customerPhone: order.customerPhone as string | undefined,
+            orderType: order.orderType as string | undefined,
+            total: Number(order.total),
+          });
+        }
+      } catch (syncError) {
+        console.error('Sync broadcast error:', syncError);
+      }
     }
 
     // Update delivery status if applicable
@@ -505,8 +597,19 @@ export async function DELETE(request: Request) {
 
     // Demo fallback: remove from shared store
     if (id.startsWith('demo-')) {
+      const demoOrder = getDemoOrderById(id);
       const removed = removeDemoOrder(id);
       if (!removed) return apiError('Commande non trouvée', 404);
+      // Broadcast cancellation to all roles
+      try {
+        await broadcastOrderCancellation({
+          orderId: id,
+          orderNumber: demoOrder?.orderNumber || '',
+          restaurantId: demoOrder?.restaurantId,
+          customerName: demoOrder?.customerName,
+          reason,
+        });
+      } catch (e) { console.error('Sync error:', e); }
       return apiSuccess({ cancelled: true }, 'Commande annulée (démo)');
     }
 

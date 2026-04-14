@@ -30,7 +30,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useRealTime } from '@/hooks/use-realtime';
+import { useOrderSync } from '@/hooks/use-order-sync';
 import { useCurrencySafe } from '@/lib/currency-context';
 import {
   ShoppingCart,
@@ -62,95 +62,8 @@ import {
   Bell,
 } from 'lucide-react';
 
-// Demo orders data
-const DEMO_ORDERS = [
-  {
-    id: '1',
-    orderNumber: 'ORD-2024-0145',
-    customerName: 'Kouamé Jean',
-    customerPhone: '07 08 09 10 11',
-    status: 'PENDING',
-    type: 'DELIVERY',
-    items: [
-      { name: 'Attieké Poisson Grillé', quantity: 2, price: 3500 },
-      { name: 'Jus de Bissap', quantity: 2, price: 750 },
-    ],
-    total: 8500,
-    deliveryFee: 1500,
-    deliveryAddress: 'Cocody, Riviera 3',
-    createdAt: new Date(),
-    timer: 5,
-    notes: '',
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-2024-0144',
-    customerName: 'Aya Marie',
-    customerPhone: '05 04 03 02 01',
-    status: 'PREPARING',
-    type: 'DINE_IN',
-    items: [
-      { name: 'Kedjenou de Poulet', quantity: 1, price: 4500 },
-      { name: 'Riz Gras', quantity: 1, price: 2500 },
-    ],
-    total: 7000,
-    tableNumber: 'T-05',
-    createdAt: new Date(Date.now() - 600000),
-    timer: 10,
-    notes: 'Sans piment',
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-2024-0143',
-    customerName: 'Koné Ibrahim',
-    customerPhone: '01 02 03 04 05',
-    status: 'READY',
-    type: 'TAKEAWAY',
-    items: [
-      { name: 'Dibi Agneau', quantity: 2, price: 5000 },
-      { name: 'Jus de Gingembre', quantity: 2, price: 1000 },
-    ],
-    total: 12000,
-    createdAt: new Date(Date.now() - 1200000),
-    timer: 20,
-    notes: '',
-  },
-  {
-    id: '4',
-    orderNumber: 'ORD-2024-0142',
-    customerName: 'Diallo Fatou',
-    customerPhone: '07 12 13 14 15',
-    status: 'OUT_FOR_DELIVERY',
-    type: 'DELIVERY',
-    items: [
-      { name: 'Alloco Sauce Graine', quantity: 2, price: 2500 },
-      { name: 'Jus de Bissap', quantity: 2, price: 500 },
-    ],
-    total: 6000,
-    deliveryFee: 1000,
-    deliveryAddress: 'Treichville, Rue 12',
-    createdAt: new Date(Date.now() - 1800000),
-    timer: 30,
-    notes: '',
-  },
-  {
-    id: '5',
-    orderNumber: 'ORD-2024-0141',
-    customerName: 'Touré Amadou',
-    customerPhone: '05 22 23 24 25',
-    status: 'COMPLETED',
-    type: 'DELIVERY',
-    items: [
-      { name: 'Thiéboudienne', quantity: 3, price: 3500 },
-    ],
-    total: 10500,
-    deliveryFee: 1500,
-    deliveryAddress: 'Yopougon, Sicogi',
-    createdAt: new Date(Date.now() - 3600000),
-    timer: 60,
-    notes: '',
-  },
-];
+// Fallback demo data (used when API is unreachable)
+const FALLBACK_ORDERS = [];
 
 // Demo menu items for order creation
 const MENU_ITEMS = [
@@ -216,14 +129,14 @@ export default function OrdersPage() {
   const { toast } = useToast();
   const { formatCurrency } = useCurrencySafe();
   
-  // Real-time connection
-  const { isConnected, newOrders, clearNewOrders } = useRealTime({
-    organizationId: 'kfm-org-1',
-    role: 'admin',
-    autoConnect: true,
+  // Real-time sync via Pusher (subscribes to order channel for all roles)
+  const { isConnected: isSynced, lastEvent, clearLastEvent } = useOrderSync({
+    restaurantId: 'demo-rest-1',
+    enabled: true,
   });
   
-  const [orders, setOrders] = useState(DEMO_ORDERS);
+  const [orders, setOrders] = useState(FALLBACK_ORDERS);
+  const [isLoading, setIsLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -240,41 +153,64 @@ export default function OrdersPage() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Add real-time orders to the list
-  useEffect(() => {
-    if (newOrders.length > 0) {
-      // Use setTimeout to defer state update
-      const timer = setTimeout(() => {
-        // Convert real-time orders to the local format
-        const rtOrders = newOrders.map(rt => ({
-          id: rt.orderId,
-          orderNumber: rt.orderNumber,
-          customerName: rt.customerName || 'Client',
-          customerPhone: '',
-          status: 'PENDING' as OrderStatus,
-          type: (rt.orderType || 'DINE_IN') as OrderType,
-          items: [],
-          total: rt.total || 0,
-          deliveryFee: 0,
-          deliveryAddress: '',
-          createdAt: new Date(rt.timestamp || Date.now()),
-          timer: 0,
-          notes: '',
+  // Fetch orders from shared API (same source as kitchen display)
+  const fetchOrders = useCallback(async () => {
+    try {
+      const response = await fetch('/api/orders?demo=true&limit=50');
+      const result = await response.json();
+      if (result.success && result.data?.data && Array.isArray(result.data.data)) {
+        const apiOrders = result.data.data.map((o: any) => ({
+          id: o.id,
+          orderNumber: o.orderNumber,
+          customerName: o.customerName,
+          customerPhone: o.customerPhone,
+          status: o.status,
+          type: o.orderType,
+          items: (o.items || []).map((item: any) => ({
+            id: item.id,
+            name: item.itemName,
+            quantity: item.quantity,
+            price: item.unitPrice || item.totalPrice / item.quantity,
+          })),
+          total: o.total,
+          deliveryFee: o.deliveryFee || 0,
+          deliveryAddress: o.deliveryAddress || '',
+          tableNumber: o.tableNumber || undefined,
+          createdAt: new Date(o.createdAt),
+          timer: Math.floor((Date.now() - new Date(o.createdAt).getTime()) / 60000),
+          notes: o.notes || '',
+          driverName: o.driverName,
+          driverPhone: o.driverPhone,
         }));
-        
-        setOrders(prev => [...rtOrders, ...prev]);
-        
-        toast({
-          title: 'Nouvelle commande',
-          description: `Commande ${newOrders[0].orderNumber} reçue`,
-        });
-        
-        clearNewOrders();
-      }, 0);
-      
-      return () => clearTimeout(timer);
+        setOrders(apiOrders);
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [newOrders, clearNewOrders, toast]);
+  }, []);
+
+  // Initial fetch + polling fallback
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 5000);
+    return () => clearInterval(interval);
+  }, [fetchOrders]);
+
+  // React to Pusher sync events - refetch when an event arrives
+  useEffect(() => {
+    if (lastEvent) {
+      fetchOrders();
+      if (lastEvent.status === 'PENDING' || lastEvent.status === 'CANCELLED') {
+        toast({
+          title: lastEvent.status === 'PENDING' ? 'Nouvelle commande' : 'Commande annulée',
+          description: `Commande ${lastEvent.orderNumber} ${lastEvent.status === 'PENDING' ? 'reçue' : 'annulée'}`,
+        });
+      }
+      clearLastEvent();
+    }
+  }, [lastEvent, fetchOrders, toast, clearLastEvent]);
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
@@ -298,12 +234,27 @@ export default function OrdersPage() {
     };
   }, [filteredOrders]);
 
-  const updateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-    toast({
-      title: 'Statut mis à jour',
-      description: `La commande a été marquée comme "${getStatusLabel(newStatus)}"`,
-    });
+  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    try {
+      // Call the shared API - this triggers Pusher events to ALL roles
+      const response = await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, status: newStatus }),
+      });
+      if (response.ok) {
+        // Optimistic UI update + refetch for consistency
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+        toast({
+          title: 'Statut mis à jour',
+          description: `La commande a été marquée comme "${getStatusLabel(newStatus)}"`,
+        });
+        // Also refetch to ensure sync across all views
+        fetchOrders();
+      }
+    } catch (error) {
+      toast({ title: 'Erreur', description: 'Impossible de mettre à jour le statut', variant: 'destructive' });
+    }
   };
 
   // Add item to order
@@ -339,7 +290,7 @@ export default function OrdersPage() {
   const deliveryFee = orderType === 'DELIVERY' ? 1500 : 0;
 
   // Create new order
-  const createOrder = () => {
+  const createOrder = async () => {
     if (!customerName || !customerPhone || orderItems.length === 0) {
       toast({
         title: 'Erreur',
@@ -358,39 +309,46 @@ export default function OrdersPage() {
       return;
     }
 
-    const newOrder = {
-      id: String(orders.length + 1),
-      orderNumber: `ORD-2024-${String(orders.length + 146).padStart(4, '0')}`,
-      customerName,
-      customerPhone,
-      status: 'PENDING' as OrderStatus,
-      type: orderType,
-      items: orderItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
-      total: orderTotal,
-      deliveryFee,
-      deliveryAddress: orderType === 'DELIVERY' ? deliveryAddress : undefined,
-      tableNumber: orderType === 'DINE_IN' ? tableNumber : undefined,
-      createdAt: new Date(),
-      timer: 0,
-      notes: orderNotes,
-    };
+    try {
+      // Create via API - triggers Pusher broadcast to ALL roles (admin, kitchen, client)
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurantId: 'demo-rest-1',
+          customerName,
+          customerPhone,
+          orderType,
+          items: orderItems.map(i => ({
+            itemName: i.name,
+            quantity: i.quantity,
+            unitPrice: i.price,
+            totalPrice: i.price * i.quantity,
+          })),
+          total: orderTotal + deliveryFee,
+          deliveryFee,
+          deliveryAddress: orderType === 'DELIVERY' ? deliveryAddress : undefined,
+          tableNumber: orderType === 'DINE_IN' ? tableNumber : undefined,
+          notes: orderNotes,
+        }),
+      });
 
-    setOrders([newOrder, ...orders]);
-    
-    // Reset form
-    setIsNewOrderOpen(false);
-    setCustomerName('');
-    setCustomerPhone('');
-    setDeliveryAddress('');
-    setTableNumber('');
-    setOrderNotes('');
-    setOrderItems([]);
-    setOrderType('DINE_IN');
-
-    toast({
-      title: 'Commande créée',
-      description: `La commande ${newOrder.orderNumber} a été créée avec succès`,
-    });
+      if (response.ok) {
+        // Reset form
+        setIsNewOrderOpen(false);
+        setCustomerName('');
+        setCustomerPhone('');
+        setDeliveryAddress('');
+        setTableNumber('');
+        setOrderNotes('');
+        setOrderItems([]);
+        setOrderType('DINE_IN');
+        toast({ title: 'Commande créée', description: 'La commande a été créée et synchronisée' });
+        fetchOrders();
+      }
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de créer la commande', variant: 'destructive' });
+    }
   };
 
   const columns = [
@@ -414,9 +372,9 @@ export default function OrdersPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">Commandes</h1>
             {/* Real-time connection indicator */}
-            <Badge variant={isConnected ? 'default' : 'secondary'} className={`text-xs ${isConnected ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}`}>
-              {isConnected ? (
-                <><Wifi className="h-3 w-3 mr-1" /> En direct</>
+            <Badge variant={isSynced ? 'default' : 'secondary'} className={`text-xs ${isSynced ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}`}>
+              {isSynced ? (
+                <><Wifi className="h-3 w-3 mr-1" /> Synchronisé</>
               ) : (
                 <><WifiOff className="h-3 w-3 mr-1" /> Hors ligne</>
               )}

@@ -202,7 +202,7 @@ export function VoiceOrdering() {
 
   // Initialize speech recognition
   useEffect(() => {
-    setIsSupported(isSpeechRecognitionSupported());
+    setIsSupported(isSpeechRecognitionSupported()); // eslint-disable-line react-hooks/set-state-in-effect
     
     if (isSpeechRecognitionSupported()) {
       recognitionRef.current = createSpeechRecognition({

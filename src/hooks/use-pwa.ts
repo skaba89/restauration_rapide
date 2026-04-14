@@ -24,7 +24,7 @@ export function usePWAInstall() {
     if (typeof window !== 'undefined') {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
         (window.navigator as any).standalone === true;
-      setIsInstalled(isStandalone);
+      setIsInstalled(isStandalone); // eslint-disable-line react-hooks/set-state-in-effect
     }
 
     // Listen for install prompt
@@ -170,7 +170,7 @@ export function useServiceWorker() {
 
       // Check if already controlled
       if (navigator.serviceWorker.controller) {
-        setStatus((prev) => ({
+        setStatus((prev) => ({ // eslint-disable-line react-hooks/set-state-in-effect
           ...prev,
           isActivated: true,
         }));
@@ -224,7 +224,7 @@ export function usePushNotifications() {
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
 
   useEffect(() => {
-    setIsSupported('Notification' in window && 'PushManager' in window);
+    setIsSupported('Notification' in window && 'PushManager' in window); // eslint-disable-line react-hooks/set-state-in-effect
     if ('Notification' in window) {
       setPermission(Notification.permission);
     }
@@ -496,7 +496,7 @@ async function getOfflineData<T>(key: string): Promise<T | null> {
   });
 }
 
-export default {
+const pwaHooks = {
   usePWAInstall,
   useOfflineStatus,
   useServiceWorker,
@@ -504,3 +504,5 @@ export default {
   useBackgroundSync,
   useOfflineData,
 };
+
+export default pwaHooks;

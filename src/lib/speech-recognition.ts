@@ -435,10 +435,12 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   { id: '12', name: 'Salade', aliases: [], price: 3000, category: 'Accompagnements' },
 ];
 
-export default {
+const speechRecognitionService = {
   isSpeechRecognitionSupported,
   createSpeechRecognition,
   parseVoiceCommand,
   SpeechRecognitionService,
   DEFAULT_MENU_ITEMS,
 };
+
+export default speechRecognitionService;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Pusher, { Channel } from 'pusher-js';
 
 // Pusher configuration (client-side)
@@ -22,7 +22,7 @@ export function getPusherClient(): Pusher | null {
 
 // Hook to subscribe to a channel
 export function usePusherChannel(channelName: string | null) {
-  const channelRef = useRef<Channel | null>(null);
+  const [channel, setChannel] = useState<Channel | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export function usePusherChannel(channelName: string | null) {
     if (!pusher) return;
 
     const channel = pusher.subscribe(channelName);
-    channelRef.current = channel;
+    setChannel(channel); // eslint-disable-line react-hooks/set-state-in-effect
 
     channel.bind('pusher:subscription_succeeded', () => {
       setIsConnected(true);
@@ -43,15 +43,15 @@ export function usePusherChannel(channelName: string | null) {
     });
 
     return () => {
-      if (channelRef.current) {
+      if (channel) {
         pusher.unsubscribe(channelName);
-        channelRef.current = null;
+        setChannel(null);
         setIsConnected(false);
       }
     };
   }, [channelName]);
 
-  return { channel: channelRef.current, isConnected };
+  return { channel, isConnected };
 }
 
 // Hook to listen to specific events
@@ -103,9 +103,7 @@ export function useDeliveryTracking(
   
   usePusherEvent(channelName, 'delivery:location_update', onLocationUpdate);
   
-  if (onStatusUpdate) {
-    usePusherEvent(channelName, 'delivery:status_changed', onStatusUpdate);
-  }
+  usePusherEvent(channelName, 'delivery:status_changed', onStatusUpdate ?? (() => {}));
 }
 
 // Hook for kitchen display

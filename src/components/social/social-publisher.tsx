@@ -309,7 +309,7 @@ export function SocialMediaManager() {
             </CardHeader>
             <CardContent className="space-y-3">
               <Button className="w-full justify-start gap-2">
-                <Image className="h-4 w-4" />
+                <Image className="h-4 w-4" alt="" />
                 Publier spécial du jour
               </Button>
               <Button className="w-full justify-start gap-2">

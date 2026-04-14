@@ -208,7 +208,7 @@ export function disconnectSocket() {
   }
 }
 
-export default {
+const websocketClient = {
   emitOrderCreated,
   emitOrderStatusUpdate,
   emitReservationCreated,
@@ -217,3 +217,5 @@ export default {
   emitTableStatusUpdate,
   disconnectSocket,
 };
+
+export default websocketClient;

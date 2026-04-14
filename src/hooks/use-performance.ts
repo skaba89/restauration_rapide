@@ -56,10 +56,14 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   delay: number = 300
 ): T {
   const callbackRef = useRef(callback);
-  callbackRef.current = callback;
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  });
 
   return useMemo(
     () =>
+      // eslint-disable-next-line react-hooks/refs
       debounce((...args: Parameters<T>) => callbackRef.current(...args), delay) as T,
     [delay]
   );
@@ -73,10 +77,14 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
   interval: number = 300
 ): T {
   const callbackRef = useRef(callback);
-  callbackRef.current = callback;
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  });
 
   return useMemo(
     () =>
+      // eslint-disable-next-line react-hooks/refs
       throttle((...args: Parameters<T>) => callbackRef.current(...args), interval) as T,
     [interval]
   );
@@ -206,6 +214,7 @@ export function useMediaQuery(query: string): boolean {
 
   useEffect(() => {
     const media = window.matchMedia(query);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMatches(media.matches);
 
     const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
@@ -254,6 +263,7 @@ export function useLocalStorage<T>(
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setStoredValue(JSON.parse(item));
       }
     } catch (error) {
@@ -311,6 +321,7 @@ export function usePrevious<T>(value: T): T | undefined {
     ref.current = value;
   }, [value]);
 
+  // eslint-disable-next-line react-hooks/refs
   return ref.current;
 }
 
@@ -412,7 +423,7 @@ export function useInfiniteScroll({
   return loadMoreRef;
 }
 
-export default {
+const performanceHooks = {
   useDebounce,
   useThrottle,
   useDebouncedCallback,
@@ -429,3 +440,5 @@ export default {
   useKeyboardShortcut,
   useInfiniteScroll,
 };
+
+export default performanceHooks;

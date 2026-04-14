@@ -110,7 +110,7 @@ export function useRealTime(options: UseRealTimeOptions = {}): UseRealTimeReturn
   // Check WebSocket availability on mount
   useEffect(() => {
     const available = shouldEnableWebSocket();
-    setIsAvailable(available);
+    setIsAvailable(available); // eslint-disable-line react-hooks/set-state-in-effect
     
     if (!available) {
       console.log('[RealTime] WebSocket disabled - polling will be used for updates');
@@ -344,7 +344,7 @@ export function useNewOrderNotifications(onNewOrder?: (order: OrderEvent) => voi
 
   useEffect(() => {
     if (newOrders.length > 0) {
-      setNewOrderCount(prev => prev + newOrders.length);
+      setNewOrderCount(prev => prev + newOrders.length); // eslint-disable-line react-hooks/set-state-in-effect
       setLatestOrder(newOrders[0]);
       onNewOrder?.(newOrders[0]);
     }

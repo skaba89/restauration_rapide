@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 
 /**
  * Hook to trap focus within a modal or dialog
@@ -140,48 +140,38 @@ export function useKeyboardNavigation<T extends HTMLElement>() {
  * Hook to detect if user prefers reduced motion
  */
 export function usePrefersReducedMotion(): boolean {
-  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
-
-  useEffect(() => {
+  const subscribe = useCallback((callback: () => void) => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    const handler = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-
-    mediaQuery.addEventListener('change', handler);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handler);
-    };
+    mediaQuery.addEventListener('change', callback);
+    return () => mediaQuery.removeEventListener('change', callback);
   }, []);
 
-  return prefersReducedMotion;
+  const getSnapshot = useCallback(() => {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  const getServerSnapshot = useCallback(() => false, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 /**
  * Hook to detect if user prefers high contrast
  */
 export function usePrefersHighContrast(): boolean {
-  const [prefersHighContrast, setPrefersHighContrast] = React.useState(false);
-
-  useEffect(() => {
+  const subscribe = useCallback((callback: () => void) => {
     const mediaQuery = window.matchMedia('(prefers-contrast: more)');
-    setPrefersHighContrast(mediaQuery.matches);
-
-    const handler = (event: MediaQueryListEvent) => {
-      setPrefersHighContrast(event.matches);
-    };
-
-    mediaQuery.addEventListener('change', handler);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handler);
-    };
+    mediaQuery.addEventListener('change', callback);
+    return () => mediaQuery.removeEventListener('change', callback);
   }, []);
 
-  return prefersHighContrast;
+  const getSnapshot = useCallback(() => {
+    return window.matchMedia('(prefers-contrast: more)').matches;
+  }, []);
+
+  const getServerSnapshot = useCallback(() => false, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 /**
@@ -295,7 +285,8 @@ interface AccessibleModalProps {
 export function AccessibleModal({ isOpen, onClose, title, description, children }: AccessibleModalProps) {
   const modalRef = useFocusTrap<HTMLDivElement>(isOpen);
   const titleId = `modal-title-${React.useId()}`;
-  const descriptionId = description ? `modal-description-${React.useId()}` : undefined;
+  const descriptionBaseId = React.useId();
+  const descriptionId = description ? `modal-description-${descriptionBaseId}` : undefined;
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -438,7 +429,7 @@ export function AccessibleTooltip({ content, children }: AccessibleTooltipProps)
   );
 }
 
-export default {
+const accessibilityExports = {
   useFocusTrap,
   useAnnounce,
   useKeyboardNavigation,
@@ -453,3 +444,5 @@ export default {
   AccessibleProgress,
   AccessibleTooltip,
 };
+
+export default accessibilityExports;

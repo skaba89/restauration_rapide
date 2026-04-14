@@ -235,7 +235,7 @@ export default function SocialPage() {
 
               <div>
                 <Button variant="outline" className="w-full gap-2">
-                  <Image className="h-4 w-4" />
+                  <Image className="h-4 w-4" alt="" />
                   Ajouter une image
                 </Button>
               </div>

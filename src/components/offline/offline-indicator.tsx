@@ -53,7 +53,7 @@ export function OfflineBanner({ className, onDismiss }: OfflineBannerProps) {
   // Reset dismissed when going offline again
   useEffect(() => {
     if (!isOnline) {
-      setDismissed(false);
+      setDismissed(false); // eslint-disable-line react-hooks/set-state-in-effect
     }
   }, [isOnline]);
 

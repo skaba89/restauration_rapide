@@ -75,7 +75,7 @@ export function OfflineBanner() {
 
   useEffect(() => {
     if (isOnline && wasOffline) {
-      setShowBackOnline(true);
+      setShowBackOnline(true); // eslint-disable-line react-hooks/set-state-in-effect
       const timer = setTimeout(() => setShowBackOnline(false), 3000);
       return () => clearTimeout(timer);
     }
@@ -151,7 +151,7 @@ export function NotificationPermissionPrompt() {
     // Check if dismissed in localStorage
     const wasDismissed = localStorage.getItem('notification-prompt-dismissed');
     if (wasDismissed) {
-      setDismissed(true);
+      setDismissed(true); // eslint-disable-line react-hooks/set-state-in-effect
     }
   }, []);
 

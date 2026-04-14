@@ -4,6 +4,7 @@
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { db } from '@/lib/db';
 
 // ============================================
@@ -58,7 +59,6 @@ function verifyOrangeSignature(
 ): boolean {
   if (!secret) return true; // Skip in demo mode
   
-  const crypto = require('crypto');
   const expectedSignature = crypto
     .createHmac('sha256', secret)
     .update(payload)
@@ -139,7 +139,6 @@ function verifyWaveSignature(
 ): boolean {
   if (!secret) return true;
   
-  const crypto = require('crypto');
   const expectedSignature = crypto
     .createHmac('sha256', secret)
     .update(payload)

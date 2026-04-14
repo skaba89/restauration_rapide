@@ -696,9 +696,11 @@ export function getPrinterService(): ThermalPrinterService {
   return printerServiceInstance;
 }
 
-export default {
+const thermalPrinterService = {
   ThermalPrinterService,
   getPrinterService,
   ESC_POS,
   DEMO_PRINTERS,
 };
+
+export default thermalPrinterService;

@@ -5,7 +5,7 @@
 // Africa-First Restaurant Management System
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import {
   Smartphone,
@@ -137,11 +137,11 @@ const mobileMoneyPartners = [
 ];
 
 export default function LandingPageClient() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   return (
     <div className="min-h-screen bg-white">

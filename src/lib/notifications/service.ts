@@ -378,7 +378,7 @@ export async function markAllNotificationsAsRead(userId: string) {
   return true;
 }
 
-export default {
+const notificationService = {
   sendNotification,
   sendNotificationFromTemplate,
   getUserNotifications,
@@ -386,3 +386,5 @@ export default {
   markAllNotificationsAsRead,
   notificationTemplates,
 };
+
+export default notificationService;

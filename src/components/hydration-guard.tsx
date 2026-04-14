@@ -1,6 +1,16 @@
 'use client';
 
-import { useEffect, useState, ReactNode } from 'react';
+import { useSyncExternalStore, ReactNode } from 'react';
+
+const emptySubscribe = () => () => {};
+
+function getIsHydrated() {
+  return true;
+}
+
+function getServerSnapshot() {
+  return false;
+}
 
 /**
  * Component that only renders its children after hydration is complete.
@@ -13,11 +23,11 @@ export function HydrationGuard({
   children: ReactNode; 
   fallback?: ReactNode;
 }) {
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  const isHydrated = useSyncExternalStore(
+    emptySubscribe,
+    getIsHydrated,
+    getServerSnapshot
+  );
 
   if (!isHydrated) {
     return <>{fallback}</>;
@@ -29,14 +39,12 @@ export function HydrationGuard({
 /**
  * Hook to check if the component is hydrated
  */
-export function useHydrated() {
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
-
-  return isHydrated;
+export function useHydrated(): boolean {
+  return useSyncExternalStore(
+    emptySubscribe,
+    getIsHydrated,
+    getServerSnapshot
+  );
 }
 
 /**

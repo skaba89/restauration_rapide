@@ -635,7 +635,7 @@ export async function getDatabaseSize(): Promise<{
   };
 }
 
-export default {
+const offlineDB = {
   orders: offlineOrders,
   menuItems: offlineMenuItems,
   customers: offlineCustomers,
@@ -646,3 +646,5 @@ export default {
   clearAllData,
   getDatabaseSize,
 };
+
+export default offlineDB;

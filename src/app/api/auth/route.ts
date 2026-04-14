@@ -84,6 +84,46 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
       }],
     },
   },
+  // Kitchen/Cook account
+  'kitchen@kfm-delice.com': {
+    password: 'kitchen123',
+    user: {
+      id: 'kitchen-user-1',
+      email: 'kitchen@kfm-delice.com',
+      phone: '+224 622 222 333',
+      role: 'KITCHEN',
+      firstName: 'Chef',
+      lastName: 'Abdoulaye',
+      avatar: null,
+      isActive: true,
+      organizations: [{
+        id: 'kfm-org-1',
+        name: 'KFM DELICE',
+        slug: 'kfm-delice',
+        role: 'STAFF',
+      }],
+    },
+  },
+  // Driver account
+  'driver@kfm-delice.com': {
+    password: 'driver123',
+    user: {
+      id: 'driver-user-1',
+      email: 'driver@kfm-delice.com',
+      phone: '+224 622 333 444',
+      role: 'DRIVER',
+      firstName: 'Moussa',
+      lastName: 'Touré',
+      avatar: null,
+      isActive: true,
+      organizations: [{
+        id: 'kfm-org-1',
+        name: 'KFM DELICE',
+        slug: 'kfm-delice',
+        role: 'STAFF',
+      }],
+    },
+  },
 };
 
 // In-memory sessions for demo mode
@@ -172,6 +212,7 @@ export async function POST(request: Request) {
               firstName: demoUser.user.firstName,
               lastName: demoUser.user.lastName,
               avatar: demoUser.user.avatar,
+              organizations: demoUser.user.organizations,
             },
             token: token,
             refreshToken: `refresh-${Date.now()}`,
@@ -226,7 +267,7 @@ export async function POST(request: Request) {
 
       console.log('[AUTH] Login failed for:', identifier);
       return json(false, { 
-        error: 'Identifiants incorrects. Comptes démo disponibles:\n• admin@kfm-delice.com / AdminKFM2024! (SUPER_ADMIN)\n• demo@kfm-delice.com / demo123 (ORG_ADMIN)\n• contact@kfm-delice.com / KfmDelice2024! (ORG_ADMIN)\n• amadou@kfm-delice.com / kfm2024! (RESTAURANT_MANAGER)' 
+        error: 'Identifiants incorrects. Comptes démo disponibles:\n• admin@kfm-delice.com / AdminKFM2024! (SUPER_ADMIN)\n• demo@kfm-delice.com / demo123 (ORG_ADMIN)\n• contact@kfm-delice.com / KfmDelice2024! (ORG_ADMIN)\n• amadou@kfm-delice.com / kfm2024! (RESTAURANT_MANAGER)\n• kitchen@kfm-delice.com / kitchen123 (CUISINIER)\n• driver@kfm-delice.com / driver123 (LIVREUR)' 
       }, 401);
     }
 

@@ -26,6 +26,7 @@ import {
   CheckCircle,
   Check,
   X,
+  Bike,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -83,10 +84,19 @@ export default function LoginPage() {
         
         // Redirect based on user role
         const userRole = result.user?.role;
-        if (userRole === 'CUSTOMER') {
-          router.push('/customer');
-        } else {
-          router.push('/dashboard');
+        switch (userRole) {
+          case 'CUSTOMER':
+            router.push('/customer');
+            break;
+          case 'DRIVER':
+            router.push('/driver/orders');
+            break;
+          case 'KITCHEN':
+            router.push('/kitchen');
+            break;
+          default:
+            router.push('/dashboard');
+            break;
         }
       } catch (error: any) {
         console.error('Login failed:', error);
@@ -169,14 +179,29 @@ export default function LoginPage() {
   const handleDemoDriverLogin = async () => {
     try {
       const result = await loginMutation.mutateAsync({
-        email: 'demo@kfm-delice.com',
-        password: 'demo123',
+        email: 'driver@kfm-delice.com',
+        password: 'driver123',
       });
       setAuthToken(result.token);
       router.push('/driver/orders');
     } catch (error: any) {
       setAuthToken(`demo-token-driver-${Date.now()}`);
       router.push('/driver/orders');
+    }
+  };
+
+  // Demo kitchen/cook login
+  const handleDemoKitchenLogin = async () => {
+    try {
+      const result = await loginMutation.mutateAsync({
+        email: 'kitchen@kfm-delice.com',
+        password: 'kitchen123',
+      });
+      setAuthToken(result.token);
+      router.push('/kitchen');
+    } catch (error: any) {
+      setAuthToken(`demo-token-kitchen-${Date.now()}`);
+      router.push('/kitchen');
     }
   };
 
@@ -321,9 +346,11 @@ export default function LoginPage() {
                   <AlertCircle className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-xs text-blue-800">
                     <strong>Comptes de démonstration:</strong><br />
-                    📧 admin@kfm-delice.com / AdminKFM2024! (Super Admin)<br />
-                    📧 demo@kfm-delice.com / demo123 (Org Admin)<br />
-                    📧 contact@kfm-delice.com / KfmDelice2024! (Org Admin)
+                    admin@kfm-delice.com / AdminKFM2024! (Super Admin)<br />
+                    demo@kfm-delice.com / demo123 (Org Admin)<br />
+                    amadou@kfm-delice.com / kfm2024! (Manager)<br />
+                    kitchen@kfm-delice.com / kitchen123 (Cuisinier)<br />
+                    driver@kfm-delice.com / driver123 (Livreur)
                   </AlertDescription>
                 </Alert>
                 
@@ -336,6 +363,29 @@ export default function LoginPage() {
                   <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
                   Accès Rapide Démo
                 </Button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-amber-50 hover:bg-amber-100 border-amber-300"
+                    onClick={handleDemoKitchenLogin}
+                    disabled={loginMutation.isPending}
+                  >
+                    <ChefHat className="mr-1 h-3 w-3 text-amber-600" />
+                    Cuisine
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-purple-50 hover:bg-purple-100 border-purple-300"
+                    onClick={handleDemoDriverLogin}
+                    disabled={loginMutation.isPending}
+                  >
+                    <Bike className="mr-1 h-3 w-3 text-purple-600" />
+                    Livreur
+                  </Button>
+                </div>
               </CardContent>
             </TabsContent>
 

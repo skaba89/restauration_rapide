@@ -307,7 +307,7 @@ function NavCategoryItem({
 }
 
 // Separate NavContent component
-function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function NavContent({ pathname, onNavigate, categories = NAV_CATEGORIES }: { pathname: string; onNavigate?: () => void; categories?: NavCategory[] }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
@@ -324,7 +324,7 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
       {/* Navigation with collapsible categories */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
-          {NAV_CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <NavCategoryItem
               key={category.title}
               category={category}
@@ -359,6 +359,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const logoutMutation = useLogout();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Determine if user is kitchen staff - show limited navigation
+  const isKitchenStaff = user?.role === 'KITCHEN';
+
+  // Filter navigation for kitchen staff
+  const kitchenNavCategories: NavCategory[] = [
+    {
+      title: 'Cuisine',
+      icon: ChefHat,
+      items: [
+        { title: 'Commandes Cuisine', href: '/kitchen', icon: ChefHat },
+        { title: 'Inventaire', href: '/inventory', icon: Package },
+      ],
+    },
+  ];
+
+  const activeNavCategories = isKitchenStaff ? kitchenNavCategories : NAV_CATEGORIES;
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -421,7 +438,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r bg-white dark:bg-gray-950">
-        <NavContent pathname={pathname} />
+        <NavContent pathname={pathname} categories={activeNavCategories} />
       </aside>
 
       {/* Mobile Sidebar */}
@@ -430,7 +447,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <VisuallyHidden>
             <SheetTitle>Menu de navigation</SheetTitle>
           </VisuallyHidden>
-          <NavContent pathname={pathname} onNavigate={() => setSidebarOpen(false)} />
+          <NavContent pathname={pathname} onNavigate={() => setSidebarOpen(false)} categories={activeNavCategories} />
         </SheetContent>
       </Sheet>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -117,9 +117,22 @@ export function DriverLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const logoutMutation = useLogout();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user?.role) {
+      const allowedRoles = ['DRIVER', 'SUPER_ADMIN', 'ORG_ADMIN'];
+      if (!allowedRoles.includes(user.role)) {
+        switch (user.role) {
+          case 'KITCHEN': router.push('/kitchen'); break;
+          case 'CUSTOMER': router.push('/customer'); break;
+          default: router.push('/dashboard'); break;
+        }
+      }
+    }
+  }, [isLoading, isAuthenticated, user?.role, router]);
 
   const handleLogout = async () => {
     await logoutMutation.mutateAsync();

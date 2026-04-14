@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -125,11 +125,22 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const logoutMutation = useLogout();
   const router = useRouter();
   const { getItemCount } = useCartStore();
   const cartCount = getItemCount();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user?.role && user.role !== 'CUSTOMER') {
+      // Redirect non-customers to their appropriate dashboard
+      switch (user.role) {
+        case 'DRIVER': router.push('/driver/orders'); break;
+        case 'KITCHEN': router.push('/kitchen'); break;
+        default: router.push('/dashboard'); break;
+      }
+    }
+  }, [isLoading, isAuthenticated, user?.role, router]);
 
   const handleLogout = async () => {
     await logoutMutation.mutateAsync();

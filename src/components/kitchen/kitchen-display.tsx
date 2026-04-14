@@ -233,7 +233,7 @@ export function KitchenDisplay() {
   // Fetch orders from API
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders?demo=true&status=PENDING,CONFIRMED,PREPARING,READY');
+      const response = await fetch('/api/orders?demo=true&status=PENDING,CONFIRMED,PREPARING,READY&limit=200');
       const data = await response.json();
       
       if (data.success && data.data && Array.isArray(data.data.data) && data.data.data.length > 0) {
@@ -395,7 +395,7 @@ export function KitchenDisplay() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="h-[calc(100vh-8rem)] bg-gray-900 text-white flex flex-col">
       {/* Header */}
       <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-b border-gray-700">
         <div className="flex items-center gap-4">
@@ -480,17 +480,18 @@ export function KitchenDisplay() {
       </div>
 
       {/* Main Content - 3 Columns */}
-      <div className="grid grid-cols-3 gap-4 p-4 h-[calc(100vh-140px)]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 flex-1 min-h-0">
         {/* Pending Column */}
-        <div className="bg-gray-800 rounded-xl overflow-hidden flex flex-col">
-          <div className="bg-yellow-500 text-black px-4 py-3 font-bold flex items-center justify-between">
+        <div className="bg-gray-800 rounded-xl overflow-hidden flex flex-col min-h-0">
+          <div className="bg-yellow-500 text-black px-4 py-3 font-bold flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5" />
               <span>EN ATTENTE</span>
             </div>
             <Badge className="bg-black/20 text-white">{pendingOrders.length}</Badge>
           </div>
-          <ScrollArea className="flex-1 p-3">
+          <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea className="h-full p-3">
             <div className="space-y-3">
               {pendingOrders.map(order => (
                 <OrderCard
@@ -513,18 +514,20 @@ export function KitchenDisplay() {
               )}
             </div>
           </ScrollArea>
+          </div>
         </div>
 
         {/* Preparing Column */}
-        <div className="bg-gray-800 rounded-xl overflow-hidden flex flex-col">
-          <div className="bg-orange-500 text-white px-4 py-3 font-bold flex items-center justify-between">
+        <div className="bg-gray-800 rounded-xl overflow-hidden flex flex-col min-h-0">
+          <div className="bg-orange-500 text-white px-4 py-3 font-bold flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2">
               <Flame className="w-5 h-5" />
               <span>EN PRÉPARATION</span>
             </div>
             <Badge className="bg-white/20">{preparingOrders.length}</Badge>
           </div>
-          <ScrollArea className="flex-1 p-3">
+          <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea className="h-full p-3">
             <div className="space-y-3">
               {preparingOrders.map(order => (
                 <OrderCard
@@ -546,18 +549,20 @@ export function KitchenDisplay() {
               )}
             </div>
           </ScrollArea>
+          </div>
         </div>
 
         {/* Ready Column */}
-        <div className="bg-gray-800 rounded-xl overflow-hidden flex flex-col">
-          <div className="bg-green-500 text-white px-4 py-3 font-bold flex items-center justify-between">
+        <div className="bg-gray-800 rounded-xl overflow-hidden flex flex-col min-h-0">
+          <div className="bg-green-500 text-white px-4 py-3 font-bold flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5" />
               <span>PRÊTES</span>
             </div>
             <Badge className="bg-white/20">{readyOrders.length}</Badge>
           </div>
-          <ScrollArea className="flex-1 p-3">
+          <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea className="h-full p-3">
             <div className="space-y-3">
               {readyOrders.map(order => (
                 <OrderCard
@@ -578,6 +583,7 @@ export function KitchenDisplay() {
               )}
             </div>
           </ScrollArea>
+          </div>
         </div>
       </div>
     </div>

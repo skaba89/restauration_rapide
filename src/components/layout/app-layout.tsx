@@ -363,14 +363,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   // Determine if user is kitchen staff - show limited navigation
   const isKitchenStaff = user?.role === 'KITCHEN';
 
-  // Filter navigation for kitchen staff
+  // Filter navigation for kitchen staff - only what concerns them
   const kitchenNavCategories: NavCategory[] = [
     {
       title: 'Cuisine',
       icon: ChefHat,
       items: [
         { title: 'Commandes Cuisine', href: '/kitchen', icon: ChefHat },
-        { title: 'Inventaire', href: '/inventory', icon: Package },
+        { title: 'Menu', href: '/menu', icon: UtensilsCrossed },
+        { title: 'Recettes', href: '/recipes', icon: Utensils },
+      ],
+    },
+    {
+      title: 'Mon espace',
+      icon: User,
+      items: [
+        { title: 'Mes Conges & Absences', href: '/kitchen/leaves', icon: CalendarDays },
+        { title: 'Mon Profil', href: '/profile', icon: User },
       ],
     },
   ];

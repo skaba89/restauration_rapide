@@ -1,2 +1,0 @@
--- Baseline migration for existing Neon database
--- This tells Prisma the DB is already up to date

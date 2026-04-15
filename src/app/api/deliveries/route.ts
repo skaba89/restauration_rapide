@@ -1,7 +1,9 @@
 // Deliveries API - Delivery management with auto-assign and demo support
+import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/lib/api-responses';
 import { calculateDistance } from '@/lib/utils-helpers';
+import { DeliveryStatusSchema, DeliveryQuerySchema, isValidStatusTransition } from '@/lib/validations/delivery';
 import { DeliveryStatus, OrderStatus } from '@prisma/client';
 
 // Demo deliveries data
@@ -176,10 +178,16 @@ export async function GET(request: Request) {
       });
     }
 
+    // Validate status with Zod schema if provided
+    const validatedStatus = status ? DeliveryStatusSchema.safeParse(status) : undefined;
+    if (status && !validatedStatus?.success) {
+      return apiError('Statut de livraison invalide', 400);
+    }
+
     const where = {
       ...(organizationId && { organizationId }),
       ...(driverId && { driverId }),
-      ...(status && { status: status as DeliveryStatus }),
+      ...(validatedStatus?.success && { status: validatedStatus.data }),
       ...(orderId && { orderId }),
       ...(dateFrom || dateTo
         ? {
@@ -242,6 +250,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   return withErrorHandler(async () => {
     const body = await request.json();
+    
+    // Validate action type if provided
+    const validActions = ['auto-assign', 'create', 'update-status', 'cancel'];
+    if (body.action && !validActions.includes(body.action)) {
+      return apiError(`Action invalide. Actions supportées: ${validActions.join(', ')}`, 400);
+    }
+
     const {
       action,
       deliveryId,

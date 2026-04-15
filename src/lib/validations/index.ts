@@ -6,6 +6,7 @@ export * from './order';
 export * from './menu';
 export * from './reservation';
 export * from './payment';
+export * from './delivery';
 
 // Generic validation helpers
 import { z } from 'zod';

@@ -108,19 +108,38 @@ export default function RestaurantPOSPage() {
   const loadMenuItems = async () => {
     try {
       setLoading(true);
-      const menuData = await apiGet<any>(`/products?restaurantId=${restaurantId}`);
-      if (menuData?.items?.length > 0) {
-        setMenuItems(menuData.items.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          category: item.category?.name || 'autres',
-          isPopular: item.isPopular,
-          isAvailable: item.isAvailable,
-        })));
+      // Utiliser la même API que la page Menu pour avoir les mêmes données
+      const menuData = await fetch(`/api/menu?restaurantId=${restaurantId}`);
+      if (menuData.ok) {
+        const menus = await menuData.json();
+        if (Array.isArray(menus) && menus.length > 0) {
+          // Extraire tous les items de toutes les catégories du premier menu
+          const allItems: MenuItem[] = [];
+          menus[0].categories?.forEach((category: any) => {
+            category.items?.forEach((item: any) => {
+              allItems.push({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                category: category.name || 'autres',
+                isPopular: item.isPopular,
+                isAvailable: item.isAvailable !== false,
+              });
+            });
+          });
+          if (allItems.length > 0) {
+            setMenuItems(allItems);
+            return;
+          }
+        }
       }
+      
+      // Fallback sur demo data si aucun item trouvé
+      setMenuItems(DEMO_MENU_ITEMS);
     } catch (error) {
       console.error('Failed to load menu items:', error);
+      // En cas d'erreur, utiliser les données de démo
+      setMenuItems(DEMO_MENU_ITEMS);
     } finally {
       setLoading(false);
     }

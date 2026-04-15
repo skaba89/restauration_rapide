@@ -46,6 +46,47 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const availableOnly = searchParams.get('availableOnly') === 'true';
+    const restaurantSlug = searchParams.get('restaurantSlug');
+    const restaurantId = searchParams.get('restaurantId');
+
+    // Si restaurantSlug ou restaurantId est fourni, récupérer le menu depuis l'API principale
+    if (restaurantSlug || restaurantId) {
+      try {
+        const internalUrl = new URL(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/menu`);
+        if (restaurantId) internalUrl.searchParams.set('restaurantId', restaurantId);
+        if (restaurantSlug) internalUrl.searchParams.set('slug', restaurantSlug);
+        
+        const res = await fetch(internalUrl.toString());
+        if (res.ok) {
+          const data = await res.json();
+          // Transformer les données pour correspondre au format attendu par le public
+          if (Array.isArray(data) && data.length > 0) {
+            const menu = data[0];
+            const formattedData = [{
+              id: menu.id,
+              name: menu.name,
+              categories: menu.categories?.map((cat: any) => ({
+                id: cat.id,
+                name: cat.name,
+                items: cat.items?.map((item: any) => ({
+                  id: item.id,
+                  name: item.name,
+                  description: item.description || '',
+                  price: item.price,
+                  isAvailable: item.isAvailable !== false,
+                  preparationTime: item.prepTime,
+                  isPopular: item.isPopular,
+                  image: item.image,
+                })) || []
+              })) || []
+            }];
+            return makeResponse(formattedData, 'database-full');
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch full menu, using simple menu:', err);
+      }
+    }
 
     if (!isDatabaseAvailable() || !db) {
       const allItems = getDemoMenuItems();

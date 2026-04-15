@@ -189,20 +189,40 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
     return () => clearInterval(interval);
   }, [bannerImages.length]);
 
-  // Fetch restaurant data
+  // Fetch restaurant data and menu
   useEffect(() => {
-    const fetchRestaurant = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/public/restaurant/${slug}`);
-        if (!res.ok) {
+        // Fetch restaurant info
+        const resRestaurant = await fetch(`/api/public/restaurant/${slug}`);
+        if (!resRestaurant.ok) {
           throw new Error('Restaurant non trouvé');
         }
-        const data = await res.json();
-        setRestaurant(data.data);
+        const dataRestaurant = await resRestaurant.json();
+        setRestaurant(dataRestaurant.data);
+        
+        // Fetch menu from the same source as POS and Admin menu
+        const resMenu = await fetch(`/api/public/menu?restaurantSlug=${slug}`);
+        if (resMenu.ok) {
+          const dataMenu = await resMenu.json();
+          if (dataMenu.success && dataMenu.data && dataMenu.data.length > 0) {
+            // Transform menu data to match restaurant structure
+            const menuData = dataMenu.data[0];
+            setRestaurant((prev: any) => prev ? {
+              ...prev,
+              menus: [{
+                id: menuData.id || 'default-menu',
+                name: menuData.name || 'Menu Principal',
+                categories: menuData.categories || [],
+              }]
+            } : null);
+          }
+        }
+        
         // Set first menu as default
-        if (data.data.menus?.length > 0) {
-          setSelectedMenuId(data.data.menus[0].id);
+        if (dataRestaurant.data?.menus?.length > 0) {
+          setSelectedMenuId(dataRestaurant.data.menus[0].id);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
@@ -212,7 +232,7 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
     };
 
     if (slug) {
-      fetchRestaurant();
+      fetchData();
     }
   }, [slug]);
 

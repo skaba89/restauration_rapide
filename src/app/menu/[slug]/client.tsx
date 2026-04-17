@@ -194,55 +194,99 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
     return () => clearInterval(interval);
   }, [bannerImages.length]);
 
-  // Fetch restaurant data and menu
+  // Fetch menu data (PRIMARY source) and restaurant info (SUPPLEMENTARY)
+  // /api/public/menu is the single source of truth for menu items (same as POS)
+  // /api/public/restaurant only provides supplementary data (settings, hours, delivery zones)
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch restaurant info
-        const resRestaurant = await fetch(`/api/public/restaurant/${slug}`);
-        if (!resRestaurant.ok) {
-          throw new Error('Restaurant non trouvé');
-        }
-        const dataRestaurant = await resRestaurant.json();
-        setRestaurant(dataRestaurant.data);
         
-        // Fetch menu from the unified public menu API (same source as POS)
-        // Add cache-busting to prevent stale data
+        // PRIMARY: Fetch menu from unified public menu API (same source as POS)
         const cacheBuster = `_t=${Date.now()}`;
         const resMenu = await fetch(`/api/public/menu?restaurantSlug=${slug}&${cacheBuster}`, {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' },
         });
-        if (resMenu.ok) {
-          const json = await resMenu.json();
-          if (json.success && json.data && json.data.menus && json.data.menus.length > 0) {
-            // Replace restaurant menus with data from unified API
-            const unifiedMenus = json.data.menus;
-            setRestaurant((prev: any) => prev ? {
-              ...prev,
-              currency: json.data.restaurant?.currency || prev.currency,
-              menus: unifiedMenus.map((menu: any) => ({
-                id: menu.id || 'default-menu',
-                name: menu.name || 'Menu Principal',
-                slug: menu.slug || 'menu-principal',
-                description: menu.description || '',
-                categories: (menu.categories || []).map((cat: any) => ({
-                  ...cat,
-                  items: (cat.items || []).map((item: any) => ({
-                    ...item,
-                    imageUrl: item.imageUrl || item.image,
-                  })),
-                })),
-              })),
-            } : null);
-          }
+        
+        if (!resMenu.ok) {
+          throw new Error('Menu non disponible');
         }
         
-        // Set first menu as default
-        if (dataRestaurant.data?.menus?.length > 0) {
-          setSelectedMenuId(dataRestaurant.data.menus[0].id);
+        const json = await resMenu.json();
+        if (!json.success || !json.data || !json.data.menus || json.data.menus.length === 0) {
+          throw new Error('Aucun menu disponible');
         }
+
+        const unifiedMenus = json.data.menus;
+        const menuRestaurant = json.data.restaurant;
+
+        // Set restaurant from menu API data (primary source)
+        setRestaurant({
+          id: menuRestaurant.id || 'kfm-delice-default',
+          name: menuRestaurant.name || 'KFM DELICE',
+          slug: menuRestaurant.slug || slug,
+          description: menuRestaurant.description || 'Restaurant fast-food guinéen',
+          logo: menuRestaurant.logo || null,
+          coverImage: menuRestaurant.coverImage || null,
+          phone: menuRestaurant.phone || '',
+          email: menuRestaurant.email || null,
+          address: menuRestaurant.address || '',
+          city: menuRestaurant.city || '',
+          district: menuRestaurant.district || null,
+          isOpen: menuRestaurant.isOpen ?? true,
+          isBusy: menuRestaurant.isBusy || false,
+          acceptsDelivery: menuRestaurant.acceptsDelivery ?? true,
+          acceptsTakeaway: menuRestaurant.acceptsTakeaway ?? true,
+          acceptsDineIn: menuRestaurant.acceptsDineIn ?? true,
+          deliveryFee: menuRestaurant.deliveryFee || 0,
+          minOrderAmount: menuRestaurant.minOrderAmount || 0,
+          deliveryTime: menuRestaurant.deliveryTime || 30,
+          rating: menuRestaurant.rating || 0,
+          reviewCount: menuRestaurant.reviewCount || 0,
+          currency: menuRestaurant.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+          settings: null,
+          hours: [],
+          deliveryZones: [],
+          menus: unifiedMenus.map((menu: any) => ({
+            id: menu.id || 'default-menu',
+            name: menu.name || 'Menu Principal',
+            slug: menu.slug || 'menu-principal',
+            description: menu.description || '',
+            categories: (menu.categories || []).map((cat: any) => ({
+              ...cat,
+              items: (cat.items || []).map((item: any) => ({
+                ...item,
+                imageUrl: item.imageUrl || item.image,
+              })),
+            })),
+          })),
+        });
+
+        // Set first menu as default
+        setSelectedMenuId(unifiedMenus[0]?.id || 'default-menu');
+
+        // SUPPLEMENTARY: Fetch restaurant details (settings, hours, delivery zones)
+        // This runs in background and enriches the data without replacing menus
+        fetch(`/api/public/restaurant/${slug}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (!data?.success || !data.data) return;
+            // Only merge supplementary data, NEVER replace menus
+            setRestaurant((prev: any) => prev ? {
+              ...prev,
+              email: data.data.email || prev.email,
+              settings: data.data.settings || prev.settings,
+              hours: data.data.hours || prev.hours,
+              deliveryZones: data.data.deliveryZones || prev.deliveryZones,
+              // Keep menus from the primary API (do NOT overwrite with restaurant data)
+            } : prev);
+          })
+          .catch(() => { /* silent - supplementary data is optional */ });
+
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
       } finally {

@@ -2,7 +2,7 @@
 // Auto-creates SimpleMenuItem table if missing for persistence
 // Falls back to demo store when database is unavailable
 import { NextRequest, NextResponse } from 'next/server';
-import { db, isDatabaseAvailable } from '@/lib/db';
+import { db, ensureDbConnection } from '@/lib/db';
 import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
 import { getDemoMenuByCategory } from '@/lib/demo-menu-store';
 
@@ -147,7 +147,9 @@ export async function GET(
     }
 
     // Try to read SimpleMenuItem from database (auto-creates table if needed)
-    if (isDatabaseAvailable() && db) {
+    // Use ensureDbConnection with 3s timeout (same as other fixed APIs)
+    const dbReady = await ensureDbConnection(3000);
+    if (dbReady && db) {
       try {
         const tableReady = await ensureSimpleMenuItemTable();
         if (tableReady) {

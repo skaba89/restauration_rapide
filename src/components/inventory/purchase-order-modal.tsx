@@ -62,16 +62,6 @@ interface PurchaseOrderModalProps {
   onSuccess?: () => void;
 }
 
-// Demo suppliers
-const DEMO_SUPPLIERS: Supplier[] = [
-  { id: '1', name: 'Marché Central', contact: 'Mamadou Diallo', phone: '+224 620 00 00 01', email: 'marche.central@email.com', address: 'Marché Central, Conakry' },
-  { id: '2', name: 'Boucherie Diallo', contact: 'Ibrahima Diallo', phone: '+224 620 00 00 02', address: 'Kaloum, Conakry' },
-  { id: '3', name: 'Pêcherie du Port', contact: 'Fatou Camara', phone: '+224 620 00 00 03', address: 'Port de Conakry' },
-  { id: '4', name: 'Boissons Plus', contact: 'Sekou Traoré', phone: '+224 620 00 00 04', email: 'boissons.plus@email.com', address: 'Ratoma, Conakry' },
-  { id: '5', name: 'Emballages Express', contact: 'Aminata Sylla', phone: '+224 620 00 00 05', address: 'Dixinn, Conakry' },
-  { id: '6', name: 'Fournisseur Pro', contact: 'Mohamed Koné', phone: '+224 620 00 00 06', email: 'fournisseur.pro@email.com', address: 'Matam, Conakry' },
-];
-
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
@@ -83,7 +73,7 @@ export function PurchaseOrderModal({
 }: PurchaseOrderModalProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [suppliers] = useState<Supplier[]>(DEMO_SUPPLIERS);
+  const [suppliers] = useState<Supplier[]>([]);
   
   // Form state
   const [selectedSupplierId, setSelectedSupplierId] = useState('');
@@ -187,7 +177,7 @@ export function PurchaseOrderModal({
     setLoading(true);
 
     try {
-      const response = await fetch('/api/inventory?demo=true', {
+      const response = await fetch('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -191,55 +191,6 @@ const NAV_CATEGORIES: NavCategory[] = [
   },
 ];
 
-// Demo notifications
-const DEMO_NOTIFICATIONS = [
-  {
-    id: '1',
-    type: 'order',
-    title: 'Nouvelle commande',
-    message: 'Commande ORD-2024-0146 reçue de Kouamé Jean',
-    time: 'Il y a 2 min',
-    read: false,
-    icon: ShoppingCart,
-  },
-  {
-    id: '2',
-    type: 'delivery',
-    title: 'Livraison en cours',
-    message: 'ORD-2024-0144 est en route vers Treichville',
-    time: 'Il y a 15 min',
-    read: false,
-    icon: Truck,
-  },
-  {
-    id: '3',
-    type: 'reservation',
-    title: 'Nouvelle réservation',
-    message: 'Réservation pour 4 personnes ce soir à 20h',
-    time: 'Il y a 30 min',
-    read: false,
-    icon: CalendarDays,
-  },
-  {
-    id: '4',
-    type: 'alert',
-    title: 'Stock faible',
-    message: 'Le stock de poisson est bas (5 unités restantes)',
-    time: 'Il y a 1h',
-    read: true,
-    icon: AlertCircle,
-  },
-  {
-    id: '5',
-    type: 'order',
-    title: 'Commande terminée',
-    message: 'ORD-2024-0142 livrée avec succès',
-    time: 'Il y a 2h',
-    read: true,
-    icon: CheckCircle,
-  },
-];
-
 // Collapsible category component
 function NavCategoryItem({
   category,
@@ -354,7 +305,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notifications, setNotifications] = useState(DEMO_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
   const { user } = useAuth();
   const logoutMutation = useLogout();
   const router = useRouter();

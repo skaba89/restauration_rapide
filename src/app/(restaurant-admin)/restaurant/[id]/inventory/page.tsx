@@ -29,57 +29,10 @@ interface InventoryItem {
   lastRestocked: string;
 }
 
-const DEMO_INVENTORY: InventoryItem[] = [
-  {
-    id: '1',
-    name: 'Poisson frais',
-    category: 'Protéines',
-    quantity: 15,
-    unit: 'kg',
-    minStock: 10,
-    unitPrice: 8000,
-    status: 'IN_STOCK',
-    lastRestocked: new Date(Date.now() - 2 * 86400000).toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Riz',
-    category: 'Légumes',
-    quantity: 5,
-    unit: 'kg',
-    minStock: 20,
-    unitPrice: 1500,
-    status: 'LOW_STOCK',
-    lastRestocked: new Date(Date.now() - 7 * 86400000).toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Attiéké',
-    category: 'Accompagnements',
-    quantity: 0,
-    unit: 'kg',
-    minStock: 10,
-    unitPrice: 2000,
-    status: 'OUT_OF_STOCK',
-    lastRestocked: new Date(Date.now() - 14 * 86400000).toISOString(),
-  },
-  {
-    id: '4',
-    name: 'Huile de palme',
-    category: 'Huiles',
-    quantity: 25,
-    unit: 'L',
-    minStock: 10,
-    unitPrice: 3500,
-    status: 'IN_STOCK',
-    lastRestocked: new Date(Date.now() - 1 * 86400000).toISOString(),
-  },
-];
-
 export default function RestaurantInventoryPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [inventory, setInventory] = useState<InventoryItem[]>(DEMO_INVENTORY);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 

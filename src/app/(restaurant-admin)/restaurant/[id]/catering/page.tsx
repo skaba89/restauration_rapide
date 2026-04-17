@@ -36,44 +36,11 @@ interface Reservation {
   createdAt: string;
 }
 
-const DEMO_RESERVATIONS: Reservation[] = [
-  {
-    id: '1',
-    customerName: 'Kouamé Jean',
-    customerPhone: '+225 07 00 00 00 01',
-    partySize: 4,
-    date: new Date().toISOString().split('T')[0],
-    time: '19:30',
-    status: 'CONFIRMED',
-    tableNumber: 'T5',
-    notes: 'Anniversaire',
-  },
-  {
-    id: '2',
-    customerName: 'Aminata Diallo',
-    customerPhone: '+225 07 00 00 00 02',
-    partySize: 2,
-    date: new Date().toISOString().split('T')[0],
-    time: '20:00',
-    status: 'PENDING',
-  },
-  {
-    id: '3',
-    customerName: 'Mamadou Koné',
-    customerPhone: '+225 07 00 00 00 03',
-    partySize: 6,
-    date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-    time: '12:30',
-    status: 'CONFIRMED',
-    tableNumber: 'VIP1',
-  },
-];
-
 export default function RestaurantCateringPage() {
   const params = useParams();
   const restaurantId = params.id as string;
   const { toast } = useToast();
-  const [reservations, setReservations] = useState<Reservation[]>(DEMO_RESERVATIONS);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'CONFIRMED' | 'CANCELLED'>('all');
 

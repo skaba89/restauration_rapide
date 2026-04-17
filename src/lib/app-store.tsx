@@ -191,89 +191,7 @@ export interface DriverDelivery {
 }
 
 // ============================================
-// Demo Data
 // ============================================
-
-const DEMO_RESTAURANT: Restaurant = {
-  id: 'kfm-delice-1',
-  name: 'KFM DELICE',
-  slug: 'kfm-delice',
-  address: 'Kaloum, Conakry, Guinée',
-  phone: '+224622000001',
-  email: 'contact@kfm-delice.com',
-  description: 'Restaurant africain authentique - Saveurs de Guinée',
-  currency: 'GNF',
-  currencySymbol: 'GNF',
-  openingHours: {
-    monday: { open: '08:00', close: '22:00' },
-    tuesday: { open: '08:00', close: '22:00' },
-    wednesday: { open: '08:00', close: '22:00' },
-    thursday: { open: '08:00', close: '22:00' },
-    friday: { open: '08:00', close: '23:00' },
-    saturday: { open: '09:00', close: '23:00' },
-    sunday: { open: '10:00', close: '21:00' },
-  },
-  deliveryZones: [
-    { id: 'zone-1', name: 'Kaloum', fee: 5000 },
-    { id: 'zone-2', name: 'Dixinn', fee: 7000 },
-    { id: 'zone-3', name: 'Ratoma', fee: 8000 },
-    { id: 'zone-4', name: 'Matam', fee: 8000 },
-    { id: 'zone-5', name: 'Matoto', fee: 10000 },
-  ],
-};
-
-const DEMO_CATEGORIES: MenuCategory[] = [
-  { id: 'cat-1', name: 'Plats Ivoiriens', slug: 'plats-ivoiriens', description: 'Spécialités de Côte d\'Ivoire', icon: '🍽️', isActive: true, sortOrder: 1 },
-  { id: 'cat-2', name: 'Plats Sénégalais', slug: 'plats-senegalais', description: 'Cuisine sénégalaise authentique', icon: '🍚', isActive: true, sortOrder: 2 },
-  { id: 'cat-3', name: 'Plats Guinéens', slug: 'plats-guineens', description: 'Saveurs traditionnelles de Guinée', icon: '🥘', isActive: true, sortOrder: 3 },
-  { id: 'cat-4', name: 'Grillades', slug: 'grillades', description: 'Viandes et poissons grillés', icon: '🍖', isActive: true, sortOrder: 4 },
-  { id: 'cat-5', name: 'Fast Food', slug: 'fast-food', description: 'Burgers, tacos et plus', icon: '🍔', isActive: true, sortOrder: 5 },
-  { id: 'cat-6', name: 'Accompagnements', slug: 'accompagnements', description: 'Frites, sauces et légumes', icon: '🍟', isActive: true, sortOrder: 6 },
-  { id: 'cat-7', name: 'Boissons', slug: 'boissons', description: 'Jus frais et boissons', icon: '🥤', isActive: true, sortOrder: 7 },
-  { id: 'cat-8', name: 'Desserts', slug: 'desserts', description: 'Douceurs et desserts', icon: '🍰', isActive: true, sortOrder: 8 },
-];
-
-const DEMO_MENU_ITEMS: MenuItem[] = [
-  // Plats Ivoiriens
-  { id: 'item-1', categoryId: 'cat-1', name: 'Attieké Poisson Grillé', slug: 'attieke-poisson-grille', price: 15000, description: 'Semoule de manioc avec poisson grillé et sauce tomate', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400', prepTime: 20, isAvailable: true, isFeatured: true, isPopular: true, isNew: false },
-  { id: 'item-2', categoryId: 'cat-1', name: 'Garba', slug: 'garba', price: 8000, description: 'Attieké au thon frit avec piment', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400', prepTime: 15, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isSpicy: true, spicyLevel: 2 },
-  { id: 'item-3', categoryId: 'cat-1', name: 'Kedjenou de Poulet', slug: 'kedjenou-de-poulet', price: 18000, description: 'Poulet braisé aux légumes dans une sauce épaisse', image: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=400', prepTime: 25, isAvailable: true, isFeatured: true, isPopular: true, isNew: false },
-  { id: 'item-4', categoryId: 'cat-1', name: 'Alloco Sauce Graine', slug: 'alloco-sauce-graine', price: 10000, description: 'Bananes plantain frites avec sauce graine', image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400', prepTime: 15, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true },
-  
-  // Plats Sénégalais
-  { id: 'item-5', categoryId: 'cat-2', name: 'Thiéboudienne', slug: 'thieboudienne', price: 15000, description: 'Riz au poisson et légumes, plat national sénégalais', image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400', prepTime: 30, isAvailable: true, isFeatured: true, isPopular: true, isNew: false },
-  { id: 'item-6', categoryId: 'cat-2', name: 'Yassa Poulet', slug: 'yassa-poulet', price: 16000, description: 'Poulet mariné au citron et oignons caramélisés', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400', prepTime: 25, isAvailable: true, isFeatured: false, isPopular: true, isNew: true },
-  { id: 'item-7', categoryId: 'cat-2', name: 'Mafé', slug: 'mafe', price: 14000, description: 'Ragoût de viande à la sauce d\'arachide', image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400', prepTime: 30, isAvailable: true, isFeatured: false, isPopular: false, isNew: false },
-  
-  // Plats Guinéens
-  { id: 'item-8', categoryId: 'cat-3', name: 'Konkoé', slug: 'konkoe', price: 12000, description: 'Ragoût de poisson fumé aux légumes', image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400', prepTime: 25, isAvailable: true, isFeatured: true, isPopular: true, isNew: false },
-  { id: 'item-9', categoryId: 'cat-3', name: 'Fou Fou', slug: 'fou-fou', price: 10000, description: 'Pâte de manioc avec sauce feuilles', image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400', prepTime: 20, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true },
-  
-  // Grillades
-  { id: 'item-10', categoryId: 'cat-4', name: 'Brochettes de Poulet', slug: 'brochettes-poulet', price: 8000, description: 'Brochettes de poulet mariné grillées', image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400', prepTime: 15, isAvailable: true, isFeatured: true, isPopular: true, isNew: false },
-  { id: 'item-11', categoryId: 'cat-4', name: 'Poulet Braisé', slug: 'poulet-braise', price: 15000, description: 'Demi-poulet grillé aux épices', image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400', prepTime: 20, isAvailable: true, isFeatured: false, isPopular: true, isNew: false },
-  { id: 'item-12', categoryId: 'cat-4', name: 'Mix Grill', slug: 'mix-grill', price: 25000, description: 'Assortiment de viandes grillées', image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400', prepTime: 25, isAvailable: true, isFeatured: true, isPopular: false, isNew: true },
-  
-  // Fast Food
-  { id: 'item-13', categoryId: 'cat-5', name: 'Burger Africain', slug: 'burger-africain', price: 12000, description: 'Burger avec sauce attiéké', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400', prepTime: 15, isAvailable: true, isFeatured: false, isPopular: true, isNew: true },
-  { id: 'item-14', categoryId: 'cat-5', name: 'Chawarma Poulet', slug: 'chawarma-poulet', price: 10000, description: 'Chawarma au poulet épicé', image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=400', prepTime: 10, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isSpicy: true, spicyLevel: 1 },
-  
-  // Accompagnements
-  { id: 'item-15', categoryId: 'cat-6', name: 'Frites', slug: 'frites', price: 5000, description: 'Frites maison croustillantes', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400', prepTime: 10, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true },
-  { id: 'item-16', categoryId: 'cat-6', name: 'Attieké', slug: 'attieke', price: 4000, description: 'Semoule de manioc', image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400', prepTime: 5, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true },
-  { id: 'item-17', categoryId: 'cat-6', name: 'Riz Blanc', slug: 'riz-blanc', price: 3000, description: 'Riz blanc parfumé', image: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400', prepTime: 5, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true },
-  
-  // Boissons
-  { id: 'item-18', categoryId: 'cat-7', name: 'Jus de Bissap', slug: 'jus-bissap', price: 3000, description: 'Jus naturel d\'hibiscus', image: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400', prepTime: 3, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isVegetarian: true, isVegan: true },
-  { id: 'item-19', categoryId: 'cat-7', name: 'Jus de Gingembre', slug: 'jus-gingembre', price: 3000, description: 'Jus de gingembre frais', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400', prepTime: 3, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true, isVegan: true },
-  { id: 'item-20', categoryId: 'cat-7', name: 'Café Touba', slug: 'cafe-touba', price: 2000, description: 'Café épicé sénégalais', image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400', prepTime: 5, isAvailable: true, isFeatured: false, isPopular: false, isNew: true, isVegetarian: true, isVegan: true },
-  { id: 'item-21', categoryId: 'cat-7', name: 'Ataya', slug: 'ataya', price: 2500, description: 'Thé vert à la menthe', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400', prepTime: 5, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true },
-  
-  // Desserts
-  { id: 'item-22', categoryId: 'cat-8', name: 'Thiakry', slug: 'thiakry', price: 5000, description: 'Semoule sucrée au lait', image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400', prepTime: 5, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true },
-  { id: 'item-23', categoryId: 'cat-8', name: 'Fruits Frais', slug: 'fruits-frais', price: 6000, description: 'Assortiment de fruits de saison', image: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=400', prepTime: 5, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true },
-  { id: 'item-24', categoryId: 'cat-8', name: 'Glaces', slug: 'glaces', price: 4000, description: 'Glaces maison', image: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=400', prepTime: 2, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true },
-];
 
 // ============================================
 // Context Types
@@ -356,9 +274,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         if (data.success && data.data?.length > 0) {
           return data.data[0];
         }
-        return DEMO_RESTAURANT;
+        throw error;
       } catch {
-        return DEMO_RESTAURANT;
+        throw error;
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -372,7 +290,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch('/api/menu-categories');
         if (!res.ok) {
           console.warn('Categories API returned', res.status);
-          return DEMO_CATEGORIES;
+          throw error;
         }
         const data = await res.json();
         // Handle various response formats
@@ -388,15 +306,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         if (data.data && Array.isArray(data.data)) {
           return data.data;
         }
-        // If it's an error response, return demo data
         if (data.error || data.success === false) {
           console.warn('Categories API error:', data.error || data.message);
-          return DEMO_CATEGORIES;
+          throw error;
         }
-        return DEMO_CATEGORIES;
+        throw error;
       } catch (error) {
         console.warn('Categories fetch error:', error);
-        return DEMO_CATEGORIES;
+        throw error;
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -410,7 +327,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch('/api/menu-items');
         if (!res.ok) {
           console.warn('Menu items API returned', res.status);
-          return DEMO_MENU_ITEMS;
+          throw error;
         }
         const data = await res.json();
         // Handle various response formats
@@ -426,15 +343,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         if (data.data && Array.isArray(data.data)) {
           return data.data;
         }
-        // If it's an error response, return demo data
         if (data.error || data.success === false) {
           console.warn('Menu items API error:', data.error || data.message);
-          return DEMO_MENU_ITEMS;
+          throw error;
         }
-        return DEMO_MENU_ITEMS;
+        throw error;
       } catch (error) {
         console.warn('Menu items fetch error:', error);
-        return DEMO_MENU_ITEMS;
+        throw error;
       }
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -517,9 +433,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   });
   
   // Derived data
-  const restaurant = restaurantData || DEMO_RESTAURANT;
-  const categories = categoriesData || DEMO_CATEGORIES;
-  const menuItems = menuItemsData || DEMO_MENU_ITEMS;
+  const restaurant = restaurantData || [];
+  const categories = categoriesData || [];
+  const menuItems = menuItemsData || [];
   const orders = ordersData || [];
   const deliveries = deliveriesData || [];
   

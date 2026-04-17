@@ -30,44 +30,10 @@ interface GiftCard {
   expiresAt: string;
 }
 
-const DEMO_GIFT_CARDS: GiftCard[] = [
-  {
-    id: '1',
-    code: 'KFM-2024-001',
-    balance: 10000,
-    initialAmount: 10000,
-    status: 'ACTIVE',
-    purchaserName: 'Jean Kouamé',
-    recipientName: 'Marie Kouamé',
-    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    expiresAt: new Date(Date.now() + 358 * 86400000).toISOString(),
-  },
-  {
-    id: '2',
-    code: 'KFM-2024-002',
-    balance: 0,
-    initialAmount: 25000,
-    status: 'USED',
-    purchaserName: 'Aminata Diallo',
-    createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-    expiresAt: new Date(Date.now() + 335 * 86400000).toISOString(),
-  },
-  {
-    id: '3',
-    code: 'KFM-2024-003',
-    balance: 15000,
-    initialAmount: 15000,
-    status: 'ACTIVE',
-    purchaserName: 'Ibrahim Sylla',
-    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-    expiresAt: new Date(Date.now() + 363 * 86400000).toISOString(),
-  },
-];
-
 export default function RestaurantGiftCardsPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [giftCards, setGiftCards] = useState<GiftCard[]>(DEMO_GIFT_CARDS);
+  const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 

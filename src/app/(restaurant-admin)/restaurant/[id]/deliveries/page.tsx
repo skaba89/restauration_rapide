@@ -34,47 +34,10 @@ interface Delivery {
   total: number;
 }
 
-const DEMO_DELIVERIES: Delivery[] = [
-  {
-    id: '1',
-    orderNumber: 'ORD-2024-0145',
-    customerName: 'Kouamé Jean',
-    customerPhone: '+225 07 00 00 01',
-    address: 'Cocody, Rue des Jardins',
-    status: 'IN_TRANSIT',
-    driverName: 'Amadou Diallo',
-    driverPhone: '+225 07 00 10 01',
-    estimatedTime: '15 min',
-    createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
-    total: 15000,
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-2024-0146',
-    customerName: 'Fatou Bamba',
-    customerPhone: '+225 07 00 00 02',
-    address: 'Plateau, Avenue Chardy',
-    status: 'PENDING',
-    createdAt: new Date(Date.now() - 15 * 60000).toISOString(),
-    total: 22500,
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-2024-0147',
-    customerName: 'Ibrahim Sylla',
-    customerPhone: '+225 07 00 00 03',
-    address: 'Treichville, Zone 4',
-    status: 'DELIVERED',
-    driverName: 'Moussa Koné',
-    createdAt: new Date(Date.now() - 120 * 60000).toISOString(),
-    total: 18700,
-  },
-];
-
 export default function RestaurantDeliveriesPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [deliveries, setDeliveries] = useState<Delivery[]>(DEMO_DELIVERIES);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 

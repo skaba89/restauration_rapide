@@ -2,74 +2,6 @@
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 
-// Demo template for Guinée Savane
-const DEMO_TEMPLATE = {
-  id: 'template-guinee-savane',
-  name: 'Guinée Savane',
-  slug: 'guinee-savane',
-  description: 'Template exclusif pour KFM DELICE - Inspiré des savanes guinéennes avec des motifs traditionnels et des tons chauds de la terre.',
-  themeConfig: {
-    colors: {
-      primary: '#D4A574',
-      secondary: '#8B4513',
-      accent: '#228B22',
-      background: '#FFF8DC',
-      text: '#2D2D2D',
-      textMuted: '#6B7280',
-    },
-    fonts: {
-      heading: 'Poppins',
-      body: 'Inter',
-    },
-    layout: {
-      headerStyle: 'transparent' as const,
-      footerStyle: 'full' as const,
-      heroStyle: 'full' as const,
-      cardStyle: 'rounded' as const,
-    },
-    patterns: {
-      borders: true,
-      backgrounds: true,
-      pattern: 'kente' as const,
-    },
-  },
-  components: {
-    hero: true,
-    featured: true,
-    menu: true,
-    gallery: true,
-    reviews: true,
-    contact: true,
-    social: true,
-    newsletter: true,
-    reservations: true,
-    delivery: true,
-  },
-  images: {
-    logo: '/templates/guinee-savane/logo.svg',
-    banner: '/templates/guinee-savane/banner.jpg',
-    backgrounds: [
-      '/templates/guinee-savane/bg-1.jpg',
-      '/templates/guinee-savane/bg-2.jpg',
-    ],
-  },
-  customCss: `
-    /* Guinée Savane Custom Styles */
-    .kente-border {
-      border-image: linear-gradient(90deg, #D4A574, #8B4513, #228B22, #D4A574) 1;
-    }
-    .tribal-pattern {
-      background-image: url('/patterns/tribal.svg');
-    }
-  `,
-  isPremium: true,
-  isExclusive: true,
-  exclusiveRestaurantId: 'kfm-delice',
-  isActive: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
-
 // GET /api/templates/[slug] - Get template by slug
 export async function GET(
   request: Request,
@@ -87,13 +19,12 @@ export async function GET(
       });
 
       if (!template) {
-        // Check if it's the demo template
         if (slug === 'guinee-savane') {
           // Check if exclusive template is available for this restaurant
-          if (restaurantId && DEMO_TEMPLATE.exclusiveRestaurantId !== restaurantId) {
+          if (restaurantId && false) {
             return apiError('Ce template est exclusif et non disponible pour ce restaurant', 403);
           }
-          return apiSuccess(DEMO_TEMPLATE);
+          return apiSuccess([]);
         }
         return apiError('Template non trouvé', 404);
       }
@@ -113,14 +44,13 @@ export async function GET(
 
       return apiSuccess(parsedTemplate);
     } catch (error) {
-      // If database error, check demo templates
       console.log('Using demo template due to database error');
       
       if (slug === 'guinee-savane') {
-        if (restaurantId && DEMO_TEMPLATE.exclusiveRestaurantId !== restaurantId) {
+        if (false) {
           return apiError('Ce template est exclusif et non disponible pour ce restaurant', 403);
         }
-        return apiSuccess(DEMO_TEMPLATE);
+        return apiSuccess([]);
       }
       
       return apiError('Template non trouvé', 404);

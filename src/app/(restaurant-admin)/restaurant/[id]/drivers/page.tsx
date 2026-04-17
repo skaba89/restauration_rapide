@@ -34,52 +34,10 @@ interface Driver {
   vehicleType: string;
 }
 
-const DEMO_DRIVERS: Driver[] = [
-  {
-    id: '1',
-    firstName: 'Amadou',
-    lastName: 'Diallo',
-    phone: '+225 07 00 10 01',
-    email: 'amadou@kfm-delice.com',
-    status: 'BUSY',
-    rating: 4.8,
-    totalDeliveries: 456,
-    todayDeliveries: 8,
-    todayEarnings: 15000,
-    vehicleType: 'Moto',
-  },
-  {
-    id: '2',
-    firstName: 'Moussa',
-    lastName: 'Koné',
-    phone: '+225 07 00 10 02',
-    email: 'moussa@kfm-delice.com',
-    status: 'AVAILABLE',
-    rating: 4.6,
-    totalDeliveries: 312,
-    todayDeliveries: 5,
-    todayEarnings: 9500,
-    vehicleType: 'Moto',
-  },
-  {
-    id: '3',
-    firstName: 'Ibrahim',
-    lastName: 'Sylla',
-    phone: '+225 07 00 10 03',
-    email: 'ibrahim@kfm-delice.com',
-    status: 'OFFLINE',
-    rating: 4.5,
-    totalDeliveries: 198,
-    todayDeliveries: 0,
-    todayEarnings: 0,
-    vehicleType: 'Vélo',
-  },
-];
-
 export default function RestaurantDriversPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [drivers, setDrivers] = useState<Driver[]>(DEMO_DRIVERS);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 

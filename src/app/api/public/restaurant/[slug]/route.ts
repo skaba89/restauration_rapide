@@ -1,10 +1,8 @@
 // Public Restaurant API - Get restaurant by slug with full menu data
 // Auto-creates SimpleMenuItem table if missing for persistence
-// Falls back to demo store when database is unavailable
 import { NextRequest, NextResponse } from 'next/server';
 import { db, ensureDbConnection } from '@/lib/db';
 import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
-import { getDemoMenuByCategory } from '@/lib/demo-menu-store';
 
 // Default KFM DELICE restaurant info
 const DEFAULT_RESTAURANT = {
@@ -188,7 +186,7 @@ export async function GET(
           }
         }
       } catch (dbError) {
-        console.warn('SimpleMenuItem query error, using demo fallback:', dbError);
+        console.warn('SimpleMenuItem query error:', dbError);
       }
 
       // Also try the full restaurant hierarchy (for multi-tenant future)
@@ -256,7 +254,7 @@ export async function GET(
       }
     }
 
-    // Fall back to demo store
+    // No data available - return empty menu
     const defaultRestaurant = {
       ...DEFAULT_RESTAURANT,
       menus: [{
@@ -265,11 +263,11 @@ export async function GET(
         slug: 'menu-principal',
         description: 'Menu complet KFM DELICE',
         menuType: 'main',
-        categories: getDemoMenuByCategory(),
+        categories: [],
       }],
     };
 
-    return NextResponse.json({ success: true, data: defaultRestaurant, timestamp: new Date().toISOString(), source: 'default' }, {
+    return NextResponse.json({ success: true, data: defaultRestaurant, timestamp: new Date().toISOString(), source: 'database' }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' },
     });
   } catch (error) {

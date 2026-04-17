@@ -7,124 +7,11 @@ import { NextRequest } from 'next/server';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { db } from '@/lib/db';
 
-// Demo suppliers
-const DEMO_SUPPLIERS = [
-  {
-    id: '1',
-    name: 'Marché Central',
-    contactName: 'Mamadou Diallo',
-    phone: '+224 620 00 00 01',
-    email: 'marche.central@email.com',
-    address: 'Marché Central, Conakry',
-    paymentTerms: 'Cash on Delivery',
-    deliveryDays: 'Lundi, Mercredi, Vendredi',
-    isActive: true,
-    rating: 4.5,
-    itemCount: 8,
-    totalOrders: 45,
-    createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Boucherie Diallo',
-    contactName: 'Ibrahima Diallo',
-    phone: '+224 620 00 00 02',
-    email: null,
-    address: 'Kaloum, Conakry',
-    paymentTerms: 'Net 15',
-    deliveryDays: 'Mardi, Jeudi, Samedi',
-    isActive: true,
-    rating: 4.8,
-    itemCount: 3,
-    totalOrders: 32,
-    createdAt: new Date(Date.now() - 300 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Pêcherie du Port',
-    contactName: 'Fatou Camara',
-    phone: '+224 620 00 00 03',
-    email: null,
-    address: 'Port de Conakry',
-    paymentTerms: 'Cash on Delivery',
-    deliveryDays: 'Quotidien',
-    isActive: true,
-    rating: 4.3,
-    itemCount: 2,
-    totalOrders: 28,
-    createdAt: new Date(Date.now() - 200 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '4',
-    name: 'Boissons Plus',
-    contactName: 'Sekou Traoré',
-    phone: '+224 620 00 00 04',
-    email: 'boissons.plus@email.com',
-    address: 'Ratoma, Conakry',
-    paymentTerms: 'Net 30',
-    deliveryDays: 'Lundi, Jeudi',
-    isActive: true,
-    rating: 4.0,
-    itemCount: 4,
-    totalOrders: 18,
-    createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '5',
-    name: 'Emballages Express',
-    contactName: 'Aminata Sylla',
-    phone: '+224 620 00 00 05',
-    email: null,
-    address: 'Dixinn, Conakry',
-    paymentTerms: 'Net 30',
-    deliveryDays: 'Sur commande',
-    isActive: true,
-    rating: 4.6,
-    itemCount: 5,
-    totalOrders: 12,
-    createdAt: new Date(Date.now() - 150 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '6',
-    name: 'Fournisseur Pro',
-    contactName: 'Mohamed Koné',
-    phone: '+224 620 00 00 06',
-    email: 'fournisseur.pro@email.com',
-    address: 'Matam, Conakry',
-    paymentTerms: 'Net 15',
-    deliveryDays: 'Mercredi, Samedi',
-    isActive: false,
-    rating: 3.8,
-    itemCount: 2,
-    totalOrders: 8,
-    createdAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
-
 // GET - List suppliers
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
   const active = searchParams.get('active');
   const search = searchParams.get('search');
-
-  if (demo) {
-    let suppliers = [...DEMO_SUPPLIERS];
-
-    if (active !== null && active !== undefined) {
-      suppliers = suppliers.filter(s => s.isActive === (active === 'true'));
-    }
-    if (search) {
-      const searchLower = search.toLowerCase();
-      suppliers = suppliers.filter(s => 
-        s.name.toLowerCase().includes(searchLower) ||
-        s.contactName?.toLowerCase().includes(searchLower) ||
-        s.phone.includes(search)
-      );
-    }
-
-    return apiSuccess({ suppliers });
-  }
 
   try {
     const organizationId = searchParams.get('organizationId');
@@ -168,7 +55,6 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
 
   const { 
     organizationId,
@@ -184,25 +70,6 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   // Validate required fields
   if (!name || !phone) {
     return apiError('Nom et téléphone sont requis', 400);
-  }
-
-  if (demo) {
-    const newSupplier = {
-      id: `${Date.now()}`,
-      name,
-      contactName,
-      phone,
-      email,
-      address,
-      paymentTerms,
-      deliveryDays,
-      isActive: true,
-      rating: 0,
-      itemCount: 0,
-      totalOrders: 0,
-      createdAt: new Date().toISOString(),
-    };
-    return apiSuccess({ supplier: newSupplier }, 'Fournisseur créé avec succès');
   }
 
   try {
@@ -247,7 +114,6 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 export const PUT = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
 
   const { 
     id,
@@ -263,22 +129,6 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
 
   if (!id) {
     return apiError('ID requis', 400);
-  }
-
-  if (demo) {
-    const updatedSupplier = {
-      id,
-      name,
-      contactName,
-      phone,
-      email,
-      address,
-      paymentTerms,
-      deliveryDays,
-      isActive,
-      updatedAt: new Date().toISOString(),
-    };
-    return apiSuccess({ supplier: updatedSupplier }, 'Fournisseur mis à jour');
   }
 
   try {
@@ -315,15 +165,10 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
 // DELETE - Delete supplier
 export const DELETE = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
   const id = searchParams.get('id');
 
   if (!id) {
     return apiError('ID requis', 400);
-  }
-
-  if (demo) {
-    return apiSuccess({}, 'Fournisseur supprimé avec succès');
   }
 
   try {

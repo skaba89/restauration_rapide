@@ -82,7 +82,6 @@ export function DriverManager() {
     try {
       setIsLoading(true);
       const params = new URLSearchParams({
-        demo: 'true',
         ...(filterStatus !== 'all' && { status: filterStatus }),
       });
       

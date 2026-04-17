@@ -26,51 +26,6 @@ import {
   ArrowDownRight,
 } from 'lucide-react';
 
-// Demo analytics data
-const DEMO_ANALYTICS = {
-  branches: [
-    { name: 'Kaloum', revenue: 2850000, orders: 145, rating: 4.8, growth: 12.5 },
-    { name: 'Dixinn', revenue: 4150000, orders: 210, rating: 4.6, growth: 18.2 },
-    { name: 'Matam', revenue: 1850000, orders: 85, rating: 4.7, growth: 8.3 },
-    { name: 'Ratoma', revenue: 0, orders: 0, rating: 0, growth: 0 },
-  ],
-  revenueTrend: [
-    { day: 'Lun', Kaloum: 420000, Dixinn: 580000, Matam: 280000 },
-    { day: 'Mar', Kaloum: 380000, Dixinn: 620000, Matam: 310000 },
-    { day: 'Mer', Kaloum: 450000, Dixinn: 550000, Matam: 290000 },
-    { day: 'Jeu', Kaloum: 520000, Dixinn: 680000, Matam: 350000 },
-    { day: 'Ven', Kaloum: 580000, Dixinn: 750000, Matam: 380000 },
-    { day: 'Sam', Kaloum: 650000, Dixinn: 820000, Matam: 420000 },
-    { day: 'Dim', Kaloum: 550000, Dixinn: 700000, Matam: 360000 },
-  ],
-  ordersByBranch: [
-    { name: 'Kaloum', value: 145, color: '#f97316' },
-    { name: 'Dixinn', value: 210, color: '#3b82f6' },
-    { name: 'Matam', value: 85, color: '#22c55e' },
-  ],
-  hourlyPerformance: [
-    { hour: '08h', orders: 15, revenue: 420000 },
-    { hour: '10h', orders: 28, revenue: 780000 },
-    { hour: '12h', orders: 65, revenue: 1850000 },
-    { hour: '14h', orders: 42, revenue: 1120000 },
-    { hour: '16h', orders: 35, revenue: 950000 },
-    { hour: '18h', orders: 58, revenue: 1650000 },
-    { hour: '20h', orders: 45, revenue: 1280000 },
-    { hour: '22h', orders: 22, revenue: 620000 },
-  ],
-  topPerformers: [
-    { branch: 'Dixinn', metric: 'Revenus', value: '4,150,000 GNF', change: '+18.2%', up: true },
-    { branch: 'Kaloum', metric: 'Note', value: '4.8 ★', change: '+0.2', up: true },
-    { branch: 'Matam', metric: 'Croissance', value: '+8.3%', change: 'Stable', up: true },
-  ],
-  comparison: {
-    totalRevenue: 8850000,
-    totalOrders: 440,
-    avgRating: 4.7,
-    avgGrowth: 13.0,
-  },
-};
-
 const chartConfig = {
   revenue: {
     label: 'Revenus',
@@ -99,7 +54,7 @@ const formatCurrency = (amount: number) => `${(amount / 1000000).toFixed(1)}M GN
 
 export function BranchAnalytics() {
   const [isLoading, setIsLoading] = useState(true);
-  const [analytics, setAnalytics] = useState(DEMO_ANALYTICS);
+  const [analytics, setAnalytics] = useState([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

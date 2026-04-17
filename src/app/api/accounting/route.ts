@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 
   accountingService,
-  DEMO_PROFIT_LOSS,
-  DEMO_TAX_SUMMARY,
-  DEMO_EXPORT_HISTORY,
   DEFAULT_CHART_OF_ACCOUNTS,
   type AccountingExport,
   type ChartOfAccount,
@@ -15,7 +12,6 @@ import {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const type = searchParams.get('type') || 'pnl'; // pnl, tax, accounts, exports
-  const demo = searchParams.get('demo') === 'true';
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
 
@@ -24,10 +20,9 @@ export async function GET(request: NextRequest) {
       case 'pnl':
         // Return Profit & Loss data
         const pnlData: ProfitLossData = {
-          ...DEMO_PROFIT_LOSS,
           period: {
-            start: startDate ? new Date(startDate) : DEMO_PROFIT_LOSS.period.start,
-            end: endDate ? new Date(endDate) : DEMO_PROFIT_LOSS.period.end
+            start: startDate ? new Date(startDate) : new Date(new Date().getFullYear(), 0, 1),
+            end: endDate ? new Date(endDate) : new Date()
           }
         };
         
@@ -39,10 +34,9 @@ export async function GET(request: NextRequest) {
       case 'tax':
         // Return Tax Summary
         const taxData: TaxSummary = {
-          ...DEMO_TAX_SUMMARY,
           period: {
-            start: startDate ? new Date(startDate) : DEMO_TAX_SUMMARY.period.start,
-            end: endDate ? new Date(endDate) : DEMO_TAX_SUMMARY.period.end
+            start: startDate ? new Date(startDate) : new Date(new Date().getFullYear(), 0, 1),
+            end: endDate ? new Date(endDate) : new Date()
           }
         };
         
@@ -62,11 +56,10 @@ export async function GET(request: NextRequest) {
         // Return Export History
         return NextResponse.json({
           success: true,
-          data: DEMO_EXPORT_HISTORY
+          data: []
         });
 
       case 'balance':
-        // Return Balance Sheet (simplified for demo)
         return NextResponse.json({
           success: true,
           data: {
@@ -139,9 +132,7 @@ export async function POST(request: NextRequest) {
         error: 'Type d\'export non valide. Utilisez: csv, excel, quickbooks, sage'
       }, { status: 400 });
     }
-
-    // Use provided data or demo data
-    const exportData = data || (dataType === 'tax' ? DEMO_TAX_SUMMARY : DEMO_PROFIT_LOSS);
+    const exportData = data || (dataType === 'tax' ? [] : []);
     
     // Generate export content
     const content = accountingService.generateExport(type, exportData, dataType || 'pnl');

@@ -28,41 +28,6 @@ import { SalesChart } from '@/components/dashboard/sales-chart';
 import { dashboardApi } from '@/lib/api-client';
 import { useCurrencySafe } from '@/lib/currency-context';
 
-// Demo data for charts (fallback)
-const DEMO_SALES_DATA = [
-  { name: 'Lun', ventes: 450000, commandes: 32 },
-  { name: 'Mar', ventes: 520000, commandes: 38 },
-  { name: 'Mer', ventes: 480000, commandes: 35 },
-  { name: 'Jeu', ventes: 610000, commandes: 45 },
-  { name: 'Ven', ventes: 750000, commandes: 52 },
-  { name: 'Sam', ventes: 920000, commandes: 68 },
-  { name: 'Dim', ventes: 680000, commandes: 48 },
-];
-
-const DEMO_PAYMENT_METHODS = [
-  { name: 'Orange Money', value: 35, color: '#f97316' },
-  { name: 'MTN Momo', value: 25, color: '#fbbf24' },
-  { name: 'Wave', value: 20, color: '#1d4ed8' },
-  { name: 'Cash', value: 15, color: '#22c55e' },
-  { name: 'Carte', value: 5, color: '#8b5cf6' },
-];
-
-const DEMO_TOP_ITEMS = [
-  { name: 'Attieké Poisson Grillé', orders: 156, revenue: 1248000 },
-  { name: 'Kedjenou de Poulet', orders: 142, revenue: 994000 },
-  { name: 'Thiéboudienne', orders: 128, revenue: 896000 },
-  { name: 'Alloco Sauce Graine', orders: 115, revenue: 575000 },
-  { name: 'Riz Gras', orders: 98, revenue: 490000 },
-];
-
-const DEMO_RECENT_ORDERS = [
-  { id: 'ORD-2024-0145', customer: 'Kouamé Jean', total: 8500, status: 'PENDING', type: 'DELIVERY', time: '12:30' },
-  { id: 'ORD-2024-0144', customer: 'Aya Marie', total: 4500, status: 'PREPARING', type: 'DINE_IN', time: '12:25' },
-  { id: 'ORD-2024-0143', customer: 'Koné Ibrahim', total: 12000, status: 'READY', type: 'TAKEAWAY', time: '12:15' },
-  { id: 'ORD-2024-0142', customer: 'Diallo Fatou', total: 6000, status: 'OUT_FOR_DELIVERY', type: 'DELIVERY', time: '12:00' },
-  { id: 'ORD-2024-0141', customer: 'Touré Amadou', total: 10500, status: 'COMPLETED', type: 'DINE_IN', time: '11:45' },
-];
-
 // Dashboard data type
 interface DashboardData {
   period: string;
@@ -110,8 +75,7 @@ export default function DashboardPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // Always use demo mode for now
-        const data = await dashboardApi.get({ period: selectedPeriod, demo: 'true' } as any);
+        const data = await dashboardApi.get({ period: selectedPeriod } as any);
         setDashboardData(data as DashboardData);
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
@@ -172,7 +136,7 @@ export default function DashboardPage() {
     name: new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' }),
     ventes: d.revenue,
     commandes: d.orders,
-  })) || DEMO_SALES_DATA;
+  })) || [];
 
   // Calculate payment method percentages
   const totalPayments = dashboardData?.paymentsByMethod?.reduce((sum, p) => sum + p.amount, 0) || 1;
@@ -184,10 +148,10 @@ export default function DashboardPage() {
       p.method === 'MOBILE_MONEY_MTN' ? '#fbbf24' :
       p.method === 'MOBILE_MONEY_WAVE' ? '#1d4ed8' :
       p.method === 'CASH' ? '#22c55e' : '#8b5cf6',
-  })) || DEMO_PAYMENT_METHODS;
+  })) || [];
 
   // Top products
-  const topItems = dashboardData?.topProducts?.slice(0, 5) || DEMO_TOP_ITEMS;
+  const topItems = dashboardData?.topProducts?.slice(0, 5) || [];
 
   // Recent orders
   const recentOrders = dashboardData?.recentOrders?.map(o => ({
@@ -197,7 +161,7 @@ export default function DashboardPage() {
     status: o.status,
     type: o.orderType,
     time: new Date(o.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-  })) || DEMO_RECENT_ORDERS;
+  })) || [];
 
   return (
     <div className="space-y-6">

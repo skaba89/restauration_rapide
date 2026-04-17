@@ -30,49 +30,10 @@ interface Subscription {
   visitsTotal: number;
 }
 
-const DEMO_SUBSCRIPTIONS: Subscription[] = [
-  {
-    id: '1',
-    customerName: 'Fatou Bamba',
-    customerPhone: '+225 07 00 00 01',
-    planName: 'Déjeuner Express',
-    price: 75000,
-    status: 'ACTIVE',
-    startDate: new Date(Date.now() - 15 * 86400000).toISOString(),
-    endDate: new Date(Date.now() + 15 * 86400000).toISOString(),
-    visitsUsed: 8,
-    visitsTotal: 20,
-  },
-  {
-    id: '2',
-    customerName: 'Ibrahim Koné',
-    customerPhone: '+225 07 00 00 02',
-    planName: 'Weekend Gourmet',
-    price: 50000,
-    status: 'ACTIVE',
-    startDate: new Date(Date.now() - 7 * 86400000).toISOString(),
-    endDate: new Date(Date.now() + 23 * 86400000).toISOString(),
-    visitsUsed: 2,
-    visitsTotal: 8,
-  },
-  {
-    id: '3',
-    customerName: 'Marie Sylla',
-    customerPhone: '+225 07 00 00 03',
-    planName: 'Déjeuner Express',
-    price: 75000,
-    status: 'EXPIRED',
-    startDate: new Date(Date.now() - 35 * 86400000).toISOString(),
-    endDate: new Date(Date.now() - 5 * 86400000).toISOString(),
-    visitsUsed: 20,
-    visitsTotal: 20,
-  },
-];
-
 export default function RestaurantSubscriptionsPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>(DEMO_SUBSCRIPTIONS);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

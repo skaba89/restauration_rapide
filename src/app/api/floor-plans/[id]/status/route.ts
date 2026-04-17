@@ -9,18 +9,6 @@ export async function GET(
   try {
     const { id: floorPlanId } = await params;
     const { searchParams } = new URL(request.url);
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || floorPlanId.startsWith('demo-')) {
-      const demoStatus = getDemoTableStatus();
-      return NextResponse.json({
-        success: true,
-        status: demoStatus,
-        lastUpdated: new Date(),
-        demo: true,
-      });
-    }
 
     // Real database query - get all tables with their current status
     const tables = await db.table.findMany({
@@ -108,7 +96,6 @@ export async function GET(
       status: tableStatus,
       stats,
       lastUpdated: new Date(),
-      demo: false,
     });
   } catch (error) {
     console.error('Error fetching table status:', error);
@@ -132,23 +119,7 @@ export async function POST(
       status, 
       currentPartySize,
       serverId,
-      demo = false,
     } = body;
-
-    // Demo mode
-    if (demo || tableId?.startsWith('demo-')) {
-      return NextResponse.json({
-        success: true,
-        table: {
-          id: tableId,
-          status,
-          currentPartySize,
-          serverId,
-          updatedAt: new Date(),
-        },
-        demo: true,
-      });
-    }
 
     // Real database update
     const updateData: Record<string, unknown> = {};

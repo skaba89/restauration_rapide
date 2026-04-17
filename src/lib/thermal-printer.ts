@@ -341,7 +341,6 @@ export class ThermalPrinterService {
     }
     
     // This would require the actual USB device to be connected
-    // For demo purposes, we simulate the print
     console.log('Printing via USB to', printer.name);
     console.log('Content:', content);
     
@@ -637,7 +636,6 @@ ${'='.repeat(printer.paperWidth === 80 ? 48 : 32)}
 KFM DELICE - Impression OK!
 ${'='.repeat(printer.paperWidth === 80 ? 48 : 32)}
 
-
 `;
     
     return this.print(printerId, testContent);
@@ -645,10 +643,9 @@ ${'='.repeat(printer.paperWidth === 80 ? 48 : 32)}
 }
 
 // ============================================
-// Demo Printers
 // ============================================
 
-export const DEMO_PRINTERS: Printer[] = [
+export const demoPrinters: Printer[] = [
   {
     id: '1',
     name: 'Cuisine',
@@ -700,7 +697,6 @@ const thermalPrinterService = {
   ThermalPrinterService,
   getPrinterService,
   ESC_POS,
-  DEMO_PRINTERS,
 };
 
 export default thermalPrinterService;

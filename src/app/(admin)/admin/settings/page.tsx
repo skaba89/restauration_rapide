@@ -34,42 +34,6 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// Demo settings
-const DEMO_SETTINGS = {
-  platform: {
-    name: 'Restaurant OS',
-    supportEmail: 'support@restaurant-os.app',
-    defaultCurrency: 'XOF',
-    defaultLanguage: 'fr',
-    defaultCountry: 'CI',
-    maintenanceMode: false,
-    registrationEnabled: true,
-    driverOnboardingEnabled: true,
-  },
-  payments: {
-    orangeMoneyEnabled: true,
-    mtnMoMoEnabled: true,
-    waveEnabled: true,
-    mpesaEnabled: false,
-    cardEnabled: true,
-    bankTransferEnabled: true,
-  },
-  notifications: {
-    emailEnabled: true,
-    smsEnabled: true,
-    pushEnabled: true,
-    orderNotifications: true,
-    reservationNotifications: true,
-    marketingEmails: false,
-  },
-  security: {
-    twoFactorRequired: false,
-    sessionTimeout: 30,
-    passwordMinLength: 8,
-    otpExpiry: 5,
-  },
-};
-
 // Currency options
 const CURRENCIES = [
   { code: 'XOF', name: 'Franc CFA (BCEAO)', symbol: 'FCFA' },
@@ -97,7 +61,40 @@ const COUNTRIES = [
 ];
 
 export default function AdminSettingsPage() {
-  const [settings, setSettings] = useState(DEMO_SETTINGS);
+  const [settings, setSettings] = useState({
+    platform: {
+      name: '',
+      supportEmail: '',
+      defaultCurrency: 'XOF',
+      defaultLanguage: 'fr',
+      defaultCountry: 'CI',
+      maintenanceMode: false,
+      registrationEnabled: true,
+      driverOnboardingEnabled: true,
+    },
+    payments: {
+      orangeMoneyEnabled: false,
+      mtnMoMoEnabled: false,
+      waveEnabled: false,
+      mpesaEnabled: false,
+      cardEnabled: false,
+      bankTransferEnabled: false,
+    },
+    notifications: {
+      emailEnabled: true,
+      smsEnabled: false,
+      pushEnabled: true,
+      orderNotifications: true,
+      reservationNotifications: true,
+      marketingEmails: false,
+    },
+    security: {
+      twoFactorRequired: false,
+      sessionTimeout: 30,
+      passwordMinLength: 8,
+      otpExpiry: 5,
+    },
+  });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 

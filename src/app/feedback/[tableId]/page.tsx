@@ -77,8 +77,7 @@ export default function FeedbackFormPage() {
           categories: selectedCategories,
           comment: comment || null,
           customerName: customerName || null,
-          customerPhone: customerPhone || null,
-          demo: true
+          customerPhone: customerPhone || null
         })
       });
 

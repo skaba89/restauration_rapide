@@ -1,31 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Demo categories for development
-const DEMO_CATEGORIES = [
-  { id: 'cat-001', name: 'Fournitures', type: 'supplies', budget: 5000000, color: '#3B82F6', icon: 'Package', description: 'Matières premières et ingrédients', isActive: true, sortOrder: 1 },
-  { id: 'cat-002', name: 'Factures', type: 'utilities', budget: 2000000, color: '#EAB308', icon: 'Zap', description: 'Électricité, eau, internet', isActive: true, sortOrder: 2 },
-  { id: 'cat-003', name: 'Loyer', type: 'rent', budget: 10000000, color: '#8B5CF6', icon: 'Home', description: 'Loyer mensuel du local', isActive: true, sortOrder: 3 },
-  { id: 'cat-004', name: 'Salaires', type: 'salaries', budget: 15000000, color: '#22C55E', icon: 'Users', description: 'Salaires du personnel', isActive: true, sortOrder: 4 },
-  { id: 'cat-005', name: 'Maintenance', type: 'maintenance', budget: 1000000, color: '#F97316', icon: 'Wrench', description: 'Réparations et entretien', isActive: true, sortOrder: 5 },
-  { id: 'cat-006', name: 'Marketing', type: 'marketing', budget: 500000, color: '#EC4899', icon: 'Megaphone', description: 'Publicité et promotion', isActive: true, sortOrder: 6 },
-  { id: 'cat-007', name: 'Autres', type: 'other', budget: 500000, color: '#6B7280', icon: 'MoreHorizontal', description: 'Dépenses diverses', isActive: true, sortOrder: 7 },
-];
-
 // GET - List expense categories
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
-    const demo = searchParams.get('demo') === 'true';
-
-    // Return demo data if requested or no organizationId
-    if (demo || !organizationId) {
-      return NextResponse.json({
-        success: true,
-        data: DEMO_CATEGORIES,
-      });
-    }
 
     // Real database query
     const categories = await db.expenseCategory.findMany({
@@ -58,7 +38,6 @@ export async function POST(request: NextRequest) {
       color,
       icon,
       description,
-      demo = false,
     } = body;
 
     // Validation
@@ -75,27 +54,6 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Type de catégorie invalide' },
         { status: 400 }
       );
-    }
-
-    // Demo mode
-    if (demo || !organizationId) {
-      const newCategory = {
-        id: `cat-${Date.now()}`,
-        name,
-        type,
-        budget: budget || null,
-        color: color || '#6B7280',
-        icon: icon || 'Tag',
-        description: description || null,
-        isActive: true,
-        sortOrder: DEMO_CATEGORIES.length + 1,
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: newCategory,
-        message: 'Catégorie créée avec succès',
-      });
     }
 
     // Check if category with same name exists
@@ -157,7 +115,6 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Demo mode
     if (!organizationId) {
       return NextResponse.json({
         success: true,
@@ -199,7 +156,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Demo mode
     if (!organizationId) {
       return NextResponse.json({
         success: true,

@@ -47,62 +47,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Demo reservations
-const DEMO_RESERVATIONS = [
-  {
-    id: '1',
-    guestName: 'Bamba Seydou',
-    guestPhone: '07 20 21 22 23',
-    guestEmail: 'bamba.seydou@email.com',
-    partySize: 4,
-    date: new Date(),
-    time: '19:30',
-    status: 'CONFIRMED',
-    tableNumbers: ['T-05'],
-    occasion: 'Anniversaire',
-    notes: 'Allergie aux fruits de mer',
-  },
-  {
-    id: '2',
-    guestName: 'Koffi Aya',
-    guestPhone: '05 24 25 26 27',
-    guestEmail: 'aya.koffi@email.com',
-    partySize: 2,
-    date: new Date(),
-    time: '20:00',
-    status: 'PENDING',
-    tableNumbers: ['T-09'],
-    occasion: null,
-    notes: null,
-  },
-  {
-    id: '3',
-    guestName: 'Diallo Amadou',
-    guestPhone: '01 28 29 30 31',
-    guestEmail: 'amadou.diallo@email.com',
-    partySize: 6,
-    date: new Date(),
-    time: '12:30',
-    status: 'SEATED',
-    tableNumbers: ['T-10', 'T-11'],
-    occasion: 'Réunion d\'affaires',
-    notes: 'Menu végétarien demandé',
-  },
-  {
-    id: '4',
-    guestName: 'Touré Fatoumata',
-    guestPhone: '07 32 33 34 35',
-    guestEmail: 'fatoumata.toure@email.com',
-    partySize: 3,
-    date: new Date(Date.now() - 86400000),
-    time: '13:00',
-    status: 'COMPLETED',
-    tableNumbers: ['T-03'],
-    occasion: null,
-    notes: null,
-  },
-];
-
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
     PENDING: 'bg-yellow-100 text-yellow-700 border-yellow-200',
@@ -135,7 +79,7 @@ export default function ReservationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [reservations, setReservations] = useState(DEMO_RESERVATIONS);
+  const [reservations, setReservations] = useState([]);
   const [saving, setSaving] = useState(false);
   
   // New reservation form state

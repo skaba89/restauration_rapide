@@ -71,7 +71,7 @@ export function DarkKitchenToggle() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/settings/dark-kitchen?demo=true');
+        const response = await fetch('/api/settings/dark-kitchen');
         const data = await response.json();
         if (data.success) {
           setSettings(data.settings);
@@ -92,7 +92,7 @@ export function DarkKitchenToggle() {
       const response = await fetch('/api/settings/dark-kitchen', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: !settings.enabled, demo: true }),
+        body: JSON.stringify({ enabled: !settings.enabled }),
       });
       const data = await response.json();
       if (data.success) {
@@ -125,7 +125,7 @@ export function DarkKitchenToggle() {
       const response = await fetch('/api/settings/dark-kitchen', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...settings, demo: true }),
+        body: JSON.stringify({ ...settings }),
       });
       const data = await response.json();
       if (data.success) {

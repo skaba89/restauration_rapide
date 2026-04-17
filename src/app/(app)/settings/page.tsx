@@ -42,30 +42,6 @@ import {
 // Mobile money providers for Guinea
 const MOBILE_MONEY_PROVIDERS = ['Orange Money', 'MTN MoMo', 'Cellcom'];
 
-// Demo sites data
-const DEMO_SITES = [
-  {
-    id: '1',
-    name: 'Restaurant Le Savana - Cocody',
-    address: 'Cocody, Rue des Jardins',
-    city: 'Abidjan',
-    phone: '07 00 00 00 01',
-    email: 'contact@savana-ci.com',
-    isMain: true,
-    status: 'active',
-  },
-  {
-    id: '2',
-    name: 'Restaurant Le Savana - Plateau',
-    address: 'Plateau, Avenue 12',
-    city: 'Abidjan',
-    phone: '07 00 00 00 02',
-    email: 'plateau@savana-ci.com',
-    isMain: false,
-    status: 'active',
-  },
-];
-
 export default function SettingsPage() {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
@@ -148,7 +124,7 @@ export default function SettingsPage() {
   });
 
   // Sites management
-  const [sites, setSites] = useState(DEMO_SITES);
+  const [sites, setSites] = useState([]);
   const [isAddSiteOpen, setIsAddSiteOpen] = useState(false);
   const [newSite, setNewSite] = useState({
     name: '',

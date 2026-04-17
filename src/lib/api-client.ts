@@ -358,7 +358,6 @@ export const dashboardApi = {
     organizationId?: string;
     restaurantId?: string;
     period?: 'today' | 'week' | 'month' | 'year';
-    demo?: string;
   }) => apiGet<any>('/dashboard', params),
 };
 

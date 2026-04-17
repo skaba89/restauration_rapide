@@ -50,93 +50,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Demo customers data
-const DEMO_CUSTOMERS = [
-  {
-    id: '1',
-    name: 'Kouamé Jean',
-    email: 'jean.kouame@email.com',
-    phone: '07 08 09 10 11',
-    totalOrders: 24,
-    totalSpent: 185000,
-    loyaltyPoints: 1850,
-    lastOrder: new Date(Date.now() - 86400000),
-    isVip: true,
-    avatar: null,
-    address: 'Cocody, Riviera 3',
-    notes: 'Client régulier, préfère les plats sans piment',
-  },
-  {
-    id: '2',
-    name: 'Aya Marie',
-    email: 'aya.marie@email.com',
-    phone: '05 04 03 02 01',
-    totalOrders: 18,
-    totalSpent: 142000,
-    loyaltyPoints: 1420,
-    lastOrder: new Date(Date.now() - 172800000),
-    isVip: true,
-    avatar: null,
-    address: 'Plateau, Avenue 12',
-    notes: '',
-  },
-  {
-    id: '3',
-    name: 'Koné Ibrahim',
-    email: 'ibrahim.kone@email.com',
-    phone: '01 02 03 04 05',
-    totalOrders: 12,
-    totalSpent: 98000,
-    loyaltyPoints: 980,
-    lastOrder: new Date(Date.now() - 259200000),
-    isVip: false,
-    avatar: null,
-    address: 'Treichville, Rue 12',
-    notes: '',
-  },
-  {
-    id: '4',
-    name: 'Diallo Fatou',
-    email: 'fatou.diallo@email.com',
-    phone: '07 12 13 14 15',
-    totalOrders: 8,
-    totalSpent: 64000,
-    loyaltyPoints: 640,
-    lastOrder: new Date(Date.now() - 345600000),
-    isVip: false,
-    avatar: null,
-    address: 'Yopougon, Sicogi',
-    notes: 'Allergique aux fruits de mer',
-  },
-  {
-    id: '5',
-    name: 'Touré Amadou',
-    email: 'amadou.toure@email.com',
-    phone: '05 22 23 24 25',
-    totalOrders: 15,
-    totalSpent: 127000,
-    loyaltyPoints: 1270,
-    lastOrder: new Date(Date.now() - 432000000),
-    isVip: false,
-    avatar: null,
-    address: 'Marcory, Zone 4',
-    notes: '',
-  },
-];
-
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
 const formatDate = (date: Date) => new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 
 export default function CustomersPage() {
   const { toast } = useToast();
-  const [customers, setCustomers] = useState(DEMO_CUSTOMERS);
+  const [customers, setCustomers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVip, setFilterVip] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('recent');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<typeof DEMO_CUSTOMERS[0] | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<typeof null | null>(null);
   
   // New customer form state
   const [newCustomer, setNewCustomer] = useState({
@@ -149,7 +75,7 @@ export default function CustomersPage() {
   });
 
   // Edit customer form state
-  const [editCustomer, setEditCustomer] = useState<typeof DEMO_CUSTOMERS[0] | null>(null);
+  const [editCustomer, setEditCustomer] = useState<typeof null | null>(null);
 
   const filteredCustomers = useMemo(() => {
     let result = [...customers];
@@ -265,12 +191,12 @@ export default function CustomersPage() {
     });
   };
 
-  const openEditDialog = (customer: typeof DEMO_CUSTOMERS[0]) => {
+  const openEditDialog = (customer: typeof null) => {
     setEditCustomer({ ...customer });
     setIsEditDialogOpen(true);
   };
 
-  const openViewDialog = (customer: typeof DEMO_CUSTOMERS[0]) => {
+  const openViewDialog = (customer: typeof null) => {
     setSelectedCustomer(customer);
     setIsViewDialogOpen(true);
   };

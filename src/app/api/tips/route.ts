@@ -50,161 +50,6 @@ interface StaffTipEarnings {
   tipsPerHour: number;
 }
 
-// Demo Data for fallback
-const DEMO_TIPS: TipResponse[] = [
-  {
-    id: 'tip-001',
-    orderId: 'ord-001',
-    orderNumber: 'ORD-2024-0145',
-    amount: 5000,
-    method: 'cash',
-    distributionStatus: 'distributed',
-    distributions: [
-      { id: 'dist-001', tipId: 'tip-001', staffId: 'staff-001', staffName: 'Aïssata Traoré', amount: 2500, percentage: 50, hoursWorked: 8, status: 'paid', distributedAt: new Date() },
-      { id: 'dist-002', tipId: 'tip-001', staffId: 'staff-002', staffName: 'Moussa Bamba', amount: 2500, percentage: 50, hoursWorked: 8, status: 'paid', distributedAt: new Date() }
-    ],
-    createdAt: new Date(Date.now() - 30 * 60 * 1000)
-  },
-  {
-    id: 'tip-002',
-    orderId: 'ord-002',
-    orderNumber: 'ORD-2024-0144',
-    amount: 10000,
-    method: 'mobile_money',
-    distributionStatus: 'pending',
-    distributions: [],
-    createdAt: new Date(Date.now() - 60 * 60 * 1000)
-  },
-  {
-    id: 'tip-003',
-    orderId: 'ord-003',
-    orderNumber: 'ORD-2024-0143',
-    amount: 7500,
-    method: 'cash',
-    distributionStatus: 'distributed',
-    distributions: [
-      { id: 'dist-003', tipId: 'tip-003', staffId: 'staff-003', staffName: 'Mariama Sy', amount: 5000, percentage: 67, hoursWorked: 4, status: 'paid', distributedAt: new Date() },
-      { id: 'dist-004', tipId: 'tip-003', staffId: 'staff-004', staffName: 'Ibrahim Koné', amount: 2500, percentage: 33, hoursWorked: 8, status: 'paid', distributedAt: new Date() }
-    ],
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
-  },
-  {
-    id: 'tip-004',
-    orderId: 'ord-004',
-    orderNumber: 'ORD-2024-0142',
-    amount: 15000,
-    method: 'cash',
-    distributionStatus: 'pending',
-    distributions: [],
-    staffId: 'staff-001',
-    staffName: 'Aïssata Traoré',
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000)
-  },
-  {
-    id: 'tip-005',
-    orderId: 'ord-005',
-    orderNumber: 'ORD-2024-0141',
-    amount: 8000,
-    method: 'mobile_money',
-    distributionStatus: 'distributed',
-    distributions: [
-      { id: 'dist-005', tipId: 'tip-005', staffId: 'staff-005', staffName: 'Fatoumata Diallo', amount: 4000, percentage: 50, hoursWorked: 6, status: 'paid', distributedAt: new Date() },
-      { id: 'dist-006', tipId: 'tip-005', staffId: 'staff-006', staffName: 'Seydou Konaté', amount: 4000, percentage: 50, hoursWorked: 6, status: 'paid', distributedAt: new Date() }
-    ],
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000)
-  },
-  {
-    id: 'tip-006',
-    orderId: 'ord-006',
-    orderNumber: 'ORD-2024-0140',
-    amount: 12000,
-    method: 'card',
-    distributionStatus: 'pending',
-    distributions: [],
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000)
-  },
-  {
-    id: 'tip-007',
-    orderId: 'ord-007',
-    orderNumber: 'ORD-2024-0139',
-    amount: 6500,
-    method: 'cash',
-    distributionStatus: 'distributed',
-    distributions: [
-      { id: 'dist-007', tipId: 'tip-007', staffId: 'staff-007', staffName: 'Amadou Keita', amount: 6500, percentage: 100, hoursWorked: 10, status: 'paid', distributedAt: new Date() }
-    ],
-    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000)
-  },
-  {
-    id: 'tip-008',
-    orderId: 'ord-008',
-    orderNumber: 'ORD-2024-0138',
-    amount: 9000,
-    method: 'cash',
-    distributionStatus: 'pending',
-    distributions: [],
-    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000)
-  },
-  {
-    id: 'tip-009',
-    orderId: 'ord-009',
-    orderNumber: 'ORD-2024-0137',
-    amount: 20000,
-    method: 'mobile_money',
-    distributionStatus: 'distributed',
-    distributions: [
-      { id: 'dist-008', tipId: 'tip-009', staffId: 'staff-001', staffName: 'Aïssata Traoré', amount: 6667, percentage: 33.3, hoursWorked: 8, status: 'paid', distributedAt: new Date() },
-      { id: 'dist-009', tipId: 'tip-009', staffId: 'staff-002', staffName: 'Moussa Bamba', amount: 6667, percentage: 33.3, hoursWorked: 8, status: 'paid', distributedAt: new Date() },
-      { id: 'dist-010', tipId: 'tip-009', staffId: 'staff-003', staffName: 'Mariama Sy', amount: 6666, percentage: 33.3, hoursWorked: 4, status: 'paid', distributedAt: new Date() }
-    ],
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
-  },
-  {
-    id: 'tip-010',
-    orderId: 'ord-010',
-    orderNumber: 'ORD-2024-0136',
-    amount: 3500,
-    method: 'cash',
-    distributionStatus: 'pending',
-    distributions: [],
-    createdAt: new Date(Date.now() - 36 * 60 * 60 * 1000)
-  },
-];
-
-const DEMO_DISTRIBUTION_RULES: DistributionRule[] = [
-  {
-    id: 'rule-001',
-    method: 'role',
-    rolePercentages: {
-      waiter: 50,
-      kitchen: 25,
-      delivery: 20,
-      other: 5
-    },
-    isActive: true
-  },
-  {
-    id: 'rule-002',
-    method: 'hours',
-    isActive: false
-  },
-  {
-    id: 'rule-003',
-    method: 'equal',
-    isActive: false
-  }
-];
-
-const DEMO_STAFF_EARNINGS: StaffTipEarnings[] = [
-  { staffId: 'staff-001', staffName: 'Aïssata Traoré', role: 'waiter', hoursWorked: 168, tipsEarned: 13917, pendingTips: 0, paidTips: 13917, tipsPerHour: 83 },
-  { staffId: 'staff-002', staffName: 'Moussa Bamba', role: 'waiter', hoursWorked: 168, tipsEarned: 17167, pendingTips: 0, paidTips: 17167, tipsPerHour: 102 },
-  { staffId: 'staff-003', staffName: 'Mariama Sy', role: 'kitchen', hoursWorked: 84, tipsEarned: 11416, pendingTips: 0, paidTips: 11416, tipsPerHour: 136 },
-  { staffId: 'staff-004', staffName: 'Ibrahim Koné', role: 'kitchen', hoursWorked: 168, tipsEarned: 12500, pendingTips: 0, paidTips: 12500, tipsPerHour: 74 },
-  { staffId: 'staff-005', staffName: 'Fatoumata Diallo', role: 'delivery', hoursWorked: 126, tipsEarned: 9500, pendingTips: 0, paidTips: 9500, tipsPerHour: 75 },
-  { staffId: 'staff-006', staffName: 'Seydou Konaté', role: 'delivery', hoursWorked: 126, tipsEarned: 9500, pendingTips: 0, paidTips: 9500, tipsPerHour: 75 },
-  { staffId: 'staff-007', staffName: 'Amadou Keita', role: 'waiter', hoursWorked: 200, tipsEarned: 15000, pendingTips: 0, paidTips: 15000, tipsPerHour: 75 },
-];
-
 // GET - List tips with filters
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -215,13 +60,8 @@ export async function GET(request: NextRequest) {
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
   const limit = parseInt(searchParams.get('limit') || '50');
-  const demo = searchParams.get('demo') === 'true';
 
   try {
-    // Use demo data if demo=true or no organizationId
-    if (demo || !organizationId) {
-      return getDemoResponse(type, staffId, status, startDate, endDate, limit);
-    }
 
     // Use database
     switch (type) {
@@ -449,7 +289,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Demo response helper
 function getDemoResponse(
   type: string,
   staffId: string | null,
@@ -460,7 +299,7 @@ function getDemoResponse(
 ) {
   switch (type) {
     case 'tips': {
-      let filteredTips = [...DEMO_TIPS];
+      let filteredTips = [];
 
       if (status && status !== 'all') {
         filteredTips = filteredTips.filter(t => t.distributionStatus === status);
@@ -498,7 +337,7 @@ function getDemoResponse(
     }
 
     case 'distributions': {
-      const allDistributions = DEMO_TIPS.flatMap(t => t.distributions);
+      const allDistributions = [].flatMap((t: any) => t.distributions);
       return NextResponse.json({
         success: true,
         data: allDistributions
@@ -525,17 +364,9 @@ function getDemoResponse(
     }
 
     case 'earnings': {
-      let earnings = [...DEMO_STAFF_EARNINGS];
+      let earnings = [];
 
-      const pendingDistributions = DEMO_TIPS
-        .filter(t => t.distributionStatus === 'pending')
-        .flatMap(t => {
-          const staffCount = DEMO_STAFF_EARNINGS.length;
-          return DEMO_STAFF_EARNINGS.map(s => ({
-            staffId: s.staffId,
-            amount: Math.round(t.amount / staffCount)
-          }));
-        });
+      const pendingDistributions = []
 
       const pendingByStaff = pendingDistributions.reduce((acc, d) => {
         acc[d.staffId] = (acc[d.staffId] || 0) + d.amount;
@@ -562,12 +393,8 @@ function getDemoResponse(
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const thisMonthTips = DEMO_TIPS.filter(t => t.createdAt >= startOfMonth);
-      const lastMonthTips = DEMO_TIPS.filter(t => {
-        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-        return t.createdAt >= lastMonth && t.createdAt <= endOfLastMonth;
-      });
+      const thisMonthTips = [];
+      const lastMonthTips = [];
 
       return NextResponse.json({
         success: true,
@@ -587,11 +414,11 @@ function getDemoResponse(
               : 0
           },
           byMethod: {
-            cash: DEMO_TIPS.filter(t => t.method === 'cash').reduce((sum, t) => sum + t.amount, 0),
-            mobile_money: DEMO_TIPS.filter(t => t.method === 'mobile_money').reduce((sum, t) => sum + t.amount, 0),
-            card: DEMO_TIPS.filter(t => t.method === 'card').reduce((sum, t) => sum + t.amount, 0)
+            cash: [].reduce((sum, t) => sum + t.amount, 0),
+            mobile_money: [].reduce((sum, t) => sum + t.amount, 0),
+            card: [].reduce((sum, t) => sum + t.amount, 0)
           },
-          pendingDistribution: DEMO_TIPS.filter(t => t.distributionStatus === 'pending').reduce((sum, t) => sum + t.amount, 0)
+          pendingDistribution: [].reduce((sum, t) => sum + t.amount, 0)
         }
       });
     }
@@ -656,8 +483,7 @@ export async function POST(request: NextRequest) {
 
     if (action === 'distribute') {
       if (!organizationId) {
-        // Return demo response
-        const pendingTips = DEMO_TIPS.filter(t => t.distributionStatus === 'pending');
+        const pendingTips = [];
 
         if (pendingTips.length === 0) {
           return NextResponse.json({

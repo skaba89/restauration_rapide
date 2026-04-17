@@ -24,19 +24,9 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     
     // Get query parameters
-    const demo = searchParams.get('demo') === 'true';
     const language = (searchParams.get('lang') === 'en' ? 'en' : 'fr') as 'fr' | 'en';
     
     let invoiceData: InvoiceData;
-    
-    if (demo) {
-      // Use demo data
-      invoiceData = getDemoInvoiceData(language);
-      invoiceData.orderNumber = orderId;
-    } else {
-      // Fetch real data from database
-      invoiceData = await fetchInvoiceData(orderId, language);
-    }
     
     // Generate PDF
     const pdfBuffer = await generateInvoicePDF(invoiceData);
@@ -96,7 +86,6 @@ async function fetchInvoiceData(orderId: string, language: 'fr' | 'en'): Promise
     if (!order) {
       // Fall back to demo data if order not found
       console.log(`Order ${orderId} not found, using demo data`);
-      const demoData = getDemoInvoiceData(language);
       demoData.orderNumber = orderId;
       return demoData;
     }
@@ -177,7 +166,6 @@ async function fetchInvoiceData(orderId: string, language: 'fr' | 'en'): Promise
     
   } catch (dbError) {
     console.error('Database error, falling back to demo data:', dbError);
-    const demoData = getDemoInvoiceData(language);
     demoData.orderNumber = orderId;
     return demoData;
   }

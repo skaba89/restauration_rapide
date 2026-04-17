@@ -1,55 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withErrorHandler } from '@/lib/api-responses';
 
-// Demo gift cards storage (in-memory, same as main route)
-const DEMO_GIFT_CARDS = [
-  {
-    id: '1',
-    code: 'KFM-A7X2-M9P4',
-    initialAmount: 50000,
-    currentBalance: 50000,
-    status: 'active' as const,
-    buyerName: 'Koné Ibrahim',
-    buyerPhone: '+225 07 12 34 56 78',
-    recipientName: 'Diallo Fatou',
-    recipientPhone: '+225 05 98 76 54 32',
-    deliveryMethod: 'sms' as const,
-    purchasedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 363 * 24 * 60 * 60 * 1000),
-    transactions: [] as any[],
-  },
-  {
-    id: '2',
-    code: 'KFM-B3K8-N2W5',
-    initialAmount: 25000,
-    currentBalance: 12500,
-    status: 'active' as const,
-    buyerName: 'Touré Amadou',
-    buyerPhone: '+225 07 88 11 22 33',
-    recipientName: 'Bamba Seydou',
-    recipientPhone: '+225 05 44 55 66 77',
-    deliveryMethod: 'email' as const,
-    purchasedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 358 * 24 * 60 * 60 * 1000),
-    transactions: [] as any[],
-  },
-  {
-    id: '5',
-    code: 'KFM-E2G6-K1M3',
-    initialAmount: 75000,
-    currentBalance: 45000,
-    status: 'active' as const,
-    buyerName: 'Diarra Moussa',
-    buyerPhone: '+225 07 22 33 44 55',
-    recipientName: 'Coulibaly Mariam',
-    recipientPhone: '+225 05 66 77 88 99',
-    deliveryMethod: 'email' as const,
-    purchasedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 351 * 24 * 60 * 60 * 1000),
-    transactions: [] as any[],
-  },
-];
-
 // POST - Redeem gift card
 export const POST = withErrorHandler(async (
   request: NextRequest,
@@ -71,7 +22,8 @@ export const POST = withErrorHandler(async (
   }
 
   // Find the gift card
-  const cardIndex = DEMO_GIFT_CARDS.findIndex(c => c.code === upperCode);
+  const giftCards: any[] = [];
+  const cardIndex = giftCards.findIndex(c => c.code === upperCode);
 
   if (cardIndex === -1) {
     return NextResponse.json({
@@ -80,7 +32,7 @@ export const POST = withErrorHandler(async (
     }, { status: 404 });
   }
 
-  const card = DEMO_GIFT_CARDS[cardIndex];
+  const card = giftCards[cardIndex];
 
   // Check if active
   if (card.status !== 'active') {
@@ -135,7 +87,7 @@ export const POST = withErrorHandler(async (
   card.transactions.push(transaction);
 
   // Update the array
-  DEMO_GIFT_CARDS[cardIndex] = card;
+  giftCards[cardIndex] = card;
 
   return NextResponse.json({
     success: true,

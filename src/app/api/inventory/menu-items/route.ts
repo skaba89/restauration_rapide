@@ -10,53 +10,8 @@ import { db } from '@/lib/db';
 // GET - Get inventory links for a menu item or all menu items with their inventory
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
   const menuItemId = searchParams.get('menuItemId');
   const inventoryItemId = searchParams.get('inventoryItemId');
-
-  if (demo) {
-    // Demo data
-    const demoLinks = [
-      {
-        id: 'link-1',
-        menuItemId: 'menu-1',
-        menuItemName: 'Attieké Poisson Grillé',
-        inventoryItemId: 'inv-1',
-        inventoryItemName: 'Attieké',
-        quantity: 0.3,
-        unit: 'kg',
-      },
-      {
-        id: 'link-2',
-        menuItemId: 'menu-1',
-        menuItemName: 'Attieké Poisson Grillé',
-        inventoryItemId: 'inv-2',
-        inventoryItemName: 'Poisson',
-        quantity: 0.25,
-        unit: 'kg',
-      },
-      {
-        id: 'link-3',
-        menuItemId: 'menu-2',
-        menuItemName: 'Kedjenou de Poulet',
-        inventoryItemId: 'inv-3',
-        inventoryItemName: 'Poulet',
-        quantity: 0.35,
-        unit: 'kg',
-      },
-    ];
-
-    let links = [...demoLinks];
-    
-    if (menuItemId) {
-      links = links.filter(l => l.menuItemId === menuItemId);
-    }
-    if (inventoryItemId) {
-      links = links.filter(l => l.inventoryItemId === inventoryItemId);
-    }
-
-    return apiSuccess({ links });
-  }
 
   try {
     const where: any = {};
@@ -105,25 +60,11 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
 
   const { menuItemId, inventoryItemId, quantity, unit } = body;
 
   if (!menuItemId || !inventoryItemId || quantity === undefined) {
     return apiError('menuItemId, inventoryItemId et quantity sont requis', 400);
-  }
-
-  if (demo) {
-    const newLink = {
-      id: `link-${Date.now()}`,
-      menuItemId,
-      menuItemName: 'Menu Item',
-      inventoryItemId,
-      inventoryItemName: 'Inventory Item',
-      quantity: parseFloat(quantity),
-      unit: unit || 'unit',
-    };
-    return apiSuccess({ link: newLink }, 'Lien créé avec succès');
   }
 
   try {
@@ -190,14 +131,9 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 // DELETE - Remove menu item inventory link
 export const DELETE = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
   const linkId = searchParams.get('id');
   const menuItemId = searchParams.get('menuItemId');
   const inventoryItemId = searchParams.get('inventoryItemId');
-
-  if (demo) {
-    return apiSuccess({}, 'Lien supprimé avec succès');
-  }
 
   try {
     if (linkId) {
@@ -228,19 +164,11 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
 export const PUT = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
 
   const { orderId, organizationId, userId } = body;
 
   if (!orderId) {
     return apiError('orderId est requis', 400);
-  }
-
-  if (demo) {
-    return apiSuccess({ 
-      deducted: 5,
-      alerts: ['Tomates - Stock bas', 'Poisson - Stock bas']
-    }, 'Stock déduit avec succès');
   }
 
   try {

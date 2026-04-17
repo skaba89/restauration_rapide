@@ -51,18 +51,6 @@ interface PayrollEntry {
   status: 'pending' | 'paid';
 }
 
-// Demo payroll data
-const DEMO_PAYROLL: PayrollEntry[] = [
-  { staffId: '1', staffName: 'Amadou Diallo', role: 'manager', roleLabel: 'Directeur', hourlyRate: 15000, hoursWorked: 176, overtimeHours: 12, regularPay: 2640000, overtimePay: 270000, tips: 150000, totalPay: 3060000, status: 'pending' },
-  { staffId: '2', staffName: 'Fatou Sylla', role: 'chef', roleLabel: 'Chef Cuisinier', hourlyRate: 12000, hoursWorked: 192, overtimeHours: 8, regularPay: 2304000, overtimePay: 144000, tips: 200000, totalPay: 2648000, status: 'pending' },
-  { staffId: '3', staffName: 'Ibrahim Keita', role: 'cook', roleLabel: 'Cuisinier', hourlyRate: 8000, hoursWorked: 184, overtimeHours: 16, regularPay: 1472000, overtimePay: 192000, tips: 80000, totalPay: 1744000, status: 'pending' },
-  { staffId: '4', staffName: 'Marie Koulibaly', role: 'waiter', roleLabel: 'Serveuse', hourlyRate: 5000, hoursWorked: 168, overtimeHours: 20, regularPay: 840000, overtimePay: 150000, tips: 350000, totalPay: 1340000, status: 'pending' },
-  { staffId: '5', staffName: 'Moussa Camara', role: 'delivery_driver', roleLabel: 'Livreur', hourlyRate: 5000, hoursWorked: 180, overtimeHours: 24, regularPay: 900000, overtimePay: 180000, tips: 280000, totalPay: 1360000, status: 'pending' },
-  { staffId: '6', staffName: 'Aissatou Traore', role: 'cashier', roleLabel: 'Caissière', hourlyRate: 6000, hoursWorked: 176, overtimeHours: 4, regularPay: 1056000, overtimePay: 36000, tips: 120000, totalPay: 1212000, status: 'pending' },
-  { staffId: '8', staffName: 'Fanta Diarra', role: 'waiter', roleLabel: 'Serveuse', hourlyRate: 5000, hoursWorked: 160, overtimeHours: 8, regularPay: 800000, overtimePay: 60000, tips: 290000, totalPay: 1150000, status: 'pending' },
-  { staffId: '9', staffName: 'Oumar Bah', role: 'cleaner', roleLabel: 'Agent d\'entretien', hourlyRate: 4000, hoursWorked: 88, overtimeHours: 0, regularPay: 352000, overtimePay: 0, tips: 20000, totalPay: 372000, status: 'pending' },
-];
-
 // Get initials
 const getInitials = (name: string) => {
   const parts = name.split(' ');
@@ -85,7 +73,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 export function PayrollSummary() {
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
-  const [payroll, setPayroll] = useState<PayrollEntry[]>(DEMO_PAYROLL);
+  const [payroll, setPayroll] = useState<PayrollEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Generate month options

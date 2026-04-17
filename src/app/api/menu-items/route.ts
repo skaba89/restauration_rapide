@@ -4,20 +4,6 @@ import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { generateSlug } from '@/lib/utils-helpers';
 import { NextRequest } from 'next/server';
 
-// Demo menu items for fallback
-const DEMO_ITEMS = [
-  { id: 'demo-1', categoryId: 'demo-cat-1', name: 'Attieké Poisson Grillé', slug: 'attieke-poisson-grille', price: 8000, description: 'Attieké accompagné de poisson grillé', image: null, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, prepTime: 20 },
-  { id: 'demo-2', categoryId: 'demo-cat-1', name: 'Kedjenou de Poulet', slug: 'kedjenou-de-poulet', price: 7000, description: 'Poulet braisé aux légumes', image: null, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, prepTime: 25 },
-  { id: 'demo-3', categoryId: 'demo-cat-1', name: 'Thiéboudienne', slug: 'thieboudienne', price: 7000, description: 'Riz rouge au poisson', image: null, isAvailable: true, isFeatured: false, isPopular: true, isNew: true, prepTime: 30 },
-  { id: 'demo-4', categoryId: 'demo-cat-2', name: 'Alloco Sauce Graine', slug: 'alloco-sauce-graine', price: 5000, description: 'Bananes plantain frites avec sauce', image: null, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, prepTime: 15 },
-  { id: 'demo-5', categoryId: 'demo-cat-1', name: 'Riz Gras', slug: 'riz-gras', price: 5000, description: 'Riz sauté à la viande', image: null, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, prepTime: 20 },
-  { id: 'demo-6', categoryId: 'demo-cat-3', name: 'Jus de Bissap', slug: 'jus-de-bissap', price: 1500, description: 'Jus frais d\'hibiscus', image: null, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, prepTime: 5 },
-  { id: 'demo-7', categoryId: 'demo-cat-3', name: 'Jus de Gingembre', slug: 'jus-de-gingembre', price: 1500, description: 'Jus de gingembre frais', image: null, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, prepTime: 5 },
-  { id: 'demo-8', categoryId: 'demo-cat-2', name: 'Banane Plantain Frite', slug: 'banane-plantain-frite', price: 2000, description: 'Bananes plantain frites', image: null, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, prepTime: 10 },
-  { id: 'demo-9', categoryId: 'demo-cat-1', name: 'Garba', slug: 'garba', price: 3500, description: 'Attiéké au thon et piment', image: null, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, prepTime: 15 },
-  { id: 'demo-10', categoryId: 'demo-cat-1', name: 'Foutou Banane', slug: 'foutou-banane', price: 6000, description: 'Pâte de banane plantain', image: null, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, prepTime: 30 },
-];
-
 // GET /api/menu-items - List all items
 export async function GET(request: NextRequest) {
   return withErrorHandler(async () => {
@@ -26,19 +12,6 @@ export async function GET(request: NextRequest) {
     const menuId = searchParams.get('menuId');
     const restaurantId = searchParams.get('restaurantId');
     const isAvailable = searchParams.get('isAvailable');
-    const demo = searchParams.get('demo');
-
-    // Return demo data if requested or no IDs provided
-    if (demo === 'true' || (!categoryId && !menuId && !restaurantId)) {
-      let items = DEMO_ITEMS;
-      if (categoryId) {
-        items = items.filter(i => i.categoryId === categoryId);
-      }
-      if (isAvailable !== null) {
-        items = items.filter(i => i.isAvailable === (isAvailable === 'true'));
-      }
-      return apiSuccess(items);
-    }
 
     // Build filter
     const where: Record<string, unknown> = {};

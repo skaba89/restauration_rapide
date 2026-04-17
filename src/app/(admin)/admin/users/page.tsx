@@ -212,65 +212,6 @@ export default function UsersManagementPage() {
       setTotalUsers(data.total || 0);
     } catch (error) {
       console.error('Error fetching users:', error);
-      // Demo data fallback
-      const demoUsers: UserItem[] = [
-        {
-          id: 'user-1',
-          email: 'admin@kfm-delice.com',
-          phone: '+224 623 21 72 40',
-          role: 'ORG_ADMIN',
-          firstName: 'KFM',
-          lastName: 'DELICE',
-          avatar: null,
-          isActive: true,
-          isLocked: false,
-          createdAt: '2024-01-01',
-          lastLoginAt: new Date().toISOString(),
-          organizationUsers: [{ organization: { id: 'org-1', name: 'KFM DELICE' }, role: 'admin' }],
-        },
-        {
-          id: 'user-2',
-          email: 'cuisinier@kfm-delice.com',
-          phone: '+224 620 00 00 01',
-          role: 'KITCHEN',
-          firstName: 'Mamadou',
-          lastName: 'Diallo',
-          avatar: null,
-          isActive: true,
-          isLocked: false,
-          createdAt: '2024-01-05',
-          lastLoginAt: new Date().toISOString(),
-          organizationUsers: [{ organization: { id: 'org-1', name: 'KFM DELICE' }, role: 'kitchen' }],
-        },
-        {
-          id: 'user-3',
-          email: 'livreur@kfm-delice.com',
-          phone: '+224 620 00 00 02',
-          role: 'DRIVER',
-          firstName: 'Ibrahima',
-          lastName: 'Sow',
-          avatar: null,
-          isActive: true,
-          isLocked: false,
-          createdAt: '2024-01-10',
-          lastLoginAt: new Date().toISOString(),
-          organizationUsers: [{ organization: { id: 'org-1', name: 'KFM DELICE' }, role: 'driver' }],
-        },
-        {
-          id: 'user-4',
-          email: 'serveur@kfm-delice.com',
-          phone: '+224 620 00 00 03',
-          role: 'STAFF',
-          firstName: 'Fatou',
-          lastName: 'Binta',
-          avatar: null,
-          isActive: true,
-          isLocked: false,
-          createdAt: '2024-01-15',
-          lastLoginAt: new Date().toISOString(),
-          organizationUsers: [{ organization: { id: 'org-1', name: 'KFM DELICE' }, role: 'staff' }],
-        },
-      ];
       setUsers(demoUsers);
       setTotalUsers(demoUsers.length);
     } finally {

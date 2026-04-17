@@ -28,55 +28,6 @@ import {
   Loader2,
 } from 'lucide-react';
 
-// Demo data for Dark Kitchen Dashboard
-const DEMO_METRICS = {
-  todayOrders: 87,
-  deliveryOrders: 62,
-  takeawayOrders: 25,
-  avgPrepTime: 14.5,
-  targetPrepTime: 15,
-  deliveryEfficiency: 94.2,
-  activeDrivers: 8,
-  kitchenUtilization: 78,
-  hourlyDistribution: [
-    { hour: '08h', orders: 5, deliveries: 3, takeaway: 2 },
-    { hour: '09h', orders: 8, deliveries: 5, takeaway: 3 },
-    { hour: '10h', orders: 12, deliveries: 8, takeaway: 4 },
-    { hour: '11h', orders: 18, deliveries: 12, takeaway: 6 },
-    { hour: '12h', orders: 25, deliveries: 18, takeaway: 7 },
-    { hour: '13h', orders: 22, deliveries: 16, takeaway: 6 },
-    { hour: '14h', orders: 15, deliveries: 10, takeaway: 5 },
-    { hour: '15h', orders: 10, deliveries: 6, takeaway: 4 },
-    { hour: '16h', orders: 8, deliveries: 5, takeaway: 3 },
-  ],
-  orderTypeSplit: [
-    { name: 'Livraison', value: 62, color: '#3b82f6' },
-    { name: 'À emporter', value: 25, color: '#22c55e' },
-  ],
-  partnerPerformance: [
-    { partner: 'Orange Money Delivery', orders: 28, avgTime: 18, rating: 4.8 },
-    { partner: 'Jumia Food', orders: 22, avgTime: 22, rating: 4.5 },
-    { partner: 'Yassir', orders: 12, avgTime: 15, rating: 4.7 },
-    { partner: 'Propre', orders: 25, avgTime: 12, rating: 4.9 },
-  ],
-  recentOrders: [
-    { id: 'ORD-001', type: 'delivery', status: 'preparing', items: 3, prepTime: 8, customer: 'Amadou K.' },
-    { id: 'ORD-002', type: 'takeaway', status: 'ready', items: 2, prepTime: 12, customer: 'Fatou D.' },
-    { id: 'ORD-003', type: 'delivery', status: 'picked_up', items: 4, prepTime: 15, customer: 'Ibrahim S.' },
-    { id: 'ORD-004', type: 'delivery', status: 'preparing', items: 1, prepTime: 5, customer: 'Mariam T.' },
-    { id: 'ORD-005', type: 'takeaway', status: 'pending', items: 2, prepTime: 0, customer: 'Ousmane B.' },
-  ],
-  prepTimeTrend: [
-    { day: 'Lun', time: 15 },
-    { day: 'Mar', time: 14 },
-    { day: 'Mer', time: 16 },
-    { day: 'Jeu', time: 13 },
-    { day: 'Ven', time: 14 },
-    { day: 'Sam', time: 17 },
-    { day: 'Dim', time: 14.5 },
-  ],
-};
-
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
   preparing: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
@@ -175,7 +126,7 @@ function StatCard({
 
 export function DarkKitchenDashboard() {
   const [isLoading, setIsLoading] = useState(true);
-  const [metrics, setMetrics] = useState(DEMO_METRICS);
+  const [metrics, setMetrics] = useState([]);
 
   useEffect(() => {
     // Simulate loading

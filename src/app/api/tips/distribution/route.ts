@@ -1,50 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Demo staff data
-const DEMO_STAFF = [
-  { id: 'staff-001', name: 'Aïssata Traoré', role: 'waiter', hoursWorked: 168 },
-  { id: 'staff-002', name: 'Moussa Bamba', role: 'waiter', hoursWorked: 168 },
-  { id: 'staff-003', name: 'Mariama Sy', role: 'kitchen', hoursWorked: 84 },
-  { id: 'staff-004', name: 'Ibrahim Koné', role: 'kitchen', hoursWorked: 168 },
-  { id: 'staff-005', name: 'Fatoumata Diallo', role: 'delivery', hoursWorked: 126 },
-  { id: 'staff-006', name: 'Seydou Konaté', role: 'delivery', hoursWorked: 126 },
-  { id: 'staff-007', name: 'Amadou Keita', role: 'waiter', hoursWorked: 200 },
-];
-
 // GET - Get tip distribution preview or by employee
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const organizationId = searchParams.get('organizationId');
     const employeeId = searchParams.get('employeeId');
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || !organizationId) {
-      const distributions = DEMO_STAFF.map(staff => ({
-        staffId: staff.id,
-        staffName: staff.name,
-        role: staff.role,
-        hoursWorked: staff.hoursWorked,
-        totalEarned: Math.round(Math.random() * 15000) + 5000,
-        pendingAmount: Math.round(Math.random() * 5000),
-        paidAmount: Math.round(Math.random() * 10000) + 5000,
-      }));
-
-      if (employeeId) {
-        const employee = distributions.find(d => d.staffId === employeeId);
-        return NextResponse.json({
-          success: true,
-          data: employee || null
-        });
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: distributions
-      });
-    }
 
     // Real database query
     const staff = await db.staffProfile.findMany({

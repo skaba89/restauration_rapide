@@ -83,125 +83,6 @@ const Cell = dynamic(
 // Plan type definition (to avoid client-side Prisma import)
 type Plan = 'STARTER' | 'PRO' | 'BUSINESS' | 'ENTERPRISE';
 
-// Demo data
-const DEMO_SUBSCRIPTION_STATS = [
-  { plan: 'STARTER' as Plan, count: 28, revenue: 0, color: '#94a3b8' },
-  { plan: 'PRO' as Plan, count: 68, revenue: 3332000, color: '#8b5cf6' },
-  { plan: 'BUSINESS' as Plan, count: 42, revenue: 4158000, color: '#6366f1' },
-  { plan: 'ENTERPRISE' as Plan, count: 18, revenue: 4482000, color: '#4f46e5' },
-];
-
-const DEMO_REVENUE_DATA = [
-  { name: 'Jan', mrr: 8200000, newRevenue: 1200000, churn: 200000 },
-  { name: 'Feb', mrr: 8500000, newRevenue: 1100000, churn: 180000 },
-  { name: 'Mar', mrr: 8900000, newRevenue: 1300000, churn: 220000 },
-  { name: 'Apr', mrr: 9100000, newRevenue: 950000, churn: 250000 },
-  { name: 'May', mrr: 9800000, newRevenue: 1500000, churn: 190000 },
-  { name: 'Jun', mrr: 10500000, newRevenue: 1400000, churn: 210000 },
-  { name: 'Jul', mrr: 11972000, newRevenue: 1650000, churn: 180000 },
-];
-
-const DEMO_ACTIVE_SUBSCRIPTIONS = [
-  {
-    id: '1',
-    organization: { name: 'Le Groupe Savana', id: 'org-1' },
-    plan: 'BUSINESS' as Plan,
-    amount: 99000,
-    startDate: new Date('2024-01-15'),
-    endDate: new Date('2025-06-15'),
-    status: 'active',
-    autoRenew: true,
-  },
-  {
-    id: '2',
-    organization: { name: 'Saveurs d\'Afrique', id: 'org-2' },
-    plan: 'PRO' as Plan,
-    amount: 49000,
-    startDate: new Date('2024-02-20'),
-    endDate: new Date('2025-03-20'),
-    status: 'active',
-    autoRenew: true,
-  },
-  {
-    id: '3',
-    organization: { name: 'La Terrasse Grill', id: 'org-3' },
-    plan: 'ENTERPRISE' as Plan,
-    amount: 249000,
-    startDate: new Date('2023-11-20'),
-    endDate: new Date('2025-12-31'),
-    status: 'active',
-    autoRenew: true,
-  },
-  {
-    id: '4',
-    organization: { name: 'Café du Plateau', id: 'org-4' },
-    plan: 'PRO' as Plan,
-    amount: 49000,
-    startDate: new Date('2024-01-05'),
-    endDate: new Date('2025-04-01'),
-    status: 'cancelled',
-    autoRenew: false,
-  },
-  {
-    id: '5',
-    organization: { name: 'Maquis Chez Maman', id: 'org-5' },
-    plan: 'STARTER' as Plan,
-    amount: 0,
-    startDate: new Date('2024-04-18'),
-    endDate: null,
-    status: 'trial',
-    autoRenew: false,
-  },
-];
-
-const DEMO_PAYMENT_HISTORY = [
-  {
-    id: 'pay-1',
-    organization: 'Le Groupe Savana',
-    amount: 99000,
-    method: 'MOBILE_MONEY_ORANGE',
-    status: 'PAID',
-    date: new Date('2025-01-15'),
-    invoiceNumber: 'INV-2025-001',
-  },
-  {
-    id: 'pay-2',
-    organization: 'Saveurs d\'Afrique',
-    amount: 49000,
-    method: 'MOBILE_MONEY_MTN',
-    status: 'PAID',
-    date: new Date('2025-01-14'),
-    invoiceNumber: 'INV-2025-002',
-  },
-  {
-    id: 'pay-3',
-    organization: 'La Terrasse Grill',
-    amount: 249000,
-    method: 'BANK_TRANSFER',
-    status: 'PAID',
-    date: new Date('2025-01-10'),
-    invoiceNumber: 'INV-2025-003',
-  },
-  {
-    id: 'pay-4',
-    organization: 'Café du Plateau',
-    amount: 49000,
-    method: 'CARD',
-    status: 'FAILED',
-    date: new Date('2025-01-08'),
-    invoiceNumber: 'INV-2025-004',
-  },
-  {
-    id: 'pay-5',
-    organization: 'Le Petit Bistro',
-    amount: 49000,
-    method: 'MOBILE_MONEY_WAVE',
-    status: 'PENDING',
-    date: new Date('2025-01-12'),
-    invoiceNumber: 'INV-2025-005',
-  },
-];
-
 const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 const formatDate = (date: Date | string) => {
   return new Date(date).toLocaleDateString('fr-FR', {
@@ -235,10 +116,10 @@ const getPaymentMethodLabel = (method: string) => {
 
 export default function SubscriptionsPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [subscriptionStats, setSubscriptionStats] = useState(DEMO_SUBSCRIPTION_STATS);
-  const [revenueData, setRevenueData] = useState(DEMO_REVENUE_DATA);
-  const [activeSubscriptions, setActiveSubscriptions] = useState(DEMO_ACTIVE_SUBSCRIPTIONS);
-  const [paymentHistory, setPaymentHistory] = useState(DEMO_PAYMENT_HISTORY);
+  const [subscriptionStats, setSubscriptionStats] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
+  const [activeSubscriptions, setActiveSubscriptions] = useState([]);
+  const [paymentHistory, setPaymentHistory] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year'>('month');
 
   useEffect(() => {

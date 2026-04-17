@@ -115,7 +115,7 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/expenses/categories?demo=true');
+      const response = await fetch('/api/expenses/categories');
       const data = await response.json();
       
       if (data.success) {
@@ -147,7 +147,6 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
         body: JSON.stringify({
           ...newCategory,
           budget: newCategory.budget ? parseFloat(newCategory.budget) : null,
-          demo: true,
         }),
       });
 
@@ -186,7 +185,6 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
         body: JSON.stringify({
           id: editingCategory.id,
           ...editingCategory,
-          demo: true,
         }),
       });
 
@@ -209,7 +207,7 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
   // Delete category
   const handleDeleteCategory = async (id: string) => {
     try {
-      const response = await fetch(`/api/expenses/categories?id=${id}&demo=true`, {
+      const response = await fetch(`/api/expenses/categories?id=${id}`, {
         method: 'DELETE',
       });
 
@@ -237,7 +235,6 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
         body: JSON.stringify({
           id: category.id,
           isActive: !category.isActive,
-          demo: true,
         }),
       });
 

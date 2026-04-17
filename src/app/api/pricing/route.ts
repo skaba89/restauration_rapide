@@ -1,95 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Demo subscription plans data
-const DEMO_PLANS = [
-  {
-    id: 'plan_starter',
-    name: 'Starter',
-    slug: 'STARTER',
-    price: 29.99,
-    currency: 'EUR',
-    billingInterval: 'monthly',
-    maxRestaurants: 1,
-    maxUsers: 2,
-    features: JSON.stringify([
-      '1 restaurant/page public',
-      '2 comptes utilisateurs',
-      'Menu digital basique',
-      'Commandes en ligne',
-      'Paiement Mobile Money',
-    ]),
-    isPopular: false,
-    sortOrder: 1,
-    isActive: true,
-  },
-  {
-    id: 'plan_pro',
-    name: 'Pro',
-    slug: 'PRO',
-    price: 59.99,
-    currency: 'EUR',
-    billingInterval: 'monthly',
-    maxRestaurants: 3,
-    maxUsers: 5,
-    features: JSON.stringify([
-      '3 restaurants/pages publics',
-      '5 comptes utilisateurs',
-      'Tout Starter +',
-      'Réservations',
-      'Livraison & drivers',
-      'Programme de fidélité',
-    ]),
-    isPopular: true,
-    sortOrder: 2,
-    isActive: true,
-  },
-  {
-    id: 'plan_business',
-    name: 'Business',
-    slug: 'BUSINESS',
-    price: 79.99,
-    currency: 'EUR',
-    billingInterval: 'monthly',
-    maxRestaurants: 10,
-    maxUsers: 15,
-    features: JSON.stringify([
-      '10 restaurants/pages publics',
-      '15 comptes utilisateurs',
-      'Tout Pro +',
-      'Multi-succursales',
-      'Gestion des stocks',
-      'Rapports avancés',
-      'API access',
-    ]),
-    isPopular: false,
-    sortOrder: 3,
-    isActive: true,
-  },
-  {
-    id: 'plan_enterprise',
-    name: 'Enterprise',
-    slug: 'ENTERPRISE',
-    price: 199.99,
-    currency: 'EUR',
-    billingInterval: 'monthly',
-    maxRestaurants: -1, // Unlimited
-    maxUsers: -1, // Unlimited
-    features: JSON.stringify([
-      'Restaurants illimités',
-      'Utilisateurs illimités',
-      'Tout Business +',
-      'Multi-organisations',
-      'White-label',
-      'Support prioritaire',
-      'Formation incluse',
-    ]),
-    isPopular: false,
-    sortOrder: 4,
-    isActive: true,
-  },
-];
-
 // GET - Retrieve all subscription plans
 export async function GET(request: NextRequest) {
   try {
@@ -105,16 +16,7 @@ export async function GET(request: NextRequest) {
         orderBy: { sortOrder: 'asc' },
       });
     } catch {
-      console.log('Database not available, using demo data');
-    }
-
-    // If no plans in database, return demo data
-    if (plans.length === 0) {
-      plans = DEMO_PLANS.map(plan => ({
-        ...plan,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
+      console.log('Database not available');
     }
 
     // Parse features JSON for each plan
@@ -170,9 +72,7 @@ export async function POST(request: NextRequest) {
     // 2. Create a Stripe subscription
     // 3. Update the organization with subscription details
     // 4. Handle webhooks for payment confirmation
-
-    // For now, return a demo response
-    const plan = DEMO_PLANS.find(p => p.slug === planSlug);
+    const plan = null;
     
     return NextResponse.json({
       success: true,
@@ -189,7 +89,7 @@ export async function POST(request: NextRequest) {
         currentPeriodStart: new Date(),
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       },
-      note: 'Stripe integration pending. This is a demo response.',
+      note: 'Stripe integration pending.',
     });
   } catch (error) {
     console.error('Error creating subscription:', error);
@@ -216,7 +116,7 @@ export async function PUT(request: NextRequest) {
     // TODO: Implement Stripe subscription update
     // This would handle proration and immediate plan changes
 
-    const plan = DEMO_PLANS.find(p => p.slug === newPlanSlug);
+    const plan = null;
 
     return NextResponse.json({
       success: true,
@@ -227,7 +127,7 @@ export async function PUT(request: NextRequest) {
         planName: plan?.name,
         price: plan?.price,
       },
-      note: 'Stripe integration pending. This is a demo response.',
+      note: 'Stripe integration pending.',
     });
   } catch (error) {
     console.error('Error updating subscription:', error);
@@ -262,7 +162,7 @@ export async function DELETE(request: NextRequest) {
         status: 'canceled',
         canceledAt: new Date(),
       },
-      note: 'Stripe integration pending. This is a demo response.',
+      note: 'Stripe integration pending.',
     });
   } catch (error) {
     console.error('Error canceling subscription:', error);

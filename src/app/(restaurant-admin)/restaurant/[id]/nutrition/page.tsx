@@ -33,67 +33,12 @@ interface NutritionInfo {
   isGlutenFree: boolean;
 }
 
-const DEMO_NUTRITION: NutritionInfo[] = [
-  {
-    id: '1',
-    menuItemId: 'm1',
-    menuItemName: 'Attiéké Poisson',
-    calories: 450,
-    protein: 35,
-    carbs: 48,
-    fat: 12,
-    allergens: ['Poisson'],
-    isVegetarian: false,
-    isVegan: false,
-    isGlutenFree: true,
-  },
-  {
-    id: '2',
-    menuItemId: 'm2',
-    menuItemName: 'Riz Gras',
-    calories: 520,
-    protein: 15,
-    carbs: 65,
-    fat: 22,
-    allergens: [],
-    isVegetarian: true,
-    isVegan: true,
-    isGlutenFree: true,
-  },
-  {
-    id: '3',
-    menuItemId: 'm3',
-    menuItemName: 'Foutou Banane',
-    calories: 380,
-    protein: 8,
-    carbs: 72,
-    fat: 6,
-    allergens: [],
-    isVegetarian: true,
-    isVegan: true,
-    isGlutenFree: true,
-  },
-  {
-    id: '4',
-    menuItemId: 'm4',
-    menuItemName: 'Poulet Braisé',
-    calories: 350,
-    protein: 42,
-    carbs: 2,
-    fat: 18,
-    allergens: [],
-    isVegetarian: false,
-    isVegan: false,
-    isGlutenFree: true,
-  },
-];
-
 const ALLERGENS = ['Gluten', 'Lait', 'Œufs', 'Poisson', 'Fruits de mer', 'Arachides', 'Soja', 'Sésame'];
 
 export default function RestaurantNutritionPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [nutritionData, setNutritionData] = useState<NutritionInfo[]>(DEMO_NUTRITION);
+  const [nutritionData, setNutritionData] = useState<NutritionInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 

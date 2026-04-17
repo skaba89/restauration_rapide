@@ -82,7 +82,6 @@ export function IntegrationsManager() {
       try {
         setIsLoading(true);
         const params = new URLSearchParams({
-          demo: 'true',
           ...(activeTab !== 'all' && { type: activeTab }),
         });
         

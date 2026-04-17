@@ -29,48 +29,12 @@ interface Expense {
   notes?: string;
 }
 
-const DEMO_EXPENSES: Expense[] = [
-  {
-    id: '1',
-    description: 'Achat poisson frais',
-    category: 'Matières premières',
-    amount: 450000,
-    date: new Date().toISOString(),
-    status: 'PAID',
-    supplier: 'Poisserie du Port',
-  },
-  {
-    id: '2',
-    description: 'Facture électricité',
-    category: 'Utilities',
-    amount: 150000,
-    date: new Date(Date.now() - 2 * 86400000).toISOString(),
-    status: 'PAID',
-  },
-  {
-    id: '3',
-    description: 'Salaire personnel',
-    category: 'Salaires',
-    amount: 1480000,
-    date: new Date(Date.now() - 5 * 86400000).toISOString(),
-    status: 'PAID',
-  },
-  {
-    id: '4',
-    description: 'Loyer mensuel',
-    category: 'Loyer',
-    amount: 800000,
-    date: new Date(Date.now() + 5 * 86400000).toISOString(),
-    status: 'PENDING',
-  },
-];
-
 const CATEGORIES = ['Matières premières', 'Utilities', 'Salaires', 'Loyer', 'Équipement', 'Marketing', 'Autres'];
 
 export default function RestaurantExpensesPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [expenses, setExpenses] = useState<Expense[]>(DEMO_EXPENSES);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 

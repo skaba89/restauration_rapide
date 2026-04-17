@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Demo tables store (shared state for demo mode)
-let demoTablesStore: Record<string, unknown[]> = {};
-
 // POST - Add a table to a floor plan
 export async function POST(
   request: NextRequest,
@@ -26,7 +23,6 @@ export async function POST(
       isAccessible = false,
       isCombineable = true,
       restaurantId,
-      demo = false,
     } = body;
 
     // Validate required fields
@@ -40,39 +36,6 @@ export async function POST(
     // Calculate default dimensions based on shape
     const defaultWidth = shape === 'rectangle' ? 120 : shape === 'square' ? 70 : 80;
     const defaultHeight = shape === 'rectangle' ? 80 : shape === 'square' ? 70 : 80;
-
-    // Demo mode
-    if (demo || floorPlanId.startsWith('demo-')) {
-      const newTable = {
-        id: `demo-table-${Date.now()}`,
-        floorPlanId,
-        number,
-        shape,
-        capacity,
-        positionX,
-        positionY,
-        width: width || defaultWidth,
-        height: height || defaultHeight,
-        rotation,
-        status: 'available',
-        section: section || 'Salle Principale',
-        isVip,
-        isAccessible,
-        isCombineable,
-        createdAt: new Date(),
-      };
-      
-      if (!demoTablesStore[floorPlanId]) {
-        demoTablesStore[floorPlanId] = [];
-      }
-      demoTablesStore[floorPlanId].push(newTable);
-      
-      return NextResponse.json({
-        success: true,
-        table: newTable,
-        demo: true,
-      });
-    }
 
     // Check if table number already exists in this floor plan
     const existingTable = await db.table.findFirst({
@@ -173,17 +136,6 @@ export async function GET(
   try {
     const { id: floorPlanId } = await params;
     const { searchParams } = new URL(request.url);
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || floorPlanId.startsWith('demo-')) {
-      const demoTables = getDemoTablesForFloorPlan(floorPlanId);
-      return NextResponse.json({
-        success: true,
-        tables: demoTables,
-        demo: true,
-      });
-    }
 
     // Real database query
     const tables = await db.table.findMany({
@@ -238,7 +190,6 @@ export async function GET(
     return NextResponse.json({
       success: true,
       tables: transformedTables,
-      demo: false,
     });
   } catch (error) {
     console.error('Error fetching tables:', error);
@@ -257,23 +208,13 @@ export async function PUT(
   try {
     const { id: floorPlanId } = await params;
     const body = await request.json();
-    const { tables, demo = false } = body;
+    const { tables } = body;
 
     if (!Array.isArray(tables)) {
       return NextResponse.json(
         { success: false, error: 'Format de données invalide' },
         { status: 400 }
       );
-    }
-
-    // Demo mode
-    if (demo || floorPlanId.startsWith('demo-')) {
-      demoTablesStore[floorPlanId] = tables;
-      return NextResponse.json({
-        success: true,
-        message: 'Tables mises à jour avec succès',
-        demo: true,
-      });
     }
 
     // Real database update - use transaction

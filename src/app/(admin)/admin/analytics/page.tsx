@@ -92,72 +92,6 @@ const Legend = dynamic(
   { ssr: false }
 );
 
-// Demo data
-const DEMO_GROWTH_DATA = [
-  { month: 'Jan', organizations: 98, users: 1850, orders: 12500, revenue: 8200000 },
-  { month: 'Feb', organizations: 108, users: 2010, orders: 14200, revenue: 8500000 },
-  { month: 'Mar', organizations: 118, users: 2180, orders: 15800, revenue: 8900000 },
-  { month: 'Apr', organizations: 128, users: 2350, orders: 15100, revenue: 9100000 },
-  { month: 'May', organizations: 142, users: 2560, orders: 18200, revenue: 9800000 },
-  { month: 'Jun', organizations: 152, users: 2740, orders: 19500, revenue: 10500000 },
-  { month: 'Jul', organizations: 156, users: 2847, orders: 21000, revenue: 11972000 },
-];
-
-const DEMO_FEATURE_USAGE = [
-  { feature: 'Order Management', usage: 98, icon: ShoppingCart },
-  { feature: 'Reservations', usage: 72, icon: Calendar },
-  { feature: 'Delivery', usage: 65, icon: Truck },
-  { feature: 'Loyalty Program', usage: 48, icon: Star },
-  { feature: 'Kitchen Display', usage: 38, icon: Activity },
-  { feature: 'Analytics', usage: 82, icon: BarChart3 },
-];
-
-const DEMO_GEOGRAPHIC_DATA = [
-  { country: 'Côte d\'Ivoire', code: 'CI', count: 124, revenue: 8500000, percentage: 71 },
-  { country: 'Senegal', code: 'SN', count: 18, revenue: 1250000, percentage: 12 },
-  { country: 'Ghana', code: 'GH', count: 8, revenue: 980000, percentage: 8 },
-  { country: 'Nigeria', code: 'NG', count: 4, revenue: 720000, percentage: 6 },
-  { country: 'Mali', code: 'ML', count: 2, revenue: 320000, percentage: 3 },
-];
-
-const DEMO_HOURLY_ORDERS = [
-  { hour: '06:00', orders: 12 },
-  { hour: '07:00', orders: 25 },
-  { hour: '08:00', orders: 45 },
-  { hour: '09:00', orders: 38 },
-  { hour: '10:00', orders: 32 },
-  { hour: '11:00', orders: 58 },
-  { hour: '12:00', orders: 125 },
-  { hour: '13:00', orders: 145 },
-  { hour: '14:00', orders: 98 },
-  { hour: '15:00', orders: 45 },
-  { hour: '16:00', orders: 38 },
-  { hour: '17:00', orders: 52 },
-  { hour: '18:00', orders: 78 },
-  { hour: '19:00', orders: 142 },
-  { hour: '20:00', orders: 168 },
-  { hour: '21:00', orders: 125 },
-  { hour: '22:00', orders: 82 },
-  { hour: '23:00', orders: 45 },
-];
-
-const DEMO_TOP_ORGANIZATIONS = [
-  { name: 'Le Groupe Savana', restaurants: 5, orders: 4890, revenue: 3850000, growth: 15.2 },
-  { name: 'La Terrasse Group', restaurants: 8, orders: 3520, revenue: 3120000, growth: 22.8 },
-  { name: 'Saveurs d\'Afrique', restaurants: 2, orders: 2180, revenue: 1650000, growth: 8.5 },
-  { name: 'Café du Plateau', restaurants: 2, orders: 1450, revenue: 980000, growth: -2.3 },
-  { name: 'Maquis Chez Maman', restaurants: 1, orders: 980, revenue: 720000, growth: 18.9 },
-];
-
-const DEMO_PLATFORM_METRICS = {
-  totalOrders: 45678,
-  monthlyOrders: 8924,
-  avgDeliveryTime: 28,
-  customerSatisfaction: 4.6,
-  activeDrivers: 156,
-  peakHourOrders: 168,
-};
-
 const COLORS = ['#8b5cf6', '#6366f1', '#4f46e5', '#a78bfa', '#c4b5fd'];
 
 const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
@@ -165,12 +99,12 @@ const formatNumber = (num: number) => num?.toLocaleString('fr-FR') || '0';
 
 export default function AnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [growthData, setGrowthData] = useState(DEMO_GROWTH_DATA);
-  const [featureUsage, setFeatureUsage] = useState(DEMO_FEATURE_USAGE);
-  const [geographicData, setGeographicData] = useState(DEMO_GEOGRAPHIC_DATA);
-  const [hourlyOrders, setHourlyOrders] = useState(DEMO_HOURLY_ORDERS);
-  const [topOrganizations, setTopOrganizations] = useState(DEMO_TOP_ORGANIZATIONS);
-  const [platformMetrics, setPlatformMetrics] = useState(DEMO_PLATFORM_METRICS);
+  const [growthData, setGrowthData] = useState([]);
+  const [featureUsage, setFeatureUsage] = useState([]);
+  const [geographicData, setGeographicData] = useState([]);
+  const [hourlyOrders, setHourlyOrders] = useState([]);
+  const [topOrganizations, setTopOrganizations] = useState([]);
+  const [platformMetrics, setPlatformMetrics] = useState([]);
   const [selectedMetric, setSelectedMetric] = useState<'revenue' | 'orders' | 'users'>('revenue');
 
   useEffect(() => {

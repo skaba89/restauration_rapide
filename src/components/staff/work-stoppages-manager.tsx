@@ -99,15 +99,6 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Annulé', color: 'bg-gray-100 text-gray-700' },
 };
 
-// Demo data
-const DEMO_STOPPAGES: WorkStoppage[] = [
-  { id: '1', staffId: '3', staffName: 'Ibrahim Keita', type: 'sick_leave', typeLabel: 'Maladie', startDate: new Date('2024-05-20'), endDate: new Date('2024-05-23'), durationDays: 4, reason: 'Grippe saisonnière', medicalCertificateUrl: '/documents/cert-maladie-001.pdf', certificateNumber: 'CERT-2024-05-001', prescribedBy: 'Dr. Mamadou Bah', hospitalName: 'Clinique Pasteur', status: 'active', statusLabel: 'En cours', extendedFrom: null, extensionCount: 0, socialSecurityNotified: true, socialSecurityRef: 'SS-2024-05-1234', approvedBy: 'Amadou Diallo', approvedAt: new Date('2024-05-20'), notes: null, createdAt: new Date('2024-05-20') },
-  { id: '2', staffId: '4', staffName: 'Marie Koulibaly', type: 'sick_leave', typeLabel: 'Maladie', startDate: new Date('2024-05-10'), endDate: new Date('2024-05-11'), durationDays: 2, reason: 'Consultation médicale', medicalCertificateUrl: '/documents/cert-maladie-002.pdf', certificateNumber: 'CERT-2024-05-002', prescribedBy: 'Dr. Aminata Diallo', hospitalName: 'Centre de Santé Matam', status: 'returned', statusLabel: 'Revenu', extendedFrom: null, extensionCount: 0, socialSecurityNotified: false, socialSecurityRef: null, approvedBy: 'Amadou Diallo', approvedAt: new Date('2024-05-10'), notes: null, createdAt: new Date('2024-05-10') },
-  { id: '3', staffId: '5', staffName: 'Moussa Camara', type: 'work_accident', typeLabel: 'Accident de travail', startDate: new Date('2024-04-25'), endDate: new Date('2024-04-30'), durationDays: 6, reason: 'Chute de moto en livraison', medicalCertificateUrl: '/documents/cert-accident-001.pdf', certificateNumber: 'ACC-2024-04-001', prescribedBy: 'Dr. Ibrahima Sylla', hospitalName: 'Hôpital National Ignace Deen', status: 'returned', statusLabel: 'Revenu', extendedFrom: null, extensionCount: 0, socialSecurityNotified: true, socialSecurityRef: 'ACC-TRAV-2024-056', approvedBy: 'Amadou Diallo', approvedAt: new Date('2024-04-25'), notes: 'Accident de travail - Déclaration effectuée', createdAt: new Date('2024-04-25') },
-  { id: '4', staffId: '6', staffName: 'Aissatou Traore', type: 'maternity', typeLabel: 'Maternité', startDate: new Date('2024-06-01'), endDate: new Date('2024-08-31'), durationDays: 92, reason: 'Congé de maternité', medicalCertificateUrl: '/documents/cert-maternite-001.pdf', certificateNumber: 'MAT-2024-001', prescribedBy: 'Dr. Fatoumata Keita', hospitalName: 'Clinique Sainte-Marie', status: 'active', statusLabel: 'En cours', extendedFrom: null, extensionCount: 0, socialSecurityNotified: true, socialSecurityRef: 'MAT-SEC-2024-089', approvedBy: 'Admin', approvedAt: new Date('2024-05-15'), notes: 'Accouchement prévu fin juin', createdAt: new Date('2024-05-15') },
-  { id: '5', staffId: '7', staffName: 'Sekou Konate', type: 'sick_leave', typeLabel: 'Maladie', startDate: new Date('2024-04-15'), endDate: new Date('2024-04-17'), durationDays: 3, reason: 'Paludisme', medicalCertificateUrl: '/documents/cert-maladie-003.pdf', certificateNumber: 'CERT-2024-04-003', prescribedBy: 'Dr. Moussa Conde', hospitalName: 'Centre de Santé Dixinn', status: 'returned', statusLabel: 'Revenu', extendedFrom: null, extensionCount: 0, socialSecurityNotified: false, socialSecurityRef: null, approvedBy: 'Amadou Diallo', approvedAt: new Date('2024-04-15'), notes: null, createdAt: new Date('2024-04-15') },
-];
-
 // Format date
 const formatDate = (date: Date | string) => {
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -115,7 +106,7 @@ const formatDate = (date: Date | string) => {
 };
 
 export function WorkStoppagesManager() {
-  const [stoppages, setStoppages] = useState<WorkStoppage[]>(DEMO_STOPPAGES);
+  const [stoppages, setStoppages] = useState<WorkStoppage[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');

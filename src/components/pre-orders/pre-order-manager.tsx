@@ -127,7 +127,7 @@ export function PreOrderManager() {
   const fetchPreOrders = async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ demo: 'true' });
+      const params = new URLSearchParams();
       if (selectedStatus !== 'all') params.append('status', selectedStatus);
       if (selectedDate) params.append('date', selectedDate);
       if (searchTerm) params.append('search', searchTerm);
@@ -154,7 +154,7 @@ export function PreOrderManager() {
   // Update pre-order status
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     try {
-      const response = await fetch('/api/pre-orders?demo=true', {
+      const response = await fetch('/api/pre-orders', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus })
@@ -175,7 +175,7 @@ export function PreOrderManager() {
     if (!confirm('Êtes-vous sûr de vouloir annuler cette pré-commande ?')) return;
     
     try {
-      const response = await fetch(`/api/pre-orders?demo=true&id=${id}`, {
+      const response = await fetch(`/api/pre-orders&id=${id}`, {
         method: 'DELETE'
       });
       

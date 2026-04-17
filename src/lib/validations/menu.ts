@@ -128,9 +128,7 @@ export const updateMenuSchema = z.object({
 export const menuFilterSchema = z.object({
   restaurantId: z.string().optional(),
   menuId: z.string().optional(),
-  isActive: z.string().optional(),
-  demo: z.string().optional(),
-});
+  isActive: z.string().optional(),});
 
 export type CreateMenuInput = z.infer<typeof createMenuSchema>;
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;

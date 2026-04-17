@@ -40,47 +40,16 @@ import {
 } from '@/components/ui/dialog';
 import { TableCard, TableData } from './table-card';
 
-// Demo servers
-const DEMO_SERVERS = [
-  { id: '1', name: 'Aïssata Traoré' },
-  { id: '2', name: 'Moussa Diallo' },
-  { id: '3', name: 'Kouamé Jean' },
-  { id: '4', name: 'Fatou Koné' },
-];
-
-// Demo tables with sections
-const DEMO_TABLES: TableData[] = [
-  // Salle Principale
-  { id: '1', number: 'T1', shape: 'round', capacity: 4, positionX: 50, positionY: 100, width: 80, height: 80, rotation: 0, status: 'occupied', currentPartySize: 3, serverName: 'Aïssata Traoré', seatedAt: new Date(Date.now() - 45 * 60000), section: 'Salle Principale' },
-  { id: '2', number: 'T2', shape: 'round', capacity: 4, positionX: 150, positionY: 100, width: 80, height: 80, rotation: 0, status: 'reserved', section: 'Salle Principale', reservationTime: '19:30', reservationName: 'Koné' },
-  { id: '3', number: 'T3', shape: 'round', capacity: 4, positionX: 250, positionY: 100, width: 80, height: 80, rotation: 0, status: 'occupied', currentPartySize: 4, serverName: 'Moussa Diallo', seatedAt: new Date(Date.now() - 90 * 60000), section: 'Salle Principale' },
-  { id: '4', number: 'T4', shape: 'square', capacity: 4, positionX: 350, positionY: 100, width: 70, height: 70, rotation: 0, status: 'cleaning', section: 'Salle Principale' },
-  { id: '5', number: 'T5', shape: 'round', capacity: 4, positionX: 50, positionY: 200, width: 80, height: 80, rotation: 0, status: 'reserved', section: 'Salle Principale', reservationTime: '20:00', reservationName: 'Diallo' },
-  // Terrasse
-  { id: '6', number: 'T6', shape: 'square', capacity: 4, positionX: 550, positionY: 100, width: 70, height: 70, rotation: 0, status: 'occupied', currentPartySize: 2, serverName: 'Fatou Koné', seatedAt: new Date(Date.now() - 30 * 60000), section: 'Terrasse' },
-  { id: '7', number: 'T7', shape: 'square', capacity: 4, positionX: 650, positionY: 100, width: 70, height: 70, rotation: 0, status: 'available', section: 'Terrasse' },
-  { id: '8', number: 'T8', shape: 'square', capacity: 4, positionX: 550, positionY: 200, width: 70, height: 70, rotation: 0, status: 'available', section: 'Terrasse' },
-  { id: '9', number: 'T9', shape: 'square', capacity: 4, positionX: 650, positionY: 200, width: 70, height: 70, rotation: 0, status: 'available', section: 'Terrasse' },
-  { id: '10', number: 'T10', shape: 'square', capacity: 4, positionX: 550, positionY: 300, width: 70, height: 70, rotation: 0, status: 'occupied', currentPartySize: 4, serverName: 'Kouamé Jean', seatedAt: new Date(Date.now() - 60 * 60000), section: 'Terrasse' },
-  // VIP
-  { id: '11', number: 'VIP1', shape: 'rectangle', capacity: 6, positionX: 50, positionY: 400, width: 120, height: 80, rotation: 0, status: 'available', section: 'VIP' },
-  { id: '12', number: 'VIP2', shape: 'rectangle', capacity: 6, positionX: 200, positionY: 400, width: 120, height: 80, rotation: 0, status: 'reserved', section: 'VIP', reservationTime: '20:30', reservationName: 'M. Touré' },
-  // Coins intimes
-  { id: '13', number: 'C1', shape: 'round', capacity: 2, positionX: 400, positionY: 400, width: 60, height: 60, rotation: 0, status: 'available', section: 'Coins Intimes' },
-  { id: '14', number: 'C2', shape: 'round', capacity: 2, positionX: 480, positionY: 400, width: 60, height: 60, rotation: 0, status: 'available', section: 'Coins Intimes' },
-  { id: '15', number: 'C3', shape: 'round', capacity: 2, positionX: 400, positionY: 480, width: 60, height: 60, rotation: 0, status: 'occupied', currentPartySize: 2, serverName: 'Aïssata Traoré', seatedAt: new Date(Date.now() - 20 * 60000), section: 'Coins Intimes' },
-];
-
 interface FloorPlanViewProps {
   tables?: TableData[];
   onTableStatusChange?: (tableId: string, status: TableData['status']) => void;
   onAssignServer?: (tableId: string, serverId: string) => void;
 }
 
-export function FloorPlanView({ 
-  tables: initialTables = DEMO_TABLES,
+export function FloorPlanView({
+  tables: initialTables = [],
   onTableStatusChange,
-  onAssignServer 
+  onAssignServer
 }: FloorPlanViewProps) {
   const [tables, setTables] = useState<TableData[]>(initialTables);
   const [selectedTable, setSelectedTable] = useState<TableData | null>(null);
@@ -91,7 +60,6 @@ export function FloorPlanView({
   useEffect(() => {
     const interval = setInterval(() => {
       // In real app, this would fetch from API or receive websocket updates
-      // For demo, we just update the elapsed times
     }, 60000);
 
     return () => clearInterval(interval);
@@ -107,7 +75,7 @@ export function FloorPlanView({
 
   // Handle server assignment
   const handleAssignServer = useCallback((tableId: string, serverId: string) => {
-    const server = DEMO_SERVERS.find(s => s.id === serverId);
+    const server = null;
     setTables(prev => prev.map(t => 
       t.id === tableId ? { ...t, serverId, serverName: server?.name } : t
     ));
@@ -399,10 +367,8 @@ export function FloorPlanView({
                     <SelectValue placeholder="Sélectionner un serveur" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DEMO_SERVERS.map(server => (
-                      <SelectItem key={server.id} value={server.id}>
-                        {server.name}
-                      </SelectItem>
+                    {([] as any[]).map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

@@ -12,7 +12,6 @@ interface DateAvailability {
   currentLoad: number;
 }
 
-// Demo booked dates (busy dates in the next 60 days)
 const generateDemoBookedDates = (): Set<string> => {
   const booked = new Set<string>();
   const today = new Date();
@@ -30,8 +29,6 @@ const generateDemoBookedDates = (): Set<string> => {
   return booked;
 };
 
-const DEMO_BOOKED_DATES = generateDemoBookedDates();
-
 // GET - Check availability
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
@@ -42,7 +39,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   // If checking a single date
   if (date) {
-    const isBooked = DEMO_BOOKED_DATES.has(date);
+    const bookedDates = new Set<string>();
+    const isBooked = bookedDates.has(date);
     const checkDate = new Date(date);
     const dayOfWeek = checkDate.getDay();
 
@@ -74,8 +72,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     return NextResponse.json({
       success: true,
       availability,
-      pricing,
-      demo: true
+      pricing
     });
   }
 
@@ -94,7 +91,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const current = new Date(start);
   while (current <= end) {
     const dateStr = current.toISOString().split('T')[0];
-    const isBooked = DEMO_BOOKED_DATES.has(dateStr);
+    const bookedDates = new Set<string>();
+    const isBooked = bookedDates.has(dateStr);
     const dayOfWeek = current.getDay();
 
     availability.push({
@@ -122,8 +120,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   return NextResponse.json({
     success: true,
     availability,
-    summary,
-    demo: true
+    summary
   });
 });
 
@@ -140,7 +137,6 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   // In a real implementation, this would update the database
-  // For demo, we just return success
 
   return NextResponse.json({
     success: true,

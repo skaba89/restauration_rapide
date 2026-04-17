@@ -57,28 +57,6 @@ interface StaffMember {
   hourlyRate: number;
 }
 
-// Demo staff
-const DEMO_STAFF: StaffMember[] = [
-  { id: '1', firstName: 'Amadou', lastName: 'Diallo', role: 'manager', roleLabel: 'Directeur', status: 'active', hourlyRate: 15000 },
-  { id: '2', firstName: 'Fatou', lastName: 'Sylla', role: 'chef', roleLabel: 'Chef Cuisinier', status: 'active', hourlyRate: 12000 },
-  { id: '3', firstName: 'Ibrahim', lastName: 'Keita', role: 'cook', roleLabel: 'Cuisinier', status: 'active', hourlyRate: 8000 },
-  { id: '4', firstName: 'Marie', lastName: 'Koulibaly', role: 'waiter', roleLabel: 'Serveuse', status: 'active', hourlyRate: 5000 },
-  { id: '5', firstName: 'Moussa', lastName: 'Camara', role: 'delivery_driver', roleLabel: 'Livreur', status: 'active', hourlyRate: 5000 },
-  { id: '6', firstName: 'Aissatou', lastName: 'Traore', role: 'cashier', roleLabel: 'Caissière', status: 'active', hourlyRate: 6000 },
-  { id: '8', firstName: 'Fanta', lastName: 'Diarra', role: 'waiter', roleLabel: 'Serveuse', status: 'active', hourlyRate: 5000 },
-  { id: '9', firstName: 'Oumar', lastName: 'Bah', role: 'cleaner', roleLabel: 'Agent d\'entretien', status: 'active', hourlyRate: 4000 },
-];
-
-// Demo time entries
-const DEMO_TIME_ENTRIES: TimeEntry[] = [
-  { id: 'te1', staffId: '1', staffName: 'Amadou Diallo', role: 'manager', clockIn: new Date(Date.now() - 6 * 60 * 60 * 1000), clockOut: null, location: 'Restaurant Principal', status: 'clocked_in', hoursWorked: 6 },
-  { id: 'te2', staffId: '2', staffName: 'Fatou Sylla', role: 'chef', clockIn: new Date(Date.now() - 8 * 60 * 60 * 1000), clockOut: null, location: 'Cuisine', status: 'clocked_in', hoursWorked: 8 },
-  { id: 'te3', staffId: '3', staffName: 'Ibrahim Keita', role: 'cook', clockIn: new Date(Date.now() - 5 * 60 * 60 * 1000), clockOut: null, location: 'Cuisine', status: 'clocked_in', hoursWorked: 5 },
-  { id: 'te4', staffId: '4', staffName: 'Marie Koulibaly', role: 'waiter', clockIn: new Date(Date.now() - 4 * 60 * 60 * 1000), clockOut: null, location: 'Salle', status: 'clocked_in', hoursWorked: 4 },
-  { id: 'te5', staffId: '5', staffName: 'Moussa Camara', role: 'delivery_driver', clockIn: new Date(Date.now() - 3 * 60 * 60 * 1000), clockOut: null, location: 'Extérieur', status: 'clocked_in', hoursWorked: 3 },
-  { id: 'te6', staffId: '6', staffName: 'Aissatou Traore', role: 'cashier', clockIn: new Date(Date.now() - 8 * 60 * 60 * 1000), clockOut: new Date(Date.now() - 1 * 60 * 60 * 1000), location: 'Caisse', status: 'clocked_out', hoursWorked: 7 },
-];
-
 // Get initials
 const getInitials = (firstName: string, lastName: string) => 
   `${firstName[0]}${lastName[0]}`.toUpperCase();
@@ -104,7 +82,7 @@ const ROLE_COLORS: Record<string, string> = {
 export function TimeClock() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedStaffId, setSelectedStaffId] = useState<string>('');
-  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>(DEMO_TIME_ENTRIES);
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [location, setLocation] = useState('Restaurant Principal');
 
   // Update clock every second
@@ -141,7 +119,7 @@ export function TimeClock() {
   const handleClockAction = () => {
     if (!selectedStaffId) return;
     
-    const staff = DEMO_STAFF.find(s => s.id === selectedStaffId);
+    const staff = null;
     if (!staff) return;
 
     const currentEntry = getCurrentStatus(selectedStaffId);
@@ -232,7 +210,7 @@ export function TimeClock() {
               <div>
                 <p className="text-sm text-muted-foreground">Non pointés</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {DEMO_STAFF.filter(s => s.status === 'active' && !getCurrentStatus(s.id)).length}
+                  {0}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
@@ -273,7 +251,7 @@ export function TimeClock() {
                       <SelectValue placeholder="Sélectionner un employé" />
                     </SelectTrigger>
                     <SelectContent>
-                      {DEMO_STAFF.filter(s => s.status === 'active').map(s => {
+                      {[].map(s => {
                         const isClockedIn = !!getCurrentStatus(s.id);
                         return (
                           <SelectItem key={s.id} value={s.id}>
@@ -312,7 +290,7 @@ export function TimeClock() {
                 <div className="p-4 rounded-lg bg-muted/50">
                   {(() => {
                     const currentEntry = getCurrentStatus(selectedStaffId);
-                    const staff = DEMO_STAFF.find(s => s.id === selectedStaffId);
+                    const staff = null;
                     
                     if (currentEntry) {
                       return (
@@ -395,7 +373,7 @@ export function TimeClock() {
             <ScrollArea className="h-[300px]">
               <div className="space-y-3">
                 {activeEntries.map(entry => {
-                  const staff = DEMO_STAFF.find(s => s.id === entry.staffId);
+                  const staff = null;
                   const currentHours = calculateCurrentHours(entry);
                   
                   return (

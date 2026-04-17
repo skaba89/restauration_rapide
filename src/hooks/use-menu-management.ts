@@ -113,9 +113,6 @@ export function useMenuManagement(restaurantSlug?: string) {
       }
       
       // Fallback: fetch from menu API with restaurantId or demo
-      const demoRes = await fetch('/api/menu?demo=true');
-      const demoData = await demoRes.json();
-      
       // Try to fetch from API with restaurantId
       const params = new URLSearchParams();
       if (restaurantSlug) {
@@ -170,26 +167,6 @@ export function useMenuManagement(restaurantSlug?: string) {
 
   // Load demo data as fallback
   const loadDemoData = () => {
-    const demoCategories: MenuCategory[] = [
-      { id: 'cat-1', menuId: 'menu-1', name: 'Plats Principaux', slug: 'plats-principaux', description: 'Nos spécialités principales', icon: 'utensils', isActive: true, sortOrder: 1, _count: { items: 6 } },
-      { id: 'cat-2', menuId: 'menu-1', name: 'Accompagnements', slug: 'accompagnements', description: 'Frites et accompagnements', icon: 'cookie', isActive: true, sortOrder: 2, _count: { items: 2 } },
-      { id: 'cat-3', menuId: 'menu-1', name: 'Boissons', slug: 'boissons', description: 'Jus frais et boissons', icon: 'cup', isActive: true, sortOrder: 3, _count: { items: 2 } },
-      { id: 'cat-4', menuId: 'menu-1', name: 'Desserts', slug: 'desserts', description: 'Nos desserts maison', icon: 'cake', isActive: true, sortOrder: 4, _count: { items: 0 } },
-    ];
-
-    const demoItems: MenuItem[] = [
-      { id: '1', categoryId: 'cat-1', category: { id: 'cat-1', name: 'Plats Principaux' }, name: 'Attieké Poisson Grillé', slug: 'attieke-poisson', description: 'Attieké traditionnel avec poisson grillé', image: null, price: 8000, discountPrice: null, prepTime: 20, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: true, spicyLevel: 1, calories: 450 },
-      { id: '2', categoryId: 'cat-1', category: { id: 'cat-1', name: 'Plats Principaux' }, name: 'Kedjenou de Poulet', slug: 'kedjenou-poulet', description: 'Poulet braisé aux légumes, cuit à l\'étouffée', image: null, price: 7000, discountPrice: null, prepTime: 25, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, calories: 520 },
-      { id: '3', categoryId: 'cat-1', category: { id: 'cat-1', name: 'Plats Principaux' }, name: 'Thiéboudienne', slug: 'thieboudienne', description: 'Riz rouge au poisson et légumes', image: null, price: 7000, discountPrice: null, prepTime: 30, isAvailable: true, isFeatured: false, isPopular: true, isNew: true, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, calories: 480 },
-      { id: '4', categoryId: 'cat-1', category: { id: 'cat-1', name: 'Plats Principaux' }, name: 'Garba', slug: 'garba', description: 'Attiéké au thon et piment', image: null, price: 3500, discountPrice: null, prepTime: 15, isAvailable: true, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: true, spicyLevel: 2, calories: 380 },
-      { id: '5', categoryId: 'cat-1', category: { id: 'cat-1', name: 'Plats Principaux' }, name: 'Riz Gras', slug: 'riz-gras', description: 'Riz sauté à la viande', image: null, price: 5000, discountPrice: null, prepTime: 20, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, calories: 420 },
-      { id: '6', categoryId: 'cat-1', category: { id: 'cat-1', name: 'Plats Principaux' }, name: 'Foutou Banane', slug: 'foutou-banane', description: 'Pâte de banane plantain avec sauce', image: null, price: 6000, discountPrice: null, prepTime: 30, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, calories: 550 },
-      { id: '7', categoryId: 'cat-2', category: { id: 'cat-2', name: 'Accompagnements' }, name: 'Alloco Sauce Graine', slug: 'alloco-sauce', description: 'Bananes plantain frites avec sauce graine', image: null, price: 5000, discountPrice: null, prepTime: 15, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, calories: 320 },
-      { id: '8', categoryId: 'cat-2', category: { id: 'cat-2', name: 'Accompagnements' }, name: 'Banane Plantain Frite', slug: 'banane-frite', description: 'Bananes plantain frites', image: null, price: 2000, discountPrice: null, prepTime: 10, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, calories: 250 },
-      { id: '9', categoryId: 'cat-3', category: { id: 'cat-3', name: 'Boissons' }, name: 'Jus de Bissap', slug: 'jus-bissap', description: 'Jus naturel de fleur d\'hibiscus', image: null, price: 1500, discountPrice: null, prepTime: 5, isAvailable: true, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, calories: 80 },
-      { id: '10', categoryId: 'cat-3', category: { id: 'cat-3', name: 'Boissons' }, name: 'Jus de Gingembre', slug: 'jus-gingembre', description: 'Jus de gingembre frais et pimentant', image: null, price: 1500, discountPrice: null, prepTime: 5, isAvailable: true, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true, isSpicy: true, spicyLevel: 1, calories: 60 },
-    ];
-
     setCategories(demoCategories);
     setItems(demoItems);
     setMenu({

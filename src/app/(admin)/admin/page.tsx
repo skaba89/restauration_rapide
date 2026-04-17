@@ -43,17 +43,6 @@ interface Signup {
   date: string;
   status: string;
 }
-
-// Demo data for recent signups (consistent with dashboard)
-const DEMO_RECENT_SIGNUPS: Signup[] = [
-  { name: 'Le Jardin Secret', org: 'Jardin Group', plan: 'Pro', date: '2024-01-15', status: 'active' },
-  { name: 'Chez Awa', org: 'Awa Restaurant', plan: 'Starter', date: '2024-01-14', status: 'active' },
-  { name: 'Ghana Food Chain', org: 'GFC Ltd', plan: 'Business', date: '2024-01-13', status: 'active' },
-  { name: 'Mama Africa', org: 'Mama Africa SARL', plan: 'Pro', date: '2024-01-12', status: 'pending' },
-  { name: 'Café de la Gare', org: 'Café Group', plan: 'Starter', date: '2024-01-11', status: 'active' },
-];
-
-// Top countries (consistent demo data)
 const TOP_COUNTRIES = [
   { name: 'Côte d\'Ivoire', flag: '🇨🇮', count: 156, percentage: 41 },
   { name: 'Sénégal', flag: '🇸🇳', count: 98, percentage: 26 },
@@ -87,7 +76,6 @@ export default function AdminDashboard() {
       } catch (err) {
         console.error('Error fetching admin stats:', err);
         setError('Failed to load stats');
-        // Use demo data as fallback
         setStats({
           totalOrganizations: 127,
           activeOrganizations: 118,
@@ -325,7 +313,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {DEMO_RECENT_SIGNUPS.map((signup) => (
+                {[].map((signup: any) => (
                   <tr key={signup.name} className="border-b last:border-0">
                     <td className="py-3 px-2">
                       <span className="font-medium">{signup.name}</span>

@@ -17,12 +17,11 @@ export async function GET() {
     version: BUILD_VERSION,
     demoAccounts: [
       { email: 'admin@kfm-delice.com', password: 'AdminKFM2024!', role: 'SUPER_ADMIN' },
-      { email: 'demo@kfm-delice.com', password: 'demo123', role: 'ORG_ADMIN' },
       { email: 'contact@kfm-delice.com', password: 'KfmDelice2024!', role: 'ORG_ADMIN' },
       { email: 'amadou@kfm-delice.com', password: 'kfm2024!', role: 'RESTAURANT_MANAGER' },
     ],
     features: [
-      'Authentication with demo mode',
+      'Authentication',
       'Real-time sync via WebSocket',
       'Guinea as default country',
       'GNF as default currency',

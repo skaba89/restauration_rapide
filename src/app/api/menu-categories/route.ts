@@ -4,26 +4,12 @@ import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { generateSlug } from '@/lib/utils-helpers';
 import { NextRequest } from 'next/server';
 
-// Demo categories for fallback
-const DEMO_CATEGORIES = [
-  { id: 'demo-cat-1', name: 'Plats Principaux', slug: 'plats-principaux', description: 'Nos spécialités principales', icon: 'utensils', isActive: true, sortOrder: 1 },
-  { id: 'demo-cat-2', name: 'Accompagnements', slug: 'accompagnements', description: 'Frites et accompagnements', icon: 'cookie', isActive: true, sortOrder: 2 },
-  { id: 'demo-cat-3', name: 'Boissons', slug: 'boissons', description: 'Jus frais et boissons', icon: 'cup', isActive: true, sortOrder: 3 },
-  { id: 'demo-cat-4', name: 'Desserts', slug: 'desserts', description: 'Nos desserts maison', icon: 'cake', isActive: true, sortOrder: 4 },
-];
-
 // GET /api/menu-categories - List all categories
 export async function GET(request: NextRequest) {
   return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const menuId = searchParams.get('menuId');
     const restaurantId = searchParams.get('restaurantId');
-    const demo = searchParams.get('demo');
-
-    // Return demo data if requested or no IDs provided
-    if (demo === 'true' || (!menuId && !restaurantId)) {
-      return apiSuccess(DEMO_CATEGORIES);
-    }
 
     // If we have a menuId, get categories for that menu
     if (menuId) {

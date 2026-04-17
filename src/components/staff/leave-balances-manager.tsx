@@ -67,7 +67,6 @@ const LEAVE_TYPES = [
   { value: 'paternity', label: 'Paternité', color: 'bg-green-100 text-green-700 border-green-200' },
 ];
 
-// Demo staff
 const STAFF_LIST = [
   { id: '1', name: 'Amadou Diallo' },
   { id: '2', name: 'Fatou Sylla' },
@@ -79,28 +78,8 @@ const STAFF_LIST = [
   { id: '9', name: 'Oumar Bah' },
 ];
 
-// Demo balances
-const DEMO_BALANCES: LeaveBalance[] = [
-  { id: '1', staffId: '1', staffName: 'Amadou Diallo', year: 2024, leaveType: 'annual', leaveTypeLabel: 'Congés annuels', totalDays: 30, usedDays: 8, pendingDays: 2, remainingDays: 20, carriedOver: 5, carryOverExpiry: new Date('2024-03-31') },
-  { id: '2', staffId: '1', staffName: 'Amadou Diallo', year: 2024, leaveType: 'sick', leaveTypeLabel: 'Maladie', totalDays: 10, usedDays: 3, pendingDays: 0, remainingDays: 7, carriedOver: 0, carryOverExpiry: null },
-  { id: '3', staffId: '1', staffName: 'Amadou Diallo', year: 2024, leaveType: 'personal', leaveTypeLabel: 'Personnel', totalDays: 3, usedDays: 1, pendingDays: 0, remainingDays: 2, carriedOver: 0, carryOverExpiry: null },
-  { id: '11', staffId: '2', staffName: 'Fatou Sylla', year: 2024, leaveType: 'annual', leaveTypeLabel: 'Congés annuels', totalDays: 30, usedDays: 12, pendingDays: 5, remainingDays: 13, carriedOver: 0, carryOverExpiry: null },
-  { id: '12', staffId: '2', staffName: 'Fatou Sylla', year: 2024, leaveType: 'sick', leaveTypeLabel: 'Maladie', totalDays: 10, usedDays: 4, pendingDays: 0, remainingDays: 6, carriedOver: 0, carryOverExpiry: null },
-  { id: '21', staffId: '3', staffName: 'Ibrahim Keita', year: 2024, leaveType: 'annual', leaveTypeLabel: 'Congés annuels', totalDays: 25, usedDays: 6, pendingDays: 0, remainingDays: 19, carriedOver: 0, carryOverExpiry: null },
-  { id: '22', staffId: '3', staffName: 'Ibrahim Keita', year: 2024, leaveType: 'sick', leaveTypeLabel: 'Maladie', totalDays: 10, usedDays: 5, pendingDays: 0, remainingDays: 5, carriedOver: 0, carryOverExpiry: null },
-  { id: '31', staffId: '4', staffName: 'Marie Koulibaly', year: 2024, leaveType: 'annual', leaveTypeLabel: 'Congés annuels', totalDays: 25, usedDays: 4, pendingDays: 3, remainingDays: 18, carriedOver: 0, carryOverExpiry: null },
-  { id: '32', staffId: '4', staffName: 'Marie Koulibaly', year: 2024, leaveType: 'sick', leaveTypeLabel: 'Maladie', totalDays: 10, usedDays: 2, pendingDays: 0, remainingDays: 8, carriedOver: 0, carryOverExpiry: null },
-  { id: '41', staffId: '5', staffName: 'Moussa Camara', year: 2024, leaveType: 'annual', leaveTypeLabel: 'Congés annuels', totalDays: 22, usedDays: 3, pendingDays: 0, remainingDays: 19, carriedOver: 0, carryOverExpiry: null },
-  { id: '42', staffId: '5', staffName: 'Moussa Camara', year: 2024, leaveType: 'sick', leaveTypeLabel: 'Maladie', totalDays: 8, usedDays: 0, pendingDays: 0, remainingDays: 8, carriedOver: 0, carryOverExpiry: null },
-  { id: '51', staffId: '6', staffName: 'Aissatou Traore', year: 2024, leaveType: 'annual', leaveTypeLabel: 'Congés annuels', totalDays: 25, usedDays: 5, pendingDays: 2, remainingDays: 18, carriedOver: 0, carryOverExpiry: null },
-  { id: '52', staffId: '6', staffName: 'Aissatou Traore', year: 2024, leaveType: 'maternity', leaveTypeLabel: 'Maternité', totalDays: 90, usedDays: 0, pendingDays: 0, remainingDays: 90, carriedOver: 0, carryOverExpiry: null },
-  { id: '71', staffId: '8', staffName: 'Fanta Diarra', year: 2024, leaveType: 'annual', leaveTypeLabel: 'Congés annuels', totalDays: 25, usedDays: 2, pendingDays: 0, remainingDays: 23, carriedOver: 0, carryOverExpiry: null },
-  { id: '72', staffId: '8', staffName: 'Fanta Diarra', year: 2024, leaveType: 'sick', leaveTypeLabel: 'Maladie', totalDays: 10, usedDays: 0, pendingDays: 0, remainingDays: 10, carriedOver: 0, carryOverExpiry: null },
-  { id: '81', staffId: '9', staffName: 'Oumar Bah', year: 2024, leaveType: 'annual', leaveTypeLabel: 'Congés annuels', totalDays: 22, usedDays: 1, pendingDays: 0, remainingDays: 21, carriedOver: 0, carryOverExpiry: null },
-];
-
 export function LeaveBalancesManager() {
-  const [balances, setBalances] = useState<LeaveBalance[]>(DEMO_BALANCES);
+  const [balances, setBalances] = useState<LeaveBalance[]>([]);
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedStaffId, setSelectedStaffId] = useState('all');
   const [selectedLeaveType, setSelectedLeaveType] = useState('all');

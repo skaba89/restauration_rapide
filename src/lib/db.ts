@@ -1,3 +1,7 @@
+// ============================================
+// Restaurant OS - Database Connection
+// Production: database-only, no demo fallback
+// ============================================
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {
@@ -11,11 +15,11 @@ let connectionPromise: Promise<boolean> | null = null
 let connectionTestedAt = 0
 const CONNECTION_TEST_INTERVAL = 30000 // Re-test every 30s
 
-// Create Prisma client with error handling
+// Create Prisma client
 function createPrismaClient(): PrismaClient | null {
-  // Check if DATABASE_URL is set
   if (!process.env.DATABASE_URL) {
-    console.log('[DB] No DATABASE_URL set - running in demo mode')
+    console.error('[DB] CRITICAL: DATABASE_URL is not set. All database operations will fail.');
+    console.error('[DB] Set DATABASE_URL in your environment variables (.env or Render dashboard).');
     dbConnectionStatus = 'error'
     return null
   }
@@ -39,7 +43,7 @@ function createPrismaClient(): PrismaClient | null {
   }
 }
 
-// Export db - will be null if Prisma client creation fails
+// Export db - will be null if DATABASE_URL is not set
 export const db = globalForPrisma.prisma ?? createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production' && db) {
@@ -47,7 +51,6 @@ if (process.env.NODE_ENV !== 'production' && db) {
 }
 
 // Helper to check if database is available (fast, synchronous check)
-// Note: Returns true only if connection has been tested and confirmed
 export function isDatabaseAvailable(): boolean {
   return db !== null && dbConnectionStatus === 'connected'
 }
@@ -96,13 +99,13 @@ export function getDatabaseStatus(): 'unknown' | 'connected' | 'error' {
   return dbConnectionStatus
 }
 
-// Helper to mark database as unavailable (called when DB errors occur)
+// Helper to mark database as unavailable
 export function markDatabaseUnavailable(): void {
   dbConnectionStatus = 'error'
   connectionTestedAt = 0
 }
 
-// Test database connection (can be called explicitly)
+// Test database connection
 export async function testDatabaseConnection(): Promise<boolean> {
   return ensureDbConnection()
 }

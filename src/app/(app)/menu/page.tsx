@@ -101,7 +101,6 @@ export default function MenuPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isDemo, setIsDemo] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -139,7 +138,6 @@ export default function MenuPage() {
       
       if (result.success && result.data) {
         setMenuItems(result.data);
-        setIsDemo(result.source === 'demo');
         setLastSyncAt(new Date());
       }
     } catch (error) {
@@ -442,12 +440,6 @@ export default function MenuPage() {
           <h1 className="text-2xl font-bold">Menu</h1>
           <p className="text-muted-foreground">Gérez vos plats et accompagnements</p>
           <div className="flex items-center gap-3 mt-1">
-            {isDemo && (
-              <div className="flex items-center gap-1.5 text-amber-600 text-sm">
-                <AlertCircle className="h-4 w-4" />
-                Mode démo
-              </div>
-            )}
             <span className="text-sm text-muted-foreground">
               {menuItems.filter(i => i.isAvailable).length} disponible{menuItems.filter(i => i.isAvailable).length > 1 ? 's' : ''} / {menuItems.length} article{menuItems.length > 1 ? 's' : ''}
             </span>

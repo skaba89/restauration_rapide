@@ -53,78 +53,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Demo drivers
-const DEMO_DRIVERS = [
-  {
-    id: '1',
-    name: 'Kouassi Emmanuel',
-    phone: '07 11 12 13 14',
-    email: 'emmanuel.kouassi@email.com',
-    vehicleType: 'motorcycle',
-    vehiclePlate: 'AB-1234-CD',
-    status: 'online',
-    isAvailable: true,
-    rating: 4.8,
-    totalDeliveries: 247,
-    todayDeliveries: 12,
-    todayEarnings: 18500,
-    currentLocation: 'Cocody',
-    joinDate: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
-    notes: '',
-  },
-  {
-    id: '2',
-    name: 'Yao Koffi',
-    phone: '05 33 34 35 36',
-    email: 'koffi.yao@email.com',
-    vehicleType: 'motorcycle',
-    vehiclePlate: 'CD-5678-EF',
-    status: 'busy',
-    isAvailable: false,
-    rating: 4.6,
-    totalDeliveries: 189,
-    todayDeliveries: 8,
-    todayEarnings: 12400,
-    currentLocation: 'Plateau',
-    joinDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-    notes: 'Driver expérimenté',
-  },
-  {
-    id: '3',
-    name: 'Bamba Seydou',
-    phone: '01 44 45 46 47',
-    email: 'seydou.bamba@email.com',
-    vehicleType: 'bicycle',
-    vehiclePlate: null,
-    status: 'offline',
-    isAvailable: false,
-    rating: 4.9,
-    totalDeliveries: 312,
-    todayDeliveries: 0,
-    todayEarnings: 0,
-    currentLocation: null,
-    joinDate: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-    notes: 'Meilleur driver du mois de janvier',
-  },
-  {
-    id: '4',
-    name: 'Traoré Aïssata',
-    phone: '07 55 56 57 58',
-    email: 'aissata.traore@email.com',
-    vehicleType: 'motorcycle',
-    vehiclePlate: 'GH-9012-IJ',
-    status: 'online',
-    isAvailable: true,
-    rating: 4.7,
-    totalDeliveries: 156,
-    todayDeliveries: 6,
-    todayEarnings: 9200,
-    currentLocation: 'Yopougon',
-    joinDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    notes: '',
-  },
-];
-
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
 const formatDate = (date: Date) => new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -140,13 +68,13 @@ const getStatusColor = (status: string) => {
 
 export default function DriversPage() {
   const { toast } = useToast();
-  const [drivers, setDrivers] = useState(DEMO_DRIVERS);
+  const [drivers, setDrivers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState<typeof DEMO_DRIVERS[0] | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState<typeof null | null>(null);
   
   // New driver form state
   const [newDriver, setNewDriver] = useState({
@@ -159,7 +87,7 @@ export default function DriversPage() {
   });
 
   // Edit driver form state
-  const [editDriver, setEditDriver] = useState<typeof DEMO_DRIVERS[0] | null>(null);
+  const [editDriver, setEditDriver] = useState<typeof null | null>(null);
 
   const filteredDrivers = drivers.filter((d) => {
     if (filterStatus !== 'all' && d.status !== filterStatus) return false;
@@ -265,12 +193,12 @@ export default function DriversPage() {
     });
   };
 
-  const openEditDialog = (driver: typeof DEMO_DRIVERS[0]) => {
+  const openEditDialog = (driver: typeof null) => {
     setEditDriver({ ...driver });
     setIsEditDialogOpen(true);
   };
 
-  const openViewDialog = (driver: typeof DEMO_DRIVERS[0]) => {
+  const openViewDialog = (driver: typeof null) => {
     setSelectedDriver(driver);
     setIsViewDialogOpen(true);
   };

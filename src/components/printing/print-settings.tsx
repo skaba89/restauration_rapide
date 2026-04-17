@@ -41,7 +41,6 @@ import { PrinterList, PrinterStats } from './printer-list';
 import { PrintPreviewWithActions } from './print-preview';
 import {
   Printer as PrinterType,
-  DEMO_PRINTERS,
   getPrinterService,
 } from '@/lib/thermal-printer';
 
@@ -371,8 +370,7 @@ function PrinterDiscovery({ onDiscovered, className }: PrinterDiscoveryProps) {
 // ============================================
 
 export function PrintSettings() {
-  // Initialize with demo printers
-  const [printers, setPrinters] = useState<PrinterType[]>(DEMO_PRINTERS);
+  const [printers, setPrinters] = useState<PrinterType[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('printers');
 

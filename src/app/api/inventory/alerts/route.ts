@@ -7,90 +7,12 @@ import { NextRequest } from 'next/server';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { db } from '@/lib/db';
 
-// Demo alerts
-const DEMO_ALERTS = [
-  {
-    id: 'alert-1',
-    itemId: '3',
-    itemName: 'Tomates',
-    type: 'LOW_STOCK',
-    message: 'Stock bas: Tomates - 10 kg restant(s)',
-    threshold: 15,
-    currentQty: 10,
-    isRead: false,
-    isResolved: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'alert-2',
-    itemId: '11',
-    itemName: 'Attieké',
-    type: 'LOW_STOCK',
-    message: 'Stock bas: Attieké - 8 kg restant(s)',
-    threshold: 10,
-    currentQty: 8,
-    isRead: false,
-    isResolved: false,
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: 'alert-3',
-    itemId: '14',
-    itemName: 'Ail',
-    type: 'LOW_STOCK',
-    message: 'Stock bas: Ail - 4 kg restant(s)',
-    threshold: 5,
-    currentQty: 4,
-    isRead: true,
-    isResolved: false,
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-  },
-  {
-    id: 'alert-4',
-    itemId: '19',
-    itemName: 'Frites surgelées',
-    type: 'OUT_OF_STOCK',
-    message: 'Rupture de stock: Frites surgelées',
-    threshold: 5,
-    currentQty: 0,
-    isRead: false,
-    isResolved: false,
-    createdAt: new Date(Date.now() - 10800000).toISOString(),
-  },
-];
-
 // GET - List alerts
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
   const type = searchParams.get('type');
   const isRead = searchParams.get('isRead');
   const isResolved = searchParams.get('isResolved');
-
-  if (demo) {
-    let alerts = [...DEMO_ALERTS];
-
-    if (type) {
-      alerts = alerts.filter(a => a.type === type);
-    }
-    if (isRead !== null && isRead !== undefined) {
-      alerts = alerts.filter(a => a.isRead === (isRead === 'true'));
-    }
-    if (isResolved !== null && isResolved !== undefined) {
-      alerts = alerts.filter(a => a.isResolved === (isResolved === 'true'));
-    }
-
-    return apiSuccess({ 
-      alerts,
-      stats: {
-        total: DEMO_ALERTS.length,
-        lowStock: DEMO_ALERTS.filter(a => a.type === 'LOW_STOCK').length,
-        outOfStock: DEMO_ALERTS.filter(a => a.type === 'OUT_OF_STOCK').length,
-        unread: DEMO_ALERTS.filter(a => !a.isRead).length,
-        unresolved: DEMO_ALERTS.filter(a => !a.isResolved).length,
-      }
-    });
-  }
 
   try {
     const organizationId = searchParams.get('organizationId');
@@ -155,16 +77,11 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
 
   const { alertId, resolvedBy } = body;
 
   if (!alertId) {
     return apiError('ID d\'alerte requis', 400);
-  }
-
-  if (demo) {
-    return apiSuccess({ alertId, isResolved: true }, 'Alerte résolue');
   }
 
   try {

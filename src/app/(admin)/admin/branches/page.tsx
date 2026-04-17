@@ -85,7 +85,7 @@ export default function AdminBranchesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiGet<{ branches: Branch[] }>('/branches', { demo: true, includeStats: true });
+      const response = await apiGet<{ branches: Branch[] }>('/branches', { includeStats: true });
       if (response?.branches && response.branches.length > 0) {
         setBranches(response.branches);
       } else {

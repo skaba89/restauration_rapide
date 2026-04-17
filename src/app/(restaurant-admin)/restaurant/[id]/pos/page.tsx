@@ -45,19 +45,6 @@ const MENU_CATEGORIES = [
   { id: 'desserts', name: 'Desserts' },
 ];
 
-const DEMO_MENU_ITEMS = [
-  { id: '1', name: 'Attiéké Poisson', price: 3500, category: 'plats', popular: true },
-  { id: '2', name: 'Alloco Poisson', price: 2500, category: 'plats' },
-  { id: '3', name: 'Riz Gras', price: 3000, category: 'plats' },
-  { id: '4', name: 'Foutou Banane', price: 4000, category: 'plats', popular: true },
-  { id: '5', name: 'Poisson Braisé', price: 5000, category: 'grillades', popular: true },
-  { id: '6', name: 'Brochette Bœuf', price: 2500, category: 'grillades' },
-  { id: '7', name: 'Poulet Braisé', price: 4000, category: 'grillades', popular: true },
-  { id: '8', name: 'Bissap', price: 500, category: 'boissons', popular: true },
-  { id: '9', name: 'Gingembre', price: 500, category: 'boissons' },
-  { id: '10', name: 'Banane Flamboyante', price: 2000, category: 'desserts' },
-];
-
 interface CartItem {
   id: string;
   name: string;
@@ -97,7 +84,7 @@ export default function RestaurantPOSPage() {
   const [cashReceived, setCashReceived] = useState('');
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(DEMO_MENU_ITEMS);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -155,12 +142,10 @@ export default function RestaurantPOSPage() {
           }
         }
       }
-      
-      // Fallback sur demo data si aucun item trouvé
-      setMenuItems(DEMO_MENU_ITEMS);
+      setMenuItems([]);
     } catch (error) {
       console.error('Failed to load menu items:', error);
-      setMenuItems(DEMO_MENU_ITEMS);
+      setMenuItems([]);
     } finally {
       setLoading(false);
     }

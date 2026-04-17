@@ -262,7 +262,7 @@ export function WaitlistManager() {
   // Fetch waitlist data
   const fetchWaitlist = useCallback(async () => {
     try {
-      const response = await fetch('/api/waitlist?demo=true');
+      const response = await fetch('/api/waitlist');
       const data = await response.json();
       
       if (data.success) {
@@ -282,7 +282,7 @@ export function WaitlistManager() {
   // Fetch detailed stats
   const fetchDetailedStats = useCallback(async () => {
     try {
-      const response = await fetch('/api/waitlist/stats?demo=true');
+      const response = await fetch('/api/waitlist/stats');
       const data = await response.json();
       
       if (data.success) {
@@ -338,7 +338,6 @@ export function WaitlistManager() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newGuest,
-          demo: true,
         }),
       });
 
@@ -372,7 +371,7 @@ export function WaitlistManager() {
       const response = await fetch('/api/waitlist', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status, demo: true }),
+        body: JSON.stringify({ id, status }),
       });
 
       const data = await response.json();
@@ -415,7 +414,7 @@ export function WaitlistManager() {
   // Delete entry
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/waitlist?id=${id}&demo=true`, {
+      const response = await fetch(`/api/waitlist?id=${id}`, {
         method: 'DELETE',
       });
 
@@ -439,7 +438,7 @@ export function WaitlistManager() {
       const response = await fetch(`/api/waitlist/${entry.id}/notify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ demo: true }),
+        body: JSON.stringify({ }),
       });
 
       const data = await response.json();
@@ -462,7 +461,7 @@ export function WaitlistManager() {
       const response = await fetch(`/api/waitlist/${entry.id}/seat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ demo: true }),
+        body: JSON.stringify({ }),
       });
 
       const data = await response.json();
@@ -485,7 +484,7 @@ export function WaitlistManager() {
       const response = await fetch(`/api/waitlist/${entry.id}/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ demo: true }),
+        body: JSON.stringify({ }),
       });
 
       const data = await response.json();

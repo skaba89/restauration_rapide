@@ -15,189 +15,6 @@ function generateGiftCardCode(): string {
   return code;
 }
 
-// Demo gift cards data
-const DEMO_GIFT_CARDS = [
-  {
-    id: '1',
-    code: 'KFM-A7X2-M9P4',
-    initialAmount: 50000,
-    currentBalance: 50000,
-    status: 'active' as const,
-    buyerName: 'Koné Ibrahim',
-    buyerPhone: '+225 07 12 34 56 78',
-    recipientName: 'Diallo Fatou',
-    recipientPhone: '+225 05 98 76 54 32',
-    deliveryMethod: 'sms' as const,
-    purchasedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 363 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't1', giftCardId: '1', type: 'purchase' as const, amount: 50000, createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '2',
-    code: 'KFM-B3K8-N2W5',
-    initialAmount: 25000,
-    currentBalance: 12500,
-    status: 'active' as const,
-    buyerName: 'Touré Amadou',
-    buyerPhone: '+225 07 88 11 22 33',
-    recipientName: 'Bamba Seydou',
-    recipientPhone: '+225 05 44 55 66 77',
-    deliveryMethod: 'email' as const,
-    purchasedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 358 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't2', giftCardId: '2', type: 'purchase' as const, amount: 25000, createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-      { id: 't3', giftCardId: '2', type: 'redemption' as const, amount: 12500, orderId: 'ORD-2024-001', createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '3',
-    code: 'KFM-C5D1-H8R9',
-    initialAmount: 100000,
-    currentBalance: 0,
-    status: 'used' as const,
-    buyerName: 'Kouamé Jean',
-    buyerPhone: '+225 07 33 44 55 66',
-    recipientName: 'Yao Kouassi',
-    recipientPhone: '+225 05 11 22 33 44',
-    deliveryMethod: 'print' as const,
-    purchasedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't4', giftCardId: '3', type: 'purchase' as const, amount: 100000, createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-      { id: 't5', giftCardId: '3', type: 'redemption' as const, amount: 45000, orderId: 'ORD-2024-015', createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000) },
-      { id: 't6', giftCardId: '3', type: 'redemption' as const, amount: 55000, orderId: 'ORD-2024-028', createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '4',
-    code: 'KFM-D9F2-J4L7',
-    initialAmount: 30000,
-    currentBalance: 30000,
-    status: 'expired' as const,
-    buyerName: 'Traoré Aïssata',
-    buyerPhone: '+225 07 55 66 77 88',
-    recipientName: 'Sylla Fatoumata',
-    recipientPhone: '+225 05 99 88 77 66',
-    deliveryMethod: 'sms' as const,
-    purchasedAt: new Date(Date.now() - 400 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't7', giftCardId: '4', type: 'purchase' as const, amount: 30000, createdAt: new Date(Date.now() - 400 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '5',
-    code: 'KFM-E2G6-K1M3',
-    initialAmount: 75000,
-    currentBalance: 45000,
-    status: 'active' as const,
-    buyerName: 'Diarra Moussa',
-    buyerPhone: '+225 07 22 33 44 55',
-    recipientName: 'Coulibaly Mariam',
-    recipientPhone: '+225 05 66 77 88 99',
-    deliveryMethod: 'email' as const,
-    purchasedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 351 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't8', giftCardId: '5', type: 'purchase' as const, amount: 75000, createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) },
-      { id: 't9', giftCardId: '5', type: 'redemption' as const, amount: 30000, orderId: 'ORD-2024-042', createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '6',
-    code: 'KFM-F8H3-L5N2',
-    initialAmount: 15000,
-    currentBalance: 0,
-    status: 'cancelled' as const,
-    buyerName: 'Ouattara Issouf',
-    buyerPhone: '+225 07 11 99 88 77',
-    recipientName: 'Konaté Fanta',
-    recipientPhone: '+225 05 33 22 11 00',
-    deliveryMethod: 'print' as const,
-    purchasedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 360 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't10', giftCardId: '6', type: 'purchase' as const, amount: 15000, createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) },
-      { id: 't11', giftCardId: '6', type: 'refund' as const, amount: 15000, createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '7',
-    code: 'KFM-G1J7-M4P8',
-    initialAmount: 60000,
-    currentBalance: 60000,
-    status: 'active' as const,
-    buyerName: 'Sangaré Salimata',
-    buyerPhone: '+225 07 44 55 66 77',
-    recipientName: 'Keïta Abdoulaye',
-    recipientPhone: '+225 05 88 77 66 55',
-    deliveryMethod: 'sms' as const,
-    purchasedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 364 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't12', giftCardId: '7', type: 'purchase' as const, amount: 60000, createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '8',
-    code: 'KFM-H6K2-N9Q1',
-    initialAmount: 40000,
-    currentBalance: 18000,
-    status: 'active' as const,
-    buyerName: 'Cissé Moussa',
-    buyerPhone: '+225 07 77 88 99 00',
-    recipientName: 'Dembélé Aminata',
-    recipientPhone: '+225 05 22 11 00 99',
-    deliveryMethod: 'email' as const,
-    purchasedAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 344 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't13', giftCardId: '8', type: 'purchase' as const, amount: 40000, createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000) },
-      { id: 't14', giftCardId: '8', type: 'redemption' as const, amount: 12000, orderId: 'ORD-2024-035', createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000) },
-      { id: 't15', giftCardId: '8', type: 'redemption' as const, amount: 10000, orderId: 'ORD-2024-048', createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '9',
-    code: 'KFM-I3L9-P2R5',
-    initialAmount: 20000,
-    currentBalance: 20000,
-    status: 'active' as const,
-    buyerName: 'Kaba Ibrahima',
-    buyerPhone: '+225 07 00 11 22 33',
-    recipientName: 'Bah Aissatou',
-    recipientPhone: '+225 05 44 33 22 11',
-    deliveryMethod: 'print' as const,
-    purchasedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 362 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't16', giftCardId: '9', type: 'purchase' as const, amount: 20000, createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-  {
-    id: '10',
-    code: 'KFM-J7M1-Q6S3',
-    initialAmount: 80000,
-    currentBalance: 25000,
-    status: 'active' as const,
-    buyerName: 'Fofana Mamadou',
-    buyerPhone: '+225 07 66 77 88 99',
-    recipientName: 'Soumahoro Adama',
-    recipientPhone: '+225 05 00 99 88 77',
-    deliveryMethod: 'sms' as const,
-    purchasedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 355 * 24 * 60 * 60 * 1000),
-    transactions: [
-      { id: 't17', giftCardId: '10', type: 'purchase' as const, amount: 80000, createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) },
-      { id: 't18', giftCardId: '10', type: 'redemption' as const, amount: 35000, orderId: 'ORD-2024-038', createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000) },
-      { id: 't19', giftCardId: '10', type: 'redemption' as const, amount: 20000, orderId: 'ORD-2024-045', createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) }
-    ],
-  },
-];
-
 // Types
 interface GiftCardTransaction {
   id: string;
@@ -225,17 +42,16 @@ interface GiftCard {
 }
 
 // In-memory storage
-let giftCards: GiftCard[] = [...DEMO_GIFT_CARDS];
+let giftCards: GiftCard[] = [];
 
 // GET - List gift cards with filters
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
-  const demo = searchParams.get('demo') === 'true';
   const status = searchParams.get('status') || '';
   const search = searchParams.get('search') || '';
   const code = searchParams.get('code') || '';
 
-  let filteredCards = demo ? DEMO_GIFT_CARDS : giftCards;
+  let giftCards;;
 
   // Check balance by code
   if (code) {

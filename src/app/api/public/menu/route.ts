@@ -1,10 +1,8 @@
 // Public Menu API - Unified menu data endpoint for all clients (POS, public pages, admin)
 // Uses the correct Prisma schema: Restaurant -> Menu -> MenuCategory -> MenuItem
-// Falls back to demo-menu-store when database is unavailable
 import { NextRequest, NextResponse } from 'next/server';
 import { db, ensureDbConnection, markDatabaseUnavailable, getDatabaseStatus } from '@/lib/db';
 import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
-import { getDemoMenuByCategory } from '@/lib/demo-menu-store';
 import { buildCategoriesFromSimpleMenuItems } from '@/lib/menu-builders';
 
 // Cache-Control headers to prevent stale data in browsers and service workers
@@ -264,53 +262,17 @@ export async function GET(request: NextRequest) {
           }, { headers: NO_CACHE_HEADERS });
         }
       } catch (dbError) {
-        console.warn('[PUBLIC MENU] Database menu query failed, falling back to demo:', dbError);
+        console.warn('[PUBLIC MENU] Database menu query failed:', dbError);
         markDatabaseUnavailable();
       }
     }
 
-    // ---- DEMO FALLBACK ----
-    const demoCategories = getDemoMenuByCategory();
+    // No data available in database
     return NextResponse.json({
-      success: true,
-      data: {
-        restaurant: {
-          id: 'kfm-delice-default',
-          name: 'KFM DELICE',
-          slug: restaurantSlug || 'kfm-delice',
-          description: 'Restaurant fast-food guinéen - Saveurs authentiques',
-          logo: null,
-          coverImage: null,
-          phone: '+224623217240',
-          email: 'contact@kfm-delice.com',
-          address: 'Nongo',
-          city: 'Conakry',
-          district: 'Ratoma',
-          isOpen: true,
-          isBusy: false,
-          acceptsDelivery: true,
-          acceptsTakeaway: true,
-          acceptsDineIn: true,
-          deliveryFee: 5000,
-          minOrderAmount: 10000,
-          deliveryTime: 30,
-          rating: 4.5,
-          reviewCount: 0,
-          currency: { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
-        },
-        categories: demoCategories,
-        menus: [{
-          id: 'main-menu',
-          name: 'Menu Principal',
-          slug: 'menu-principal',
-          description: 'Menu complet KFM DELICE',
-          menuType: 'main',
-          categories: demoCategories,
-        }],
-      },
-      timestamp: new Date().toISOString(),
-      source: 'demo',
-    }, { headers: NO_CACHE_HEADERS });
+      success: false,
+      error: 'Menu non disponible',
+      source: 'database',
+    }, { status: 404, headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error('[PUBLIC MENU 500]', {
       message: error instanceof Error ? error.message : String(error),

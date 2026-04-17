@@ -32,45 +32,10 @@ interface Invoice {
   items: { description: string; quantity: number; unitPrice: number }[];
 }
 
-const DEMO_INVOICES: Invoice[] = [
-  {
-    id: '1',
-    invoiceNumber: 'Fac-2024-001',
-    customerName: 'Entreprise ABC',
-    customerPhone: '+224 620 00 00 01',
-    amount: 850000,
-    status: 'PAID',
-    date: new Date(Date.now() - 10 * 86400000).toISOString(),
-    dueDate: new Date(Date.now() - 5 * 86400000).toISOString(),
-    items: [{ description: 'Traiteur événement', quantity: 1, unitPrice: 850000 }],
-  },
-  {
-    id: '2',
-    invoiceNumber: 'Fac-2024-002',
-    customerName: 'SARL XYZ',
-    customerPhone: '+224 620 00 00 02',
-    amount: 350000,
-    status: 'PENDING',
-    date: new Date(Date.now() - 5 * 86400000).toISOString(),
-    dueDate: new Date(Date.now() + 5 * 86400000).toISOString(),
-    items: [{ description: 'Service traiteur', quantity: 1, unitPrice: 350000 }],
-  },
-  {
-    id: '3',
-    invoiceNumber: 'Fac-2024-003',
-    customerName: 'Restaurant voisin',
-    amount: 120000,
-    status: 'OVERDUE',
-    date: new Date(Date.now() - 30 * 86400000).toISOString(),
-    dueDate: new Date(Date.now() - 15 * 86400000).toISOString(),
-    items: [{ description: 'Fournitures', quantity: 1, unitPrice: 120000 }],
-  },
-];
-
 export default function RestaurantInvoicesPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [invoices, setInvoices] = useState<Invoice[]>(DEMO_INVOICES);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 

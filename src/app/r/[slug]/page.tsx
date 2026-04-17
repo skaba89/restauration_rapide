@@ -135,102 +135,6 @@ interface RestaurantData {
   }>;
 }
 
-// Demo restaurant data for fallback
-const DEMO_RESTAURANT_FALLBACK: RestaurantData = {
-  id: 'demo-restaurant-1',
-  name: 'KFM DELICE',
-  slug: 'kfm-delice',
-  description: 'Restaurant fast-food guinéen - Saveurs de Guinée, Côte d\'Ivoire et Sénégal',
-  logo: null,
-  coverImage: null,
-  phone: '+224623217240',
-  email: 'contact@kfm-delice.com',
-  address: 'Nongo',
-  city: 'Conakry',
-  district: 'Ratoma',
-  deliveryFee: 5000,
-  minOrderAmount: 10000,
-  deliveryTime: 30,
-  rating: 4.5,
-  reviewCount: 127,
-  isOpen: true,
-  acceptsDelivery: true,
-  acceptsTakeaway: true,
-  acceptsDineIn: true,
-  currency: { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
-  menus: [
-    {
-      id: 'menu-1',
-      name: 'Menu Principal',
-      slug: 'menu-principal',
-      description: 'Menu complet KFM DELICE',
-      menuType: 'main',
-      categories: [
-        {
-          id: 'cat-1',
-          name: 'Plats Ivoiriens',
-          slug: 'plats-ivoiriens',
-          description: 'Spécialités ivoiriennes',
-          items: [
-            { id: 'item-1', name: 'Attieké Poisson', slug: 'attieke-poisson', description: 'Semoule de manioc avec poisson grillé', price: 45000, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.8, reviewCount: 45, variants: [], options: [] },
-            { id: 'item-2', name: 'Alloco Sauce Graine', slug: 'alloco-sauce-graine', description: 'Bananes plantains frites sauce graine', price: 25000, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.5, reviewCount: 32, variants: [], options: [] },
-            { id: 'item-3', name: 'Garba', slug: 'garba', description: 'Attieké avec poisson frit', price: 30000, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: true, spicyLevel: 2, rating: 4.7, reviewCount: 67, variants: [], options: [] },
-          ],
-        },
-        {
-          id: 'cat-2',
-          name: 'Plats Sénégalais',
-          slug: 'plats-senegalais',
-          description: 'Spécialités sénégalaises',
-          items: [
-            { id: 'item-4', name: 'Thiéboudienne', slug: 'thieboudienne', description: 'Riz au poisson et légumes', price: 45000, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.9, reviewCount: 89, variants: [], options: [] },
-            { id: 'item-5', name: 'Yassa Poulet', slug: 'yassa-poulet', description: 'Poulet mariné au citron', price: 40000, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.6, reviewCount: 54, variants: [], options: [] },
-          ],
-        },
-        {
-          id: 'cat-3',
-          name: 'Grillades',
-          slug: 'grillades',
-          description: 'Grillades maison',
-          items: [
-            { id: 'item-6', name: 'Mix Grill', slug: 'mix-grill', description: 'Assortiment de grillades', price: 65000, isFeatured: true, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.8, reviewCount: 42, variants: [], options: [] },
-            { id: 'item-7', name: 'Poulet Braisé', slug: 'poulet-braise', description: 'Demi-poulet grillé', price: 35000, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.5, reviewCount: 67, variants: [], options: [] },
-          ],
-        },
-        {
-          id: 'cat-4',
-          name: 'Fast Food',
-          slug: 'fast-food',
-          description: 'Burgers et wraps',
-          items: [
-            { id: 'item-8', name: 'Burger KFM', slug: 'burger-kfm', description: 'Burger maison spécial', price: 25000, isFeatured: true, isPopular: true, isNew: true, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, rating: 4.6, reviewCount: 38, variants: [], options: [] },
-            { id: 'item-9', name: 'Chawarma Poulet', slug: 'chawarma-poulet', description: 'Chawarma au poulet', price: 20000, isFeatured: false, isPopular: true, isNew: false, isVegetarian: false, isVegan: false, isHalal: true, isGlutenFree: false, isSpicy: false, spicyLevel: 0, rating: 4.4, reviewCount: 52, variants: [], options: [] },
-          ],
-        },
-        {
-          id: 'cat-5',
-          name: 'Boissons',
-          slug: 'boissons',
-          description: 'Jus frais et boissons',
-          items: [
-            { id: 'item-10', name: 'Jus de Bissap', slug: 'jus-bissap', description: 'Jus naturel d\'hibiscus', price: 4000, isFeatured: false, isPopular: true, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true, isSpicy: false, spicyLevel: 0, rating: 4.7, reviewCount: 89, variants: [], options: [] },
-            { id: 'item-11', name: 'Jus de Gingembre', slug: 'jus-gingembre', description: 'Jus de gingembre frais', price: 4000, isFeatured: false, isPopular: false, isNew: false, isVegetarian: true, isVegan: true, isHalal: true, isGlutenFree: true, isSpicy: true, spicyLevel: 1, rating: 4.5, reviewCount: 45, variants: [], options: [] },
-          ],
-        },
-      ],
-    },
-  ],
-  hours: [
-    { dayOfWeek: 0, openTime: '10:00', closeTime: '22:00', isClosed: false },
-    { dayOfWeek: 1, openTime: '10:00', closeTime: '22:00', isClosed: false },
-    { dayOfWeek: 2, openTime: '10:00', closeTime: '22:00', isClosed: false },
-    { dayOfWeek: 3, openTime: '10:00', closeTime: '22:00', isClosed: false },
-    { dayOfWeek: 4, openTime: '10:00', closeTime: '22:00', isClosed: false },
-    { dayOfWeek: 5, openTime: '10:00', closeTime: '23:00', isClosed: false },
-    { dayOfWeek: 6, openTime: '10:00', closeTime: '23:00', isClosed: false },
-  ],
-};
-
 // Fetch restaurant data with fallback
 async function fetchRestaurant(slug: string): Promise<RestaurantData> {
   try {
@@ -239,7 +143,7 @@ async function fetchRestaurant(slug: string): Promise<RestaurantData> {
       console.warn('API returned non-OK status, using fallback data');
       // For kfm-delice, return fallback data instead of throwing
       if (slug === 'kfm-delice') {
-        return DEMO_RESTAURANT_FALLBACK;
+        throw error;
       }
       throw new Error('Restaurant non trouvé');
     }
@@ -247,7 +151,7 @@ async function fetchRestaurant(slug: string): Promise<RestaurantData> {
     if (!data.success || !data.data) {
       console.warn('API returned invalid data, using fallback');
       if (slug === 'kfm-delice') {
-        return DEMO_RESTAURANT_FALLBACK;
+        throw error;
       }
       throw new Error('Données invalides');
     }
@@ -256,7 +160,7 @@ async function fetchRestaurant(slug: string): Promise<RestaurantData> {
     console.error('Error fetching restaurant:', error);
     // For kfm-delice, always return fallback data
     if (slug === 'kfm-delice') {
-      return DEMO_RESTAURANT_FALLBACK;
+      throw error;
     }
     throw error;
   }

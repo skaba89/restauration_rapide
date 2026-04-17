@@ -102,111 +102,6 @@ interface InvoiceStats {
   paidAmount: number;
 }
 
-// Demo invoices
-const DEMO_INVOICES: Invoice[] = [
-  {
-    id: '1',
-    invoiceNumber: 'FAC-2024-001',
-    type: 'client',
-    status: 'paid',
-    clientName: 'Entreprise ABC',
-    clientEmail: 'contact@abc.com',
-    clientPhone: '+224 620 00 00 10',
-    issueDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    dueDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [
-      { id: '1', description: 'Service traiteur - Réunion annuelle', quantity: 1, unitPrice: 2500000, totalPrice: 2500000 },
-      { id: '2', description: 'Location salle + décoration', quantity: 1, unitPrice: 500000, totalPrice: 500000 },
-    ],
-    subtotal: 3000000,
-    tax: 0,
-    discount: 0,
-    total: 3000000,
-    currency: 'GNF',
-    paidAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '2',
-    invoiceNumber: 'FAC-2024-002',
-    type: 'client',
-    status: 'sent',
-    clientName: 'Société XYZ',
-    clientEmail: 'xyz@company.com',
-    clientPhone: '+224 620 00 00 11',
-    issueDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [
-      { id: '1', description: 'Commande spéciale - 50 repas', quantity: 50, unitPrice: 25000, totalPrice: 1250000 },
-    ],
-    subtotal: 1250000,
-    tax: 0,
-    discount: 50000,
-    total: 1200000,
-    currency: 'GNF',
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '3',
-    invoiceNumber: 'FAC-2024-003',
-    type: 'supplier',
-    status: 'overdue',
-    clientName: 'Marché Central',
-    supplierName: 'Marché Central',
-    issueDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-    dueDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [
-      { id: '1', description: 'Légumes frais - Commande mensuelle', quantity: 1, unitPrice: 800000, totalPrice: 800000 },
-      { id: '2', description: 'Viandes - Approvisionnement', quantity: 1, unitPrice: 1200000, totalPrice: 1200000 },
-    ],
-    subtotal: 2000000,
-    tax: 0,
-    discount: 0,
-    total: 2000000,
-    currency: 'GNF',
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '4',
-    invoiceNumber: 'FAC-2024-004',
-    type: 'client',
-    status: 'draft',
-    clientName: 'Particulier - M. Diallo',
-    clientPhone: '+224 620 00 00 12',
-    issueDate: new Date().toISOString(),
-    dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [
-      { id: '1', description: 'Anniversaire - Menu prestige', quantity: 30, unitPrice: 35000, totalPrice: 1050000 },
-    ],
-    subtotal: 1050000,
-    tax: 0,
-    discount: 0,
-    total: 1050000,
-    currency: 'GNF',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '5',
-    invoiceNumber: 'FAC-2024-005',
-    type: 'supplier',
-    status: 'paid',
-    clientName: 'Boucherie Diallo',
-    supplierName: 'Boucherie Diallo',
-    issueDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [
-      { id: '1', description: 'Viande de bœuf - 50kg', quantity: 50, unitPrice: 25000, totalPrice: 1250000 },
-    ],
-    subtotal: 1250000,
-    tax: 0,
-    discount: 0,
-    total: 1250000,
-    currency: 'GNF',
-    paidAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
-
 // Format date
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -270,17 +165,16 @@ export default function InvoicesPage() {
   // Fetch data
   const fetchData = useCallback(async () => {
     setLoading(true);
-    // Simulate API call with demo data
     setTimeout(() => {
-      setInvoices(DEMO_INVOICES);
+      setInvoices([]);
       
       // Calculate stats
-      const totalInvoices = DEMO_INVOICES.length;
-      const totalPaid = DEMO_INVOICES.filter(i => i.status === 'paid').length;
-      const totalPending = DEMO_INVOICES.filter(i => i.status === 'sent' || i.status === 'draft').length;
-      const totalOverdue = DEMO_INVOICES.filter(i => i.status === 'overdue').length;
-      const totalAmount = DEMO_INVOICES.reduce((acc, i) => acc + i.total, 0);
-      const paidAmount = DEMO_INVOICES.filter(i => i.status === 'paid').reduce((acc, i) => acc + i.total, 0);
+      const totalInvoices = 0;
+      const totalPaid = [].length;
+      const totalPending = [].length;
+      const totalOverdue = [].length;
+      const totalAmount = [].reduce((acc: number, i: any) => acc + i.total, 0);
+      const paidAmount = [].reduce((acc, i) => acc + i.total, 0);
       
       setStats({
         totalInvoices,

@@ -173,32 +173,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
     const restaurantId = searchParams.get('restaurantId');
-    const demo = searchParams.get('demo') === 'true';
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const period = searchParams.get('period') || 'month'; // today, week, month, year
-
-    // Return demo data if requested or no organizationId
-    if (demo || !organizationId) {
-      let expenses = getDemoExpenses();
-
-      // Apply date filters
-      if (startDate) {
-        const start = new Date(startDate);
-        expenses = expenses.filter(e => new Date(e.date) >= start);
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        expenses = expenses.filter(e => new Date(e.date) <= end);
-      }
-
-      const summary = calculateSummary(expenses);
-
-      return NextResponse.json({
-        success: true,
-        data: summary,
-      });
-    }
 
     // Real database query
     const where: Record<string, unknown> = { organizationId };

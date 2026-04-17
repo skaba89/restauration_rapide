@@ -3,143 +3,6 @@ import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { NextRequest } from 'next/server';
 
-// Demo tracking data
-const DEMO_TRACKING: Record<string, any> = {
-  'demo-ord-1': {
-    orderId: 'demo-ord-1',
-    orderNumber: 'ORD-2024-0145',
-    status: 'PREPARING',
-    statusHistory: [
-      { status: 'PENDING', timestamp: new Date(Date.now() - 15 * 60000), note: 'Commande reçue' },
-      { status: 'CONFIRMED', timestamp: new Date(Date.now() - 14 * 60000), note: 'Commande confirmée' },
-      { status: 'PREPARING', timestamp: new Date(Date.now() - 10 * 60000), note: 'En préparation' },
-    ],
-    estimatedReadyTime: new Date(Date.now() + 10 * 60000),
-    estimatedDeliveryTime: null,
-    restaurant: {
-      name: 'KFM DELICE',
-      address: 'Conakry, Kaloum',
-      phone: '+224 622 12 34 56',
-      coordinates: { lat: 9.6412, lng: -13.5784 },
-    },
-    customer: {
-      name: 'Amadou Diallo',
-      phone: '+224 622 12 34 57',
-    },
-    delivery: null,
-    items: [
-      { name: 'Thiéboudienne', quantity: 2 },
-      { name: 'Jus de Bissap', quantity: 2 },
-    ],
-    total: 15000,
-    paymentMethod: 'Orange Money',
-    paymentStatus: 'PAID',
-  },
-  'demo-ord-2': {
-    orderId: 'demo-ord-2',
-    orderNumber: 'ORD-2024-0144',
-    status: 'OUT_FOR_DELIVERY',
-    statusHistory: [
-      { status: 'PENDING', timestamp: new Date(Date.now() - 45 * 60000), note: 'Commande reçue' },
-      { status: 'CONFIRMED', timestamp: new Date(Date.now() - 44 * 60000), note: 'Commande confirmée' },
-      { status: 'PREPARING', timestamp: new Date(Date.now() - 40 * 60000), note: 'En préparation' },
-      { status: 'READY', timestamp: new Date(Date.now() - 15 * 60000), note: 'Commande prête' },
-      { status: 'OUT_FOR_DELIVERY', timestamp: new Date(Date.now() - 10 * 60000), note: 'En livraison' },
-    ],
-    estimatedReadyTime: new Date(Date.now() - 15 * 60000),
-    estimatedDeliveryTime: new Date(Date.now() + 5 * 60000),
-    restaurant: {
-      name: 'KFM DELICE',
-      address: 'Conakry, Kaloum',
-      phone: '+224 622 12 34 56',
-      coordinates: { lat: 9.6412, lng: -13.5784 },
-    },
-    customer: {
-      name: 'Fatou Sylla',
-      phone: '+224 622 65 43 21',
-      address: 'Conakry, Dixinn',
-    },
-    delivery: {
-      status: 'IN_TRANSIT',
-      driver: {
-        id: 'driver-1',
-        name: 'Mamadou Touré',
-        phone: '+224 622 11 11 11',
-        avatar: null,
-        vehicleType: 'motorcycle',
-        rating: 4.8,
-      },
-      currentLocation: { lat: 9.6350, lng: -13.5850 },
-      lastLocationUpdate: new Date(Date.now() - 1 * 60000),
-      distanceRemaining: 2.5,
-      timeRemaining: 5,
-      pickupLocation: { lat: 9.6412, lng: -13.5784, address: 'Conakry, Kaloum' },
-      dropoffLocation: { lat: 9.6289, lng: -13.5956, address: 'Conakry, Dixinn' },
-      trackingEvents: [
-        { event: 'DRIVER_ASSIGNED', timestamp: new Date(Date.now() - 12 * 60000), note: 'Livreur assigné' },
-        { event: 'DRIVER_ARRIVED', timestamp: new Date(Date.now() - 10 * 60000), note: 'Livreur arrivé au restaurant' },
-        { event: 'PICKED_UP', timestamp: new Date(Date.now() - 8 * 60000), note: 'Commande récupérée' },
-        { event: 'IN_TRANSIT', timestamp: new Date(Date.now() - 8 * 60000), note: 'En route' },
-      ],
-    },
-    items: [
-      { name: 'Yassa Poulet', quantity: 1 },
-      { name: 'Attiéké', quantity: 2 },
-    ],
-    total: 12500,
-    paymentMethod: 'MTN MoMo',
-    paymentStatus: 'PAID',
-  },
-  'demo-ord-3': {
-    orderId: 'demo-ord-3',
-    orderNumber: 'ORD-2024-0143',
-    status: 'DELIVERED',
-    statusHistory: [
-      { status: 'PENDING', timestamp: new Date(Date.now() - 90 * 60000), note: 'Commande reçue' },
-      { status: 'CONFIRMED', timestamp: new Date(Date.now() - 89 * 60000), note: 'Commande confirmée' },
-      { status: 'PREPARING', timestamp: new Date(Date.now() - 85 * 60000), note: 'En préparation' },
-      { status: 'READY', timestamp: new Date(Date.now() - 60 * 60000), note: 'Commande prête' },
-      { status: 'OUT_FOR_DELIVERY', timestamp: new Date(Date.now() - 55 * 60000), note: 'En livraison' },
-      { status: 'DELIVERED', timestamp: new Date(Date.now() - 30 * 60000), note: 'Livrée' },
-    ],
-    estimatedReadyTime: new Date(Date.now() - 60 * 60000),
-    estimatedDeliveryTime: new Date(Date.now() - 30 * 60000),
-    restaurant: {
-      name: 'KFM DELICE',
-      address: 'Conakry, Kaloum',
-      phone: '+224 622 12 34 56',
-      coordinates: { lat: 9.6412, lng: -13.5784 },
-    },
-    customer: {
-      name: 'Ibrahima Keita',
-      phone: '+224 622 11 12 22',
-    },
-    delivery: {
-      status: 'DELIVERED',
-      driver: {
-        id: 'driver-2',
-        name: 'Fatou Sow',
-        phone: '+224 622 22 22 22',
-        avatar: null,
-        vehicleType: 'motorcycle',
-        rating: 4.6,
-      },
-      deliveredAt: new Date(Date.now() - 30 * 60000),
-      deliveryProof: {
-        type: 'signature',
-        timestamp: new Date(Date.now() - 30 * 60000),
-      },
-    },
-    items: [
-      { name: 'Kedjenou', quantity: 2 },
-      { name: 'Alloco', quantity: 3 },
-    ],
-    total: 18500,
-    paymentMethod: 'Cash',
-    paymentStatus: 'PAID',
-  },
-};
-
 // GET /api/tracking/[orderId] - Get order tracking info
 export async function GET(
   request: NextRequest,
@@ -148,46 +11,6 @@ export async function GET(
   return withErrorHandler(async () => {
     const { orderId } = await params;
     const { searchParams } = new URL(request.url);
-    const demo = searchParams.get('demo');
-
-    // Return demo data for demo mode or if orderId starts with 'demo'
-    if (demo === 'true' || orderId.startsWith('demo')) {
-      const tracking = DEMO_TRACKING[orderId];
-      
-      if (!tracking) {
-        // Generate a generic tracking response for any demo order
-        const genericTracking = {
-          orderId,
-          orderNumber: orderId.replace('demo-ord-', 'ORD-2024-'),
-          status: 'CONFIRMED',
-          statusHistory: [
-            { status: 'PENDING', timestamp: new Date(Date.now() - 10 * 60000), note: 'Commande reçue' },
-            { status: 'CONFIRMED', timestamp: new Date(Date.now() - 9 * 60000), note: 'Commande confirmée' },
-          ],
-          estimatedReadyTime: new Date(Date.now() + 15 * 60000),
-          estimatedDeliveryTime: null,
-          restaurant: {
-            name: 'KFM DELICE',
-            address: 'Conakry, Kaloum',
-            phone: '+224 622 12 34 56',
-            coordinates: { lat: 9.6412, lng: -13.5784 },
-          },
-          customer: {
-            name: 'Client',
-            phone: '+224 6XX XXX XXX',
-          },
-          delivery: null,
-          items: [],
-          total: 0,
-          paymentMethod: 'Orange Money',
-          paymentStatus: 'PAID',
-        };
-        
-        return apiSuccess(genericTracking);
-      }
-      
-      return apiSuccess(tracking);
-    }
 
     // Fetch real order data - try by ID first, then by orderNumber
     try {
@@ -367,8 +190,7 @@ export async function GET(
 
       return apiSuccess(tracking);
     } catch (error) {
-      // Fallback to demo data
-      return apiSuccess(DEMO_TRACKING['demo-ord-1']);
+      return apiSuccess([]);
     }
   });
 }

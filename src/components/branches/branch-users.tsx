@@ -65,15 +65,6 @@ const ROLE_CONFIG: Record<string, { label: string; color: string; icon: React.El
   staff: { label: 'Employé', color: 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300', icon: User },
 };
 
-// Demo users data
-const DEMO_AVAILABLE_USERS: AvailableUser[] = [
-  { id: 'user-008', name: 'Kadia Touré', email: 'kadia@kfm-delice.com', phone: '+224 66 555 66 77' },
-  { id: 'user-009', name: 'Moussa Sylla', email: 'moussa@kfm-delice.com', phone: '+224 66 666 77 88' },
-  { id: 'user-010', name: 'Aminata Diallo', email: 'aminata@kfm-delice.com', phone: '+224 66 777 88 99' },
-  { id: 'user-011', name: 'Sekou Condé', email: 'sekou@kfm-delice.com', phone: '+224 66 888 99 00' },
-  { id: 'user-012', name: 'Fatoumata Bamba', email: 'fatoumata@kfm-delice.com', phone: '+224 66 999 00 11' },
-];
-
 interface BranchUserAssignmentProps {
   branchId: string;
   initialUsers?: BranchUser[];
@@ -112,7 +103,7 @@ export function BranchUserAssignment({ branchId, initialUsers, onUpdate }: Branc
       return;
     }
 
-    const userToAdd = DEMO_AVAILABLE_USERS.find(u => u.id === selectedUser);
+    const userToAdd = null;
     if (!userToAdd) return;
 
     const newUser: BranchUser = {
@@ -210,9 +201,9 @@ export function BranchUserAssignment({ branchId, initialUsers, onUpdate }: Branc
                       <SelectValue placeholder="Sélectionner un utilisateur" />
                     </SelectTrigger>
                     <SelectContent>
-                      {DEMO_AVAILABLE_USERS
-                        .filter(u => !users.find(bu => bu.userId === u.id))
-                        .map((user) => (
+                      {(allUsers || [])
+                        .filter((u: any) => !users.find(bu => bu.userId === u.id))
+                        .map((user: any) => (
                           <SelectItem key={user.id} value={user.id}>
                             <div className="flex items-center gap-2">
                               <Avatar className="h-6 w-6">

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getOrganizationCurrencyCode } from '@/lib/org-settings';
 
-// Demo recurring expenses for development
 function getDemoRecurringExpenses() {
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -97,20 +96,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
-    const demo = searchParams.get('demo') === 'true';
     const isActive = searchParams.get('isActive');
-
-    // Return demo data if requested or no organizationId
-    if (demo || !organizationId) {
-      let data = getDemoRecurringExpenses();
-      if (isActive !== null && isActive !== undefined) {
-        data = data.filter(e => e.isActive === (isActive === 'true'));
-      }
-      return NextResponse.json({
-        success: true,
-        data,
-      });
-    }
 
     // Real database query
     const where: Record<string, unknown> = { organizationId };
@@ -160,7 +146,6 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       notes,
       autoCreate = true,
-      demo = false,
     } = body;
 
     // Validation
@@ -177,31 +162,6 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Fréquence invalide' },
         { status: 400 }
       );
-    }
-
-    // Demo mode
-    if (demo || !organizationId) {
-      const newRecurring = {
-        id: `rec-${Date.now()}`,
-        name,
-        description,
-        amount: parseFloat(amount),
-        currency: currency || 'GNF',
-        frequency,
-        nextDueDate: new Date(nextDueDate),
-        category: category || 'other',
-        supplierName,
-        paymentMethod,
-        notes,
-        isActive: true,
-        autoCreate,
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: newRecurring,
-        message: 'Dépense récurrente créée avec succès',
-      });
     }
 
     // Get organization currency if not specified
@@ -253,7 +213,6 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Demo mode
     if (!organizationId) {
       return NextResponse.json({
         success: true,
@@ -295,7 +254,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Demo mode
     if (!organizationId) {
       return NextResponse.json({
         success: true,

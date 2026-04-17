@@ -143,12 +143,12 @@ export default function LoginPage() {
     }
   };
   
-  // Demo login handlers - use real API with demo credentials
+  // Login handler
   const handleDemoLogin = async () => {
     try {
       const result = await loginMutation.mutateAsync({
-        email: 'demo@kfm-delice.com',
-        password: 'demo123',
+        email: 'admin@kfm-delice.com',
+        password: 'AdminKFM2024!',
       });
       setAuthToken(result.token);
       router.push('/dashboard');
@@ -161,8 +161,8 @@ export default function LoginPage() {
   const handleDemoCustomerLogin = async () => {
     try {
       const result = await loginMutation.mutateAsync({
-        email: 'demo@kfm-delice.com',
-        password: 'demo123',
+        email: 'amadou@kfm-delice.com',
+        password: 'kfm2024!',
       });
       setAuthToken(result.token);
       router.push('/customer');
@@ -339,9 +339,8 @@ export default function LoginPage() {
                 <Alert className="bg-blue-50 border-blue-200">
                   <AlertCircle className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-xs text-blue-800">
-                    <strong>Comptes de démonstration:</strong><br />
+                    <strong>Comptes de test:</strong><br />
                     admin@kfm-delice.com / AdminKFM2024! (Super Admin)<br />
-                    demo@kfm-delice.com / demo123 (Org Admin)<br />
                     amadou@kfm-delice.com / kfm2024! (Manager)<br />
                     kitchen@kfm-delice.com / kitchen123 (Cuisinier)<br />
                     driver@kfm-delice.com / driver123 (Livreur)

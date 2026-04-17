@@ -68,7 +68,6 @@ export function ReviewsManager() {
       try {
         setIsLoading(true);
         const params = new URLSearchParams({
-          demo: 'true',
           ...(filterStatus !== 'all' && { status: filterStatus }),
           ...(filterRating !== 'all' && { rating: filterRating }),
           ...(searchQuery && { search: searchQuery }),

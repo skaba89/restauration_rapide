@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Demo floor plans store reference (shared with main route)
 // This would normally be in a shared store or database
 
 // GET - Get a single floor plan
@@ -12,38 +11,6 @@ export async function GET(
   try {
     const { id } = await params;
     const { searchParams } = new URL(request.url);
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || id.startsWith('demo-')) {
-      // Return demo floor plan with tables
-      const demoFloorPlan = {
-        id,
-        name: id === 'demo-1' ? 'Plan Principal' : 'Plan Événement',
-        description: 'Plan de salle du restaurant',
-        layout: {
-          sections: [
-            { id: 'main', name: 'Salle Principale', color: '#3b82f6' },
-            { id: 'terrace', name: 'Terrasse', color: '#22c55e' },
-            { id: 'vip', name: 'VIP', color: '#f59e0b' },
-            { id: 'intimate', name: 'Coins Intimes', color: '#ec4899' },
-          ],
-          canvasWidth: 800,
-          canvasHeight: 600,
-        },
-        isDefault: id === 'demo-1',
-        isActive: true,
-        tables: getDemoTables(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      return NextResponse.json({
-        success: true,
-        floorPlan: demoFloorPlan,
-        demo: true,
-      });
-    }
 
     // Real database query
     const floorPlan = await db.floorPlan.findUnique({
@@ -118,7 +85,6 @@ export async function GET(
         createdAt: floorPlan.createdAt,
         updatedAt: floorPlan.updatedAt,
       },
-      demo: false,
     });
   } catch (error) {
     console.error('Error fetching floor plan:', error);
@@ -143,26 +109,8 @@ export async function PUT(
       layout, 
       isDefault, 
       isActive,
-      demo = false,
       restaurantId,
     } = body;
-
-    // Demo mode
-    if (demo || id.startsWith('demo-')) {
-      return NextResponse.json({
-        success: true,
-        floorPlan: {
-          id,
-          name: name || 'Plan de salle',
-          description,
-          layout,
-          isDefault: isDefault || false,
-          isActive: isActive !== undefined ? isActive : true,
-          updatedAt: new Date(),
-        },
-        demo: true,
-      });
-    }
 
     // If setting as default, unset other defaults
     if (isDefault && restaurantId) {
@@ -214,16 +162,6 @@ export async function DELETE(
   try {
     const { id } = await params;
     const { searchParams } = new URL(request.url);
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || id.startsWith('demo-')) {
-      return NextResponse.json({
-        success: true,
-        message: 'Plan de salle supprimé avec succès',
-        demo: true,
-      });
-    }
 
     // Soft delete by setting isActive to false
     await db.floorPlan.update({

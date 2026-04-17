@@ -46,9 +46,6 @@ export default function DriverMapPage() {
   const { toast } = useToast();
   const { isConnected } = useDriverTracking({ pollingInterval: 10000 });
 
-  // Demo driver ID for GPS updates
-  const DEMO_DRIVER_ID = 'demo-driver-1';
-
   // Try to use real GPS (navigator.geolocation)
   useEffect(() => {
     if (typeof navigator !== 'undefined' && navigator.geolocation && isOnline) {
@@ -79,8 +76,6 @@ export default function DriverMapPage() {
       };
     }
   }, [isOnline]);
-
-  // Fallback: simulate GPS movement for demo
   useEffect(() => {
     if (watchId !== null) return; // Real GPS is active
 
@@ -109,8 +104,7 @@ export default function DriverMapPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          driverId: DEMO_DRIVER_ID,
-          lat,
+          driverId: lat,
           lng,
           heading,
           speed,
@@ -141,7 +135,6 @@ export default function DriverMapPage() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        driverId: DEMO_DRIVER_ID,
         status: isOnline ? 'offline' : 'online',
         isAvailable: !isOnline,
       }),
@@ -152,8 +145,6 @@ export default function DriverMapPage() {
       description: isOnline ? 'Vous ne recevrez plus de commandes' : 'Vous recevrez des commandes',
     });
   };
-
-  // Use demo active delivery data (in production, this would come from API)
   const activeDelivery = {
     id: 'ORD-2024-0145',
     address: 'Cocody, Riviera 3',

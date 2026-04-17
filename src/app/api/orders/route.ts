@@ -4,10 +4,8 @@ import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/l
 import { withAuth, withAdminAuth } from '@/lib/auth-middleware';
 import { NextRequest } from 'next/server';
 import { generateOrderNumber, calculateLoyaltyPoints } from '@/lib/utils-helpers';
-import { getDemoOrders, updateDemoOrderStatus, removeDemoOrder, assignDriverToOrder, getDemoOrderById } from '@/lib/demo-order-store';
 import { broadcastNewOrder, broadcastOrderStatusChange, broadcastOrderCancellation, broadcastDriverAssignment } from '@/lib/sync-engine';
 
-// Demo orders are now managed via shared store (demo-order-store.ts)
 // Both kitchen and admin read/write from the same source of truth
 
 // GET /api/orders - List orders with pagination (authenticated users)
@@ -23,49 +21,6 @@ export const GET = withAuth(async (request: NextRequest, user) => {
     const dateFrom = searchParams.get('dateFrom');
     const dateTo = searchParams.get('dateTo');
     const search = searchParams.get('search');
-    const demo = searchParams.get('demo');
-
-    // Return demo data if demo mode or no organization/restaurant specified
-    if (demo === 'true' || (!restaurantId && !organizationId)) {
-      let filteredOrders = [...getDemoOrders()];
-      
-      // Apply filters
-      if (status) {
-        const statusList = status.split(',').map(s => s.trim().toUpperCase());
-        filteredOrders = filteredOrders.filter(o => statusList.includes(o.status));
-      }
-      if (orderType) {
-        filteredOrders = filteredOrders.filter(o => o.orderType === orderType);
-      }
-      if (customerId) {
-        filteredOrders = filteredOrders.filter(o => 'customerId' in o && (o as any).customerId === customerId);
-      }
-      if (search) {
-        const searchLower = search.toLowerCase();
-        filteredOrders = filteredOrders.filter(o => 
-          o.orderNumber.toLowerCase().includes(searchLower) || 
-          o.customerName.toLowerCase().includes(searchLower) ||
-          o.customerPhone.includes(search)
-        );
-      }
-      if (dateFrom) {
-        filteredOrders = filteredOrders.filter(o => new Date(o.createdAt) >= new Date(dateFrom));
-      }
-      if (dateTo) {
-        filteredOrders = filteredOrders.filter(o => new Date(o.createdAt) <= new Date(dateTo));
-      }
-
-      const total = filteredOrders.length;
-      const paginatedOrders = filteredOrders.slice(skip, skip + limit);
-
-      return apiSuccess({
-        data: paginatedOrders,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      });
-    }
 
     const statusList = status ? status.split(',').map(s => s.trim()) : null;
 
@@ -415,67 +370,6 @@ export const PATCH = withAuth(async (request: NextRequest, user) => {
       return apiError('ID est requis');
     }
 
-    // Demo fallback: update in shared store
-    if (id.startsWith('demo-')) {
-      const demoOrder = getDemoOrderById(id);
-      if (!demoOrder) return apiError('Commande non trouvée', 404);
-      if (status) {
-        const previousStatus = demoOrder.status;
-        // Also handle driver assignment
-        if (status === 'OUT_FOR_DELIVERY' && body.driverName && body.driverPhone) {
-          const updated = assignDriverToOrder(id, body.driverName, body.driverPhone);
-          if (!updated) return apiError('Commande non trouvée', 404);
-          // Broadcast driver assignment to all roles
-          try {
-            await broadcastDriverAssignment({
-              orderId: id,
-              orderNumber: updated.orderNumber,
-              restaurantId: updated.restaurantId,
-              driverId: body.driverId || `driver-${body.driverName}`,
-              driverName: body.driverName,
-              driverPhone: body.driverPhone,
-              customerName: updated.customerName,
-              deliveryAddress: updated.deliveryAddress,
-              total: updated.total,
-            });
-          } catch (e) { console.error('Sync error:', e); }
-          return apiSuccess(updated, 'Livreur assigné (démo)');
-        }
-        const updated = updateDemoOrderStatus(id, status as any);
-        if (!updated) return apiError('Commande non trouvée', 404);
-        if (paymentStatus) (updated as any).paymentStatus = paymentStatus;
-        if (cancellationReason) (updated as any).cancellationReason = cancellationReason;
-        // Broadcast status change to all roles
-        try {
-          if (status === 'CANCELLED') {
-            await broadcastOrderCancellation({
-              orderId: id,
-              orderNumber: updated.orderNumber,
-              restaurantId: updated.restaurantId,
-              customerName: updated.customerName,
-              reason: cancellationReason,
-            });
-          } else {
-            await broadcastOrderStatusChange({
-              orderId: id,
-              orderNumber: updated.orderNumber,
-              restaurantId: updated.restaurantId,
-              status,
-              previousStatus,
-              customerName: updated.customerName,
-              customerPhone: updated.customerPhone,
-              driverName: updated.driverName,
-              orderType: updated.orderType,
-              items: updated.items.map(item => ({ name: item.itemName, quantity: item.quantity })),
-              total: updated.total,
-            });
-          }
-        } catch (e) { console.error('Sync error:', e); }
-        return apiSuccess(updated, 'Commande mise à jour (démo)');
-      }
-      return apiSuccess(demoOrder);
-    }
-
     const order = await db.order.findUnique({
       where: { id },
       include: { delivery: true },
@@ -595,24 +489,6 @@ export const DELETE = withAdminAuth(async (request: NextRequest, user) => {
 
     if (!id) {
       return apiError('ID est requis');
-    }
-
-    // Demo fallback: remove from shared store
-    if (id.startsWith('demo-')) {
-      const demoOrder = getDemoOrderById(id);
-      const removed = removeDemoOrder(id);
-      if (!removed) return apiError('Commande non trouvée', 404);
-      // Broadcast cancellation to all roles
-      try {
-        await broadcastOrderCancellation({
-          orderId: id,
-          orderNumber: demoOrder?.orderNumber || '',
-          restaurantId: demoOrder?.restaurantId,
-          customerName: demoOrder?.customerName,
-          reason,
-        });
-      } catch (e) { console.error('Sync error:', e); }
-      return apiSuccess({ cancelled: true }, 'Commande annulée (démo)');
     }
 
     const order = await db.order.findUnique({

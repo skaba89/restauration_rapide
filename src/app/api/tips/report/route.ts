@@ -1,27 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Demo data for reports
-const DEMO_DAILY_DATA = [
-  { date: '2024-01-15', total: 25000, count: 8, average: 3125 },
-  { date: '2024-01-14', total: 18500, count: 6, average: 3083 },
-  { date: '2024-01-13', total: 32000, count: 10, average: 3200 },
-  { date: '2024-01-12', total: 15000, count: 5, average: 3000 },
-  { date: '2024-01-11', total: 28000, count: 9, average: 3111 },
-  { date: '2024-01-10', total: 22000, count: 7, average: 3143 },
-  { date: '2024-01-09', total: 19500, count: 6, average: 3250 },
-];
-
-const DEMO_STAFF_REPORT = [
-  { staffId: 'staff-001', staffName: 'Aïssata Traoré', role: 'waiter', totalEarned: 45000, hoursWorked: 168, tipsPerHour: 268 },
-  { staffId: 'staff-002', staffName: 'Moussa Bamba', role: 'waiter', totalEarned: 38000, hoursWorked: 160, tipsPerHour: 238 },
-  { staffId: 'staff-003', staffName: 'Mariama Sy', role: 'kitchen', totalEarned: 28000, hoursWorked: 84, tipsPerHour: 333 },
-  { staffId: 'staff-004', staffName: 'Ibrahim Koné', role: 'kitchen', totalEarned: 35000, hoursWorked: 168, tipsPerHour: 208 },
-  { staffId: 'staff-005', staffName: 'Fatoumata Diallo', role: 'delivery', totalEarned: 22000, hoursWorked: 126, tipsPerHour: 175 },
-  { staffId: 'staff-006', staffName: 'Seydou Konaté', role: 'delivery', totalEarned: 19500, hoursWorked: 120, tipsPerHour: 163 },
-  { staffId: 'staff-007', staffName: 'Amadou Keita', role: 'waiter', totalEarned: 42000, hoursWorked: 176, tipsPerHour: 239 },
-];
-
 // GET - Generate tips report
 export async function GET(request: NextRequest) {
   try {
@@ -31,35 +10,6 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const period = searchParams.get('period') || 'week';
     const groupBy = searchParams.get('groupBy') || 'day';
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || !organizationId) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          period,
-          summary: {
-            totalTips: DEMO_DAILY_DATA.reduce((sum, d) => sum + d.total, 0),
-            totalAmount: DEMO_DAILY_DATA.reduce((sum, d) => sum + d.total, 0),
-            averagePerDay: Math.round(DEMO_DAILY_DATA.reduce((sum, d) => sum + d.total, 0) / DEMO_DAILY_DATA.length),
-            tipsCount: DEMO_DAILY_DATA.reduce((sum, d) => sum + d.count, 0),
-            byMethod: {
-              cash: 125000,
-              mobile_money: 45000,
-              card: 15000
-            }
-          },
-          dailyData: DEMO_DAILY_DATA,
-          staffReport: DEMO_STAFF_REPORT,
-          byMethod: {
-            cash: 125000,
-            mobile_money: 45000,
-            card: 15000
-          }
-        }
-      });
-    }
 
     // Build where clause
     const where: Record<string, unknown> = { organizationId };

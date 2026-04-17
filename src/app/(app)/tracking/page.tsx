@@ -11,7 +11,7 @@ import { Search, Package, Navigation } from 'lucide-react';
 import { useDriverTracking } from '@/hooks/use-driver-tracking';
 
 export default function TrackingPage() {
-  const [orderId, setOrderId] = useState('demo-ord-2');
+  const [orderId, setOrderId] = useState('');
   const [searchOrderId, setSearchOrderId] = useState('');
   const [activeTab, setActiveTab] = useState('drivers');
 
@@ -75,7 +75,7 @@ export default function TrackingPage() {
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <Input
-                      placeholder="Entrez le numero de commande (ex: ORD-2024-0144 ou demo-ord-2)"
+                      placeholder="Entrez le numero de commande (ex: ORD-2024-0144)"
                       value={searchOrderId}
                       onChange={(e) => setSearchOrderId(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -87,7 +87,7 @@ export default function TrackingPage() {
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Commandes de test disponibles: demo-ord-1, demo-ord-2, demo-ord-3
+                  Entrez un numero de commande pour suivre sa livraison en temps réel
                 </p>
               </CardContent>
             </Card>

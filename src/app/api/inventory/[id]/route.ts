@@ -14,31 +14,6 @@ export const GET = withErrorHandler(async (
 ) => {
   const { id } = await params;
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
-
-  if (demo) {
-    // Demo mode - return mock item
-    const demoItem = {
-      id,
-      name: 'Riz',
-      category: 'ingredients',
-      quantity: 50,
-      unit: 'kg',
-      minStock: 20,
-      maxStock: 100,
-      reorderPoint: 30,
-      reorderQuantity: 50,
-      cost: 5000,
-      sellingPrice: 6000,
-      supplier: 'Marché Central',
-      location: 'Entrepôt A',
-      status: 'in_stock',
-      lastRestocked: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    return apiSuccess({ item: demoItem });
-  }
 
   try {
     const item = await db.inventoryItem.findUnique({
@@ -89,22 +64,6 @@ export const PUT = withErrorHandler(async (
   const { id } = await params;
   const body = await request.json();
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
-
-  if (demo) {
-    // Demo mode - return mock updated item
-    const updatedItem = {
-      id,
-      ...body,
-      status: body.quantity <= 0 
-        ? 'out_of_stock' 
-        : body.quantity <= (body.minStock || 0) 
-          ? 'low_stock' 
-          : 'in_stock',
-      updatedAt: new Date().toISOString(),
-    };
-    return apiSuccess({ item: updatedItem }, 'Article mis à jour');
-  }
 
   try {
     // Check if item exists
@@ -185,11 +144,6 @@ export const DELETE = withErrorHandler(async (
 ) => {
   const { id } = await params;
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
-
-  if (demo) {
-    return apiSuccess({}, 'Article supprimé avec succès');
-  }
 
   try {
     // Check if item exists

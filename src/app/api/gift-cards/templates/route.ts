@@ -1,145 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withErrorHandler } from '@/lib/api-responses';
 
-// Demo gift card templates
-const DEMO_TEMPLATES = [
-  {
-    id: '1',
-    name: 'Classique KFM',
-    description: 'Design élégant avec les couleurs de KFM DELICE',
-    occasion: 'general',
-    design: {
-      primaryColor: '#F97316',
-      secondaryColor: '#EA580C',
-      pattern: 'solid',
-      borderRadius: 16,
-    },
-    imageUrl: '/gift-cards/classic.png',
-    isDefault: true,
-    isActive: true,
-    sortOrder: 0,
-  },
-  {
-    id: '2',
-    name: 'Anniversaire',
-    description: 'Parfait pour célébrer un anniversaire spécial',
-    occasion: 'birthday',
-    design: {
-      primaryColor: '#EC4899',
-      secondaryColor: '#DB2777',
-      pattern: 'confetti',
-      borderRadius: 16,
-    },
-    imageUrl: '/gift-cards/birthday.png',
-    isDefault: false,
-    isActive: true,
-    sortOrder: 1,
-  },
-  {
-    id: '3',
-    name: 'Mariage',
-    description: 'Design romantique pour les jeunes mariés',
-    occasion: 'wedding',
-    design: {
-      primaryColor: '#8B5CF6',
-      secondaryColor: '#7C3AED',
-      pattern: 'hearts',
-      borderRadius: 16,
-    },
-    imageUrl: '/gift-cards/wedding.png',
-    isDefault: false,
-    isActive: true,
-    sortOrder: 2,
-  },
-  {
-    id: '4',
-    name: 'Fêtes',
-    description: 'Design festif pour les grandes occasions',
-    occasion: 'holiday',
-    design: {
-      primaryColor: '#10B981',
-      secondaryColor: '#059669',
-      pattern: 'stars',
-      borderRadius: 16,
-    },
-    imageUrl: '/gift-cards/holiday.png',
-    isDefault: false,
-    isActive: true,
-    sortOrder: 3,
-  },
-  {
-    id: '5',
-    name: 'Remerciement',
-    description: 'Pour exprimer votre gratitude',
-    occasion: 'thank_you',
-    design: {
-      primaryColor: '#3B82F6',
-      secondaryColor: '#2563EB',
-      pattern: 'gradient',
-      borderRadius: 16,
-    },
-    imageUrl: '/gift-cards/thanks.png',
-    isDefault: false,
-    isActive: true,
-    sortOrder: 4,
-  },
-  {
-    id: '6',
-    name: 'Entreprise',
-    description: 'Design professionnel pour les cadeaux d\'entreprise',
-    occasion: 'corporate',
-    design: {
-      primaryColor: '#1F2937',
-      secondaryColor: '#111827',
-      pattern: 'stripes',
-      borderRadius: 8,
-    },
-    imageUrl: '/gift-cards/corporate.png',
-    isDefault: false,
-    isActive: true,
-    sortOrder: 5,
-  },
-  {
-    id: '7',
-    name: 'Nouveau-né',
-    description: 'Pour accueillir un nouveau-né',
-    occasion: 'new_baby',
-    design: {
-      primaryColor: '#FDE68A',
-      secondaryColor: '#FCD34D',
-      pattern: 'bubbles',
-      borderRadius: 20,
-    },
-    imageUrl: '/gift-cards/baby.png',
-    isDefault: false,
-    isActive: true,
-    sortOrder: 6,
-  },
-  {
-    id: '8',
-    name: 'Diplômé',
-    description: 'Pour féliciter un nouveau diplômé',
-    occasion: 'graduation',
-    design: {
-      primaryColor: '#6366F1',
-      secondaryColor: '#4F46E5',
-      pattern: 'diploma',
-      borderRadius: 12,
-    },
-    imageUrl: '/gift-cards/graduation.png',
-    isDefault: false,
-    isActive: true,
-    sortOrder: 7,
-  },
-];
-
 // GET - List all gift card templates
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
   const occasion = searchParams.get('occasion');
   const active = searchParams.get('active');
 
-  let templates = [...DEMO_TEMPLATES];
+  let templates = [];
 
   // Filter by occasion
   if (occasion) {
@@ -205,10 +73,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     imageUrl: imageUrl || null,
     isDefault: false,
     isActive: true,
-    sortOrder: DEMO_TEMPLATES.length,
+    sortOrder: 0,
   };
-
-  // In demo mode, we just return success
   return NextResponse.json({
     success: true,
     data: newTemplate,
@@ -228,7 +94,8 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
     }, { status: 400 });
   }
 
-  const templateIndex = DEMO_TEMPLATES.findIndex(t => t.id === id);
+  const existingTemplates: any[] = [];
+  const templateIndex = existingTemplates.findIndex(t => t.id === id);
 
   if (templateIndex === -1) {
     return NextResponse.json({
@@ -236,10 +103,8 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
       error: 'Template non trouvé',
     }, { status: 404 });
   }
-
-  // In demo mode, return the updated template
   const updatedTemplate = {
-    ...DEMO_TEMPLATES[templateIndex],
+    ...existingTemplates[templateIndex],
     ...updates,
   };
 

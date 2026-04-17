@@ -8,8 +8,6 @@ import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { db } from '@/lib/db';
 
 // In-memory storage for demo mode
-const demoItems: Record<string, any> = {};
-
 // POST - Create stock adjustment
 export const POST = withErrorHandler(async (
   request: NextRequest,
@@ -18,7 +16,6 @@ export const POST = withErrorHandler(async (
   const { id } = await params;
   const body = await request.json();
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
 
   const { type, quantity, reason, notes, userId, organizationId } = body;
 
@@ -29,55 +26,6 @@ export const POST = withErrorHandler(async (
 
   if (!['IN', 'OUT', 'ADJUSTMENT'].includes(type)) {
     return apiError('Type invalide. Utilisez IN, OUT ou ADJUSTMENT', 400);
-  }
-
-  if (demo) {
-    // Demo mode - simulate adjustment
-    let item = demoItems[id] || {
-      id,
-      name: 'Riz',
-      quantity: 50,
-      minStock: 20,
-      unit: 'kg',
-    };
-
-    const previousQty = item.quantity;
-    let newQty = previousQty;
-
-    if (type === 'IN') {
-      newQty = previousQty + parseFloat(quantity);
-    } else if (type === 'OUT') {
-      newQty = Math.max(0, previousQty - parseFloat(quantity));
-    } else {
-      newQty = parseFloat(quantity);
-    }
-
-    const status = newQty <= 0 
-      ? 'out_of_stock' 
-      : newQty <= item.minStock 
-        ? 'low_stock' 
-        : 'in_stock';
-
-    const transaction = {
-      id: `tx-${Date.now()}`,
-      itemId: id,
-      itemName: item.name,
-      type,
-      quantity: parseFloat(quantity),
-      previousQty,
-      newQty,
-      reason,
-      notes,
-      createdAt: new Date().toISOString(),
-      createdBy: userId || 'Admin',
-    };
-
-    demoItems[id] = { ...item, quantity: newQty };
-
-    return apiSuccess({ 
-      item: { ...item, quantity: newQty, status },
-      transaction 
-    }, 'Mouvement de stock enregistré');
   }
 
   try {

@@ -25,20 +25,10 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     
     // Get query parameters
-    const demo = searchParams.get('demo') === 'true';
     const language = (searchParams.get('lang') === 'en' ? 'en' : 'fr') as 'fr' | 'en';
     const format = searchParams.get('format') || 'pdf'; // 'pdf' or 'text'
     
     let receiptData: ReceiptData;
-    
-    if (demo) {
-      // Use demo data
-      receiptData = getDemoReceiptData(language);
-      receiptData.orderNumber = orderId;
-    } else {
-      // Fetch real data from database
-      receiptData = await fetchReceiptData(orderId, language);
-    }
     
     // Check format requested
     if (format === 'text') {
@@ -113,7 +103,6 @@ async function fetchReceiptData(orderId: string, language: 'fr' | 'en'): Promise
     if (!order) {
       // Fall back to demo data if order not found
       console.log(`Order ${orderId} not found, using demo data`);
-      const demoData = getDemoReceiptData(language);
       demoData.orderNumber = orderId;
       return demoData;
     }
@@ -180,7 +169,6 @@ async function fetchReceiptData(orderId: string, language: 'fr' | 'en'): Promise
     
   } catch (dbError) {
     console.error('Database error, falling back to demo data:', dbError);
-    const demoData = getDemoReceiptData(language);
     demoData.orderNumber = orderId;
     return demoData;
   }

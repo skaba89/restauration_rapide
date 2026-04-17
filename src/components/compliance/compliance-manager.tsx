@@ -40,55 +40,10 @@ import {
   Download
 } from 'lucide-react';
 
-// Demo compliance data
-const DEMO_CHECKLISTS = [
-  {
-    id: '1',
-    type: 'haccp',
-    name: 'Contrôle réception produits',
-    items: [
-      { id: '1', name: 'Vérifier température réfrigérateur', checked: true },
-      { id: '2', name: 'Vérifier température congélateur', checked: true },
-      { id: '3', name: 'Inspecter état des fruits/légumes', checked: false },
-      { id: '4', name: 'Vérifier dates de péérémption', checked: true },
-    ],
-    status: 'pending',
-    date: new Date(),
-  },
-  {
-    id: '2',
-    type: 'cleaning',
-    name: 'Nettoyage quotidien cuisine',
-    items: [
-      { id: '1', name: 'Nettoyer plans de travail', checked: true },
-      { id: '2', name: 'Désinfecter surfaces', checked: true },
-      { id: '3', name: 'Vider poubelles', checked: false },
-      { id: '4', name: 'Nettoyer évier', checked: false },
-    ],
-    status: 'completed',
-    date: new Date(),
-  },
-];
-
-const DEMO_TEMPERATURES = [
-  { id: '1', location: 'Frigo 1', temperature: 3.5, unit: 'celsius', isAlert: false, recordedAt: new Date(Date.now() - 30 * 60 * 1000) },
-  { id: '2', location: 'Frigo 2', temperature: 4.2, unit: 'celsius', isAlert: false, recordedAt: new Date(Date.now() - 30 * 60 * 1000) },
-  { id: '3', location: 'Congélateur 1', temperature: -18.5, unit: 'celsius', isAlert: false, recordedAt: new Date(Date.now() - 30 * 60 * 1000) },
-  { id: '4', location: 'Congélateur 2', temperature: -22.0, unit: 'celsius', isAlert: false, recordedAt: new Date(Date.now() - 30 * 60 * 1000) },
-  { id: '5', location: 'Réserve froide', temperature: 8.5, unit: 'celsius', isAlert: true, recordedAt: new Date(Date.now() - 60 * 60 * 1000) },
-];
-
-const DEMO_CLEANING_SCHEDULE = [
-  { id: '1', area: 'Cuisine', task: 'Nettoyage sol profond', frequency: 'weekly', nextDue: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), assignedTo: 'Fatoumata S.' },
-  { id: '2', area: 'Salle', task: 'Nettoyage sols et tables', frequency: 'daily', nextDue: new Date(), assignedTo: 'Aïssata T.' },
-  { id: '3', area: 'Toilettes', task: 'Désinfection complète', frequency: 'daily', nextDue: new Date(), assignedTo: 'Moussa B.' },
-  { id: '4', area: 'Extérieur', task: 'Nettoyage terrasse', frequency: 'weekly', nextDue: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), assignedTo: 'Seydou K.' },
-];
-
 export function ComplianceManager() {
-  const [checklists, setChecklists] = useState(DEMO_CHECKLISTS);
-  const [temperatures, setTemperatures] = useState(DEMO_TEMPERATURES);
-  const [cleaningSchedule, setCleaningSchedule] = useState(DEMO_CLEANING_SCHEDULE);
+  const [checklists, setChecklists] = useState([]);
+  const [temperatures, setTemperatures] = useState([]);
+  const [cleaningSchedule, setCleaningSchedule] = useState([]);
   const [isTempDialogOpen, setIsTempDialogOpen] = useState(false);
   const [newTemp, setNewTemp] = useState({ location: '', temperature: 0 });
 

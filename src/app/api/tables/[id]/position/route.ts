@@ -15,24 +15,9 @@ export async function PUT(
       width, 
       height, 
       rotation,
-      demo = false,
     } = body;
 
     // Demo mode
-    if (demo || tableId.startsWith('demo-')) {
-      return NextResponse.json({
-        success: true,
-        table: {
-          id: tableId,
-          positionX,
-          positionY,
-          width,
-          height,
-          rotation,
-        },
-        demo: true,
-      });
-    }
 
     // Real database update
     const updateData: Record<string, unknown> = {};

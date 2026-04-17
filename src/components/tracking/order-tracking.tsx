@@ -14,73 +14,7 @@ const statusSteps = [
   { key: 'DELIVERED', label: 'Livree', icon: CheckCircle },
 ];
 
-// Demo order data for tracking
-const DEMO_ORDERS: Record<string, {
-  orderId: string;
-  orderNumber: string;
-  status: string;
-  customerName: string;
-  deliveryAddress: string;
-  estimatedTime: number;
-  driverName: string;
-  driverPhone: string;
-  events: Array<{ id: string; status: string; timestamp: string; notes?: string }>;
-}> = {
-  'demo-ord-1': {
-    orderId: 'demo-ord-1',
-    orderNumber: 'ORD-2024-0144',
-    status: 'DELIVERED',
-    customerName: 'Aminata Diallo',
-    deliveryAddress: 'Kaloum, pres de la mosque',
-    estimatedTime: 0,
-    driverName: 'Amadou Toure',
-    driverPhone: '+2250700000100',
-    events: [
-      { id: '1', status: 'Commande creee', timestamp: '2024-12-01T10:00:00Z', notes: 'Commande en ligne' },
-      { id: '2', status: 'Confirmee', timestamp: '2024-12-01T10:02:00Z' },
-      { id: '3', status: 'En preparation', timestamp: '2024-12-01T10:05:00Z' },
-      { id: '4', status: 'Prete', timestamp: '2024-12-01T10:20:00Z' },
-      { id: '5', status: 'Driver assigne', timestamp: '2024-12-01T10:21:00Z', notes: 'Amadou Toure' },
-      { id: '6', status: 'En livraison', timestamp: '2024-12-01T10:25:00Z' },
-      { id: '7', status: 'Livree', timestamp: '2024-12-01T10:45:00Z', notes: 'Livree avec succes' },
-    ],
-  },
-  'demo-ord-2': {
-    orderId: 'demo-ord-2',
-    orderNumber: 'ORD-2024-0145',
-    status: 'OUT_FOR_DELIVERY',
-    customerName: 'Kouame Jean',
-    deliveryAddress: 'Cocody, Riviera 3, pres de la pharmacie',
-    estimatedTime: 15,
-    driverName: 'Moussa Diallo',
-    driverPhone: '+2250700000102',
-    events: [
-      { id: '1', status: 'Commande creee', timestamp: '2024-12-01T11:30:00Z', notes: 'Commande en ligne' },
-      { id: '2', status: 'Confirmee', timestamp: '2024-12-01T11:32:00Z' },
-      { id: '3', status: 'En preparation', timestamp: '2024-12-01T11:35:00Z' },
-      { id: '4', status: 'Prete', timestamp: '2024-12-01T11:50:00Z' },
-      { id: '5', status: 'Driver assigne', timestamp: '2024-12-01T11:51:00Z', notes: 'Moussa Diallo' },
-      { id: '6', status: 'En livraison', timestamp: '2024-12-01T11:55:00Z', notes: 'Commande recuperee' },
-    ],
-  },
-  'demo-ord-3': {
-    orderId: 'demo-ord-3',
-    orderNumber: 'ORD-2024-0146',
-    status: 'PREPARING',
-    customerName: 'Aya Marie',
-    deliveryAddress: 'Plateau, Rue du Commerce',
-    estimatedTime: 30,
-    driverName: '',
-    driverPhone: '',
-    events: [
-      { id: '1', status: 'Commande creee', timestamp: '2024-12-01T12:00:00Z', notes: 'Commande en ligne' },
-      { id: '2', status: 'Confirmee', timestamp: '2024-12-01T12:02:00Z' },
-      { id: '3', status: 'En preparation', timestamp: '2024-12-01T12:05:00Z' },
-    ],
-  },
-};
-
-type OrderData = typeof DEMO_ORDERS[string];
+type OrderData = any;
 
 export function OrderTracking({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<OrderData | null>(null);
@@ -116,7 +50,6 @@ export function OrderTracking({ orderId }: { orderId: string }) {
           });
           setNotFound(false);
         } else {
-          const demoOrder = DEMO_ORDERS[orderId];
           if (demoOrder) {
             setOrder(demoOrder);
             setNotFound(false);
@@ -127,7 +60,6 @@ export function OrderTracking({ orderId }: { orderId: string }) {
       })
       .catch(() => {
         if (cancelled) return;
-        const demoOrder = DEMO_ORDERS[orderId];
         if (demoOrder) {
           setOrder(demoOrder);
           setNotFound(false);

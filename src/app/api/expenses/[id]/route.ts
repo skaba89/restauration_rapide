@@ -10,31 +10,6 @@ export async function GET(
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || !organizationId) {
-      // Return a demo expense
-      const demoExpense = {
-        id,
-        category: 'supplies',
-        description: 'Achat de riz local (50 kg)',
-        amount: 425000,
-        currency: 'GNF',
-        date: new Date(),
-        status: 'pending',
-        paymentMethod: 'Orange Money',
-        supplierName: 'Marché de Kaloum',
-        notes: 'Riz de bonne qualité pour le restaurant',
-        receipt: null,
-        createdAt: new Date(),
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: demoExpense,
-      });
-    }
 
     const expense = await db.expense.findUnique({
       where: { id },
@@ -84,7 +59,6 @@ export async function PUT(
       updates.approvedAt = new Date();
     }
 
-    // Demo mode
     if (!organizationId) {
       return NextResponse.json({
         success: true,
@@ -122,7 +96,6 @@ export async function DELETE(
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
 
-    // Demo mode
     if (!organizationId) {
       return NextResponse.json({
         success: true,

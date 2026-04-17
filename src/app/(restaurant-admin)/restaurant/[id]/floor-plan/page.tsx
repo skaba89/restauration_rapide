@@ -20,23 +20,11 @@ import { FloorPlanView } from '@/components/floor-plan/floor-plan-view';
 import { TableData } from '@/components/floor-plan/table-card';
 import { toast } from 'sonner';
 
-// Demo tables data
-const DEMO_TABLES: TableData[] = [
-  { id: '1', number: 'T1', shape: 'round', capacity: 4, positionX: 80, positionY: 100, width: 80, height: 80, rotation: 0, status: 'occupied', currentPartySize: 3, serverName: 'Aïssata', seatedAt: new Date(Date.now() - 45 * 60000), section: 'Salle Principale' },
-  { id: '2', number: 'T2', shape: 'round', capacity: 4, positionX: 200, positionY: 100, width: 80, height: 80, rotation: 0, status: 'reserved', section: 'Salle Principale', reservationTime: '19:30', reservationName: 'M. Koné' },
-  { id: '3', number: 'T3', shape: 'round', capacity: 4, positionX: 320, positionY: 100, width: 80, height: 80, rotation: 0, status: 'occupied', currentPartySize: 4, serverName: 'Moussa', seatedAt: new Date(Date.now() - 90 * 60000), section: 'Salle Principale' },
-  { id: '4', number: 'T4', shape: 'square', capacity: 4, positionX: 80, positionY: 220, width: 70, height: 70, rotation: 0, status: 'cleaning', section: 'Salle Principale' },
-  { id: '5', number: 'T5', shape: 'round', capacity: 4, positionX: 200, positionY: 220, width: 80, height: 80, rotation: 0, status: 'available', section: 'Salle Principale' },
-  { id: '6', number: 'T6', shape: 'square', capacity: 4, positionX: 520, positionY: 100, width: 70, height: 70, rotation: 0, status: 'occupied', currentPartySize: 2, serverName: 'Fatou', seatedAt: new Date(Date.now() - 30 * 60000), section: 'Terrasse' },
-  { id: '7', number: 'T7', shape: 'square', capacity: 4, positionX: 620, positionY: 100, width: 70, height: 70, rotation: 0, status: 'available', section: 'Terrasse' },
-  { id: '8', number: 'VIP1', shape: 'rectangle', capacity: 6, positionX: 80, positionY: 400, width: 120, height: 80, rotation: 0, status: 'available', section: 'VIP' },
-];
-
 export default function RestaurantFloorPlanPage() {
   const params = useParams();
   const restaurantId = params.id as string;
   const [mode, setMode] = useState<'view' | 'edit'>('view');
-  const [tables, setTables] = useState<TableData[]>(DEMO_TABLES);
+  const [tables, setTables] = useState<TableData[]>([]);
   const [isConnected, setIsConnected] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 

@@ -1,249 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Demo tables data
-const DEMO_TABLES = [
-  // Salle Principale (Tables 1-5)
-  { 
-    id: 'demo-1', 
-    number: 'T1', 
-    shape: 'round', 
-    capacity: 4, 
-    positionX: 80, 
-    positionY: 100, 
-    width: 80, 
-    height: 80, 
-    rotation: 0, 
-    status: 'occupied', 
-    currentPartySize: 3, 
-    serverName: 'Aïssata', 
-    section: 'Salle Principale' 
-  },
-  { 
-    id: 'demo-2', 
-    number: 'T2', 
-    shape: 'round', 
-    capacity: 4, 
-    positionX: 200, 
-    positionY: 100, 
-    width: 80, 
-    height: 80, 
-    rotation: 0, 
-    status: 'reserved', 
-    section: 'Salle Principale', 
-    reservationTime: '19:30', 
-    reservationName: 'M. Koné' 
-  },
-  { 
-    id: 'demo-3', 
-    number: 'T3', 
-    shape: 'round', 
-    capacity: 4, 
-    positionX: 320, 
-    positionY: 100, 
-    width: 80, 
-    height: 80, 
-    rotation: 0, 
-    status: 'occupied', 
-    currentPartySize: 4, 
-    serverName: 'Moussa', 
-    section: 'Salle Principale' 
-  },
-  { 
-    id: 'demo-4', 
-    number: 'T4', 
-    shape: 'square', 
-    capacity: 4, 
-    positionX: 80, 
-    positionY: 220, 
-    width: 70, 
-    height: 70, 
-    rotation: 0, 
-    status: 'cleaning', 
-    section: 'Salle Principale' 
-  },
-  { 
-    id: 'demo-5', 
-    number: 'T5', 
-    shape: 'round', 
-    capacity: 4, 
-    positionX: 200, 
-    positionY: 220, 
-    width: 80, 
-    height: 80, 
-    rotation: 0, 
-    status: 'reserved', 
-    section: 'Salle Principale', 
-    reservationTime: '20:00', 
-    reservationName: 'Diallo' 
-  },
-  
-  // Terrasse (Tables 6-10)
-  { 
-    id: 'demo-6', 
-    number: 'T6', 
-    shape: 'square', 
-    capacity: 4, 
-    positionX: 520, 
-    positionY: 100, 
-    width: 70, 
-    height: 70, 
-    rotation: 0, 
-    status: 'occupied', 
-    currentPartySize: 2, 
-    serverName: 'Fatou', 
-    section: 'Terrasse' 
-  },
-  { 
-    id: 'demo-7', 
-    number: 'T7', 
-    shape: 'square', 
-    capacity: 4, 
-    positionX: 620, 
-    positionY: 100, 
-    width: 70, 
-    height: 70, 
-    rotation: 0, 
-    status: 'occupied', 
-    currentPartySize: 3, 
-    serverName: 'Kouamé', 
-    section: 'Terrasse' 
-  },
-  { 
-    id: 'demo-8', 
-    number: 'T8', 
-    shape: 'square', 
-    capacity: 4, 
-    positionX: 720, 
-    positionY: 100, 
-    width: 70, 
-    height: 70, 
-    rotation: 0, 
-    status: 'available', 
-    section: 'Terrasse' 
-  },
-  { 
-    id: 'demo-9', 
-    number: 'T9', 
-    shape: 'square', 
-    capacity: 4, 
-    positionX: 520, 
-    positionY: 200, 
-    width: 70, 
-    height: 70, 
-    rotation: 0, 
-    status: 'available', 
-    section: 'Terrasse' 
-  },
-  { 
-    id: 'demo-10', 
-    number: 'T10', 
-    shape: 'square', 
-    capacity: 4, 
-    positionX: 620, 
-    positionY: 200, 
-    width: 70, 
-    height: 70, 
-    rotation: 0, 
-    status: 'available', 
-    section: 'Terrasse' 
-  },
-  
-  // VIP (Tables 11-12)
-  { 
-    id: 'demo-11', 
-    number: 'VIP1', 
-    shape: 'rectangle', 
-    capacity: 6, 
-    positionX: 80, 
-    positionY: 400, 
-    width: 120, 
-    height: 80, 
-    rotation: 0, 
-    status: 'available', 
-    section: 'VIP' 
-  },
-  { 
-    id: 'demo-12', 
-    number: 'VIP2', 
-    shape: 'rectangle', 
-    capacity: 6, 
-    positionX: 240, 
-    positionY: 400, 
-    width: 120, 
-    height: 80, 
-    rotation: 0, 
-    status: 'available', 
-    section: 'VIP' 
-  },
-  
-  // Coins intimes (Tables 13-15)
-  { 
-    id: 'demo-13', 
-    number: 'C1', 
-    shape: 'round', 
-    capacity: 2, 
-    positionX: 450, 
-    positionY: 400, 
-    width: 60, 
-    height: 60, 
-    rotation: 0, 
-    status: 'available', 
-    section: 'Coins Intimes' 
-  },
-  { 
-    id: 'demo-14', 
-    number: 'C2', 
-    shape: 'round', 
-    capacity: 2, 
-    positionX: 530, 
-    positionY: 400, 
-    width: 60, 
-    height: 60, 
-    rotation: 0, 
-    status: 'available', 
-    section: 'Coins Intimes' 
-  },
-  { 
-    id: 'demo-15', 
-    number: 'C3', 
-    shape: 'round', 
-    capacity: 2, 
-    positionX: 610, 
-    positionY: 400, 
-    width: 60, 
-    height: 60, 
-    rotation: 0, 
-    status: 'available', 
-    section: 'Coins Intimes' 
-  },
-];
-
 // In-memory store for demo mode
-let demoTablesStore = [...DEMO_TABLES];
-
 // GET - List tables with status
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const restaurantId = searchParams.get('restaurantId');
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || !restaurantId) {
-      return NextResponse.json({
-        success: true,
-        tables: demoTablesStore,
-        stats: {
-          total: demoTablesStore.length,
-          available: demoTablesStore.filter(t => t.status === 'available').length,
-          occupied: demoTablesStore.filter(t => t.status === 'occupied').length,
-          reserved: demoTablesStore.filter(t => t.status === 'reserved').length,
-          cleaning: demoTablesStore.filter(t => t.status === 'cleaning').length,
-        },
-        demo: true,
-      });
-    }
 
     // Real database query
     const tables = await db.table.findMany({
@@ -308,7 +71,6 @@ export async function GET(request: NextRequest) {
       success: true,
       tables: transformedTables,
       stats,
-      demo: false,
     });
   } catch (error) {
     console.error('Error fetching tables:', error);
@@ -316,8 +78,7 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to fetch tables',
-        tables: demoTablesStore, // Fallback to demo data
-        demo: true,
+        tables: demoTablesStore, // Fallback to demo data,
       },
       { status: 500 }
     );
@@ -338,33 +99,7 @@ export async function POST(request: NextRequest) {
       width, 
       height, 
       section,
-      demo = false,
     } = body;
-
-    // Demo mode
-    if (demo || !restaurantId) {
-      const newTable = {
-        id: `demo-${Date.now()}`,
-        number,
-        shape,
-        capacity,
-        positionX,
-        positionY,
-        width: width || (shape === 'rectangle' ? 120 : shape === 'square' ? 70 : 80),
-        height: height || (shape === 'rectangle' ? 80 : shape === 'square' ? 70 : 80),
-        rotation: 0,
-        status: 'available',
-        section: section || 'Salle Principale',
-      };
-      
-      demoTablesStore.push(newTable as any);
-      
-      return NextResponse.json({
-        success: true,
-        table: newTable,
-        demo: true,
-      });
-    }
 
     // Real database creation
     // Find or create dining room for the section
@@ -436,19 +171,10 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tables, demo = false } = body;
+    const { tables } = body;
 
     // Batch update for saving layout
     if (Array.isArray(tables)) {
-      // Demo mode
-      if (demo) {
-        demoTablesStore = tables;
-        return NextResponse.json({
-          success: true,
-          message: 'Tables updated successfully',
-          demo: true,
-        });
-      }
 
       // Real database update would go here
       // For now, just return success
@@ -460,26 +186,6 @@ export async function PUT(request: NextRequest) {
 
     // Single table update
     const { tableId, positionX, positionY, rotation, status, serverId } = body;
-
-    // Demo mode
-    if (demo || !tableId) {
-      const tableIndex = demoTablesStore.findIndex(t => t.id === tableId);
-      if (tableIndex !== -1) {
-        demoTablesStore[tableIndex] = {
-          ...demoTablesStore[tableIndex],
-          ...(positionX !== undefined && { positionX }),
-          ...(positionY !== undefined && { positionY }),
-          ...(rotation !== undefined && { rotation }),
-          ...(status && { status }),
-          ...(serverId && { serverId }),
-        };
-      }
-      
-      return NextResponse.json({
-        success: true,
-        demo: true,
-      });
-    }
 
     // Real database update
     const updateData: any = {};
@@ -514,28 +220,7 @@ export async function PUT(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tableId, status, serverId, currentPartySize, demo = false } = body;
-
-    // Demo mode
-    if (demo || tableId?.startsWith('demo-')) {
-      const tableIndex = demoTablesStore.findIndex(t => t.id === tableId);
-      if (tableIndex !== -1) {
-        demoTablesStore[tableIndex] = {
-          ...demoTablesStore[tableIndex],
-          ...(status && { status }),
-          ...(serverId !== undefined && { serverId }),
-          ...(currentPartySize !== undefined && { currentPartySize }),
-          ...(status === 'occupied' && { 
-            currentPartySize: currentPartySize || demoTablesStore[tableIndex].capacity 
-          }),
-        };
-      }
-      
-      return NextResponse.json({
-        success: true,
-        demo: true,
-      });
-    }
+    const { tableId, status, serverId, currentPartySize } = body;
 
     // Real database update
     const updateData: any = {};
@@ -576,16 +261,6 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const tableId = searchParams.get('id');
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo mode
-    if (demo || tableId?.startsWith('demo-')) {
-      demoTablesStore = demoTablesStore.filter(t => t.id !== tableId);
-      return NextResponse.json({
-        success: true,
-        demo: true,
-      });
-    }
 
     if (!tableId) {
       return NextResponse.json(

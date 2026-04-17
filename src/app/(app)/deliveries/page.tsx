@@ -40,67 +40,6 @@ import {
   X,
 } from 'lucide-react';
 
-// Demo deliveries
-const DEMO_DELIVERIES = [
-  {
-    id: '1',
-    orderNumber: 'ORD-2024-0145',
-    customerName: 'Kouamé Jean',
-    customerPhone: '07 08 09 10 11',
-    status: 'PENDING',
-    pickupAddress: 'Restaurant Le Savana, Cocody',
-    dropoffAddress: 'Cocody, Riviera 3, Avenue 25',
-    distance: '3.2 km',
-    fee: 1500,
-    driver: null,
-    createdAt: new Date(),
-    estimatedTime: 25,
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-2024-0144',
-    customerName: 'Diallo Fatou',
-    customerPhone: '07 12 13 14 15',
-    status: 'DRIVER_ASSIGNED',
-    pickupAddress: 'Restaurant Le Savana, Cocody',
-    dropoffAddress: 'Treichville, Rue 12',
-    distance: '4.5 km',
-    fee: 1800,
-    driver: { id: '1', name: 'Kouassi Emmanuel', phone: '07 11 12 13 14', rating: 4.8 },
-    createdAt: new Date(Date.now() - 1200000),
-    estimatedTime: 30,
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-2024-0143',
-    customerName: 'Koné Ibrahim',
-    customerPhone: '01 02 03 04 05',
-    status: 'IN_TRANSIT',
-    pickupAddress: 'Restaurant Le Savana, Cocody',
-    dropoffAddress: 'Plateau, Avenue 12',
-    distance: '2.8 km',
-    fee: 1200,
-    driver: { id: '2', name: 'Yao Koffi', phone: '05 33 34 35 36', rating: 4.6 },
-    createdAt: new Date(Date.now() - 1800000),
-    estimatedTime: 15,
-  },
-  {
-    id: '4',
-    orderNumber: 'ORD-2024-0142',
-    customerName: 'Touré Amadou',
-    customerPhone: '05 22 23 24 25',
-    status: 'DELIVERED',
-    pickupAddress: 'Restaurant Le Savana, Cocody',
-    dropoffAddress: 'Yopougon, Sicogi',
-    distance: '5.1 km',
-    fee: 2000,
-    driver: { id: '1', name: 'Kouassi Emmanuel', phone: '07 11 12 13 14', rating: 4.8 },
-    createdAt: new Date(Date.now() - 3600000),
-    estimatedTime: 0,
-  },
-];
-
-// Demo available drivers
 const AVAILABLE_DRIVERS = [
   { id: '1', name: 'Kouassi Emmanuel', phone: '07 11 12 13 14', rating: 4.8, status: 'online', currentLocation: 'Cocody', vehicleType: 'motorcycle' },
   { id: '2', name: 'Yao Koffi', phone: '05 33 34 35 36', rating: 4.6, status: 'online', currentLocation: 'Plateau', vehicleType: 'motorcycle' },
@@ -138,11 +77,11 @@ const getStatusLabel = (status: string) => {
 
 export default function DeliveriesPage() {
   const { toast } = useToast();
-  const [deliveries, setDeliveries] = useState(DEMO_DELIVERIES);
+  const [deliveries, setDeliveries] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
-  const [selectedDelivery, setSelectedDelivery] = useState<typeof DEMO_DELIVERIES[0] | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<typeof null | null>(null);
   const [selectedDriverId, setSelectedDriverId] = useState<string>('');
 
   const filteredDeliveries = deliveries.filter((d) => {
@@ -159,7 +98,7 @@ export default function DeliveriesPage() {
   };
 
   // Open driver assignment dialog
-  const openAssignDialog = (delivery: typeof DEMO_DELIVERIES[0]) => {
+  const openAssignDialog = (delivery: typeof null) => {
     setSelectedDelivery(delivery);
     setSelectedDriverId('');
     setIsAssignDialogOpen(true);

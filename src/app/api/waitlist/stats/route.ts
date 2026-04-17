@@ -7,65 +7,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const restaurantId = searchParams.get('restaurantId');
     const period = searchParams.get('period') || 'today'; // today, week, month
-    const demo = searchParams.get('demo') === 'true';
-
-    // Demo data
-    if (demo || !restaurantId) {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-      // Generate demo stats
-      const demoStats = {
-        current: {
-          waiting: 5,
-          notified: 2,
-          averageWaitTime: 25,
-          longestWait: 45,
-          shortestWait: 5,
-          totalParties: 7,
-          totalGuests: 24,
-        },
-        today: {
-          totalEntries: 23,
-          seated: 18,
-          cancelled: 2,
-          noShows: 1,
-          averageWaitTime: 22,
-          averageQuotedTime: 25,
-          accuracyRate: 88, // Percentage of accurate quotes
-          peakHour: '19:00',
-          peakWaitTime: 45,
-        },
-        trends: {
-          waitTimeChange: -5, // Percentage change from yesterday
-          volumeChange: 12, // Percentage change from yesterday
-          seatingRate: 78, // Percentage of entries that were seated
-        },
-        hourlyData: Array.from({ length: 24 }, (_, i) => ({
-          hour: `${i.toString().padStart(2, '0')}:00`,
-          entries: i >= 11 && i <= 21 ? Math.floor(Math.random() * 5) + 1 : 0,
-          avgWait: i >= 11 && i <= 21 ? Math.floor(Math.random() * 20) + 10 : 0,
-        })),
-        partySizeDistribution: [
-          { size: '1-2', count: 8, percentage: 35 },
-          { size: '3-4', count: 10, percentage: 43 },
-          { size: '5-6', count: 3, percentage: 13 },
-          { size: '7+', count: 2, percentage: 9 },
-        ],
-        areaPreferences: [
-          { area: 'Intérieur', count: 12, percentage: 52 },
-          { area: 'Terrasse', count: 8, percentage: 35 },
-          { area: 'VIP', count: 3, percentage: 13 },
-        ],
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: demoStats,
-        period,
-        generatedAt: new Date().toISOString(),
-      });
-    }
 
     // Calculate date range
     const now = new Date();

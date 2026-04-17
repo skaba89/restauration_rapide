@@ -83,7 +83,7 @@ export function AllergenManager() {
       const response = await fetch('/api/allergens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getMenuItems', data: { demo: true } })
+        body: JSON.stringify({ action: 'getMenuItems', data: { } })
       });
       const result = await response.json();
       if (result.success) {

@@ -35,23 +35,8 @@ interface Table {
   reservationTime?: string;
 }
 
-const DEMO_TABLES: Table[] = [
-  { id: '1', name: 'Table 1', seats: 4, status: 'available', guests: 0 },
-  { id: '2', name: 'Table 2', seats: 2, status: 'occupied', guests: 2, serverName: 'Ibrahim' },
-  { id: '3', name: 'Table 3', seats: 6, status: 'occupied', guests: 4, serverName: 'Fatou' },
-  { id: '4', name: 'Table 4', seats: 4, status: 'reserved', guests: 0, reservationName: 'M. Diallo', reservationTime: '19:30' },
-  { id: '5', name: 'Table 5', seats: 8, status: 'available', guests: 0 },
-  { id: '6', name: 'Table 6', seats: 4, status: 'occupied', guests: 3, serverName: 'Ibrahim' },
-  { id: '7', name: 'Table 7', seats: 2, status: 'cleaning', guests: 0 },
-  { id: '8', name: 'Table 8', seats: 4, status: 'available', guests: 0 },
-  { id: '9', name: 'Table 9', seats: 6, status: 'reserved', guests: 0, reservationName: 'Mme Sylla', reservationTime: '20:00' },
-  { id: '10', name: 'Table 10', seats: 4, status: 'available', guests: 0 },
-  { id: '11', name: 'Table 11', seats: 2, status: 'occupied', guests: 2, serverName: 'Fatou' },
-  { id: '12', name: 'Table 12', seats: 8, status: 'available', guests: 0 },
-];
-
 export default function FloorPlanPage() {
-  const [tables, setTables] = useState<Table[]>(DEMO_TABLES);
+  const [tables, setTables] = useState<Table[]>([]);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [showTableDialog, setShowTableDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);

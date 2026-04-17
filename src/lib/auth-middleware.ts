@@ -1,77 +1,14 @@
 // ============================================
 // Restaurant OS - Authentication Middleware
 // Protect API routes with session validation
-// Supports: self-contained demo tokens, in-memory demo sessions, DB sessions
+// Database-only authentication
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth-helpers';
 import { apiError } from '@/lib/api-responses';
 import { hasPermission } from '@/lib/auth-helpers';
-import { validateDemoToken } from '@/lib/demo-tokens';
-
-// ── Demo users lookup (shared with auth/route.ts) ──
-// Full user data is embedded in the demo token, but we need
-// organizations/phone/name which require a lookup by userId.
-const DEMO_USER_LOOKUP: Record<string, any> = {
-  'admin-user-1': {
-    id: 'admin-user-1', email: 'admin@kfm-delice.com', phone: '+224 623 21 72 40',
-    role: 'SUPER_ADMIN', firstName: 'Super', lastName: 'Admin', avatar: null, isActive: true,
-    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'ADMIN' }],
-  },
-  'demo-user-1': {
-    id: 'demo-user-1', email: 'demo@kfm-delice.com', phone: '+224 622 000 000',
-    role: 'ORG_ADMIN', firstName: 'Admin', lastName: 'Demo', avatar: null, isActive: true,
-    organizations: [{ id: 'demo-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'ADMIN' }],
-  },
-  'kfm-user-1': {
-    id: 'kfm-user-1', email: 'contact@kfm-delice.com', phone: '+224 623 21 72 41',
-    role: 'ORG_ADMIN', firstName: 'KFM', lastName: 'DELICE', avatar: null, isActive: true,
-    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'ADMIN' }],
-  },
-  'amadou-user-1': {
-    id: 'amadou-user-1', email: 'amadou@kfm-delice.com', phone: '+224 622 111 222',
-    role: 'RESTAURANT_MANAGER', firstName: 'Amadou', lastName: 'Diallo', avatar: null, isActive: true,
-    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'MANAGER' }],
-  },
-  'kitchen-user-1': {
-    id: 'kitchen-user-1', email: 'kitchen@kfm-delice.com', phone: '+224 622 222 333',
-    role: 'KITCHEN', firstName: 'Chef', lastName: 'Abdoulaye', avatar: null, isActive: true,
-    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'STAFF' }],
-  },
-  'driver-user-1': {
-    id: 'driver-user-1', email: 'driver@kfm-delice.com', phone: '+224 622 333 444',
-    role: 'DRIVER', firstName: 'Moussa', lastName: 'Touré', avatar: null, isActive: true,
-    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'STAFF' }],
-  },
-};
-
-// ── Demo session bridge ──
-// In demo mode, tokens are stored in an in-memory Map inside route.ts.
-// This module-level reference allows auth-middleware to validate them.
-// The Map is populated lazily via a shared module pattern.
-let _getDemoSession: ((token: string) => { user: any; expiresAt: Date } | undefined) | null = null;
-
-// Called from auth/route.ts to register the demo session getter
-export function registerDemoSessionGetter(
-  getter: (token: string) => { user: any; expiresAt: Date } | undefined
-) {
-  _getDemoSession = getter;
-}
-
-// Try to validate against demo in-memory sessions
-function getDemoSession(token: string): { user: any; expiresAt: Date } | undefined {
-  if (!_getDemoSession) return undefined;
-  try {
-    const session = _getDemoSession(token);
-    if (session && session.expiresAt > new Date()) {
-      return session;
-    }
-    return undefined;
-  } catch {
-    return undefined;
-  }
-}
+import { db } from '@/lib/db';
 
 /**
  * Authenticated user interface
@@ -125,9 +62,7 @@ export function extractBearerToken(request: NextRequest): string | null {
 
 /**
  * Validate authentication from request
- * 1. Self-contained demo tokens (works across serverless instances)
- * 2. In-memory demo sessions (same instance, fast path)
- * 3. Database sessions (persistent, production)
+ * Database session validation only
  */
 export async function authenticateRequest(
   request: NextRequest
@@ -140,54 +75,14 @@ export async function authenticateRequest(
       error: apiError('Token d\'authentification requis', 401),
     };
   }
-  
-  // 1. Check self-contained demo token (works across serverless instances)
-  const demoPayload = validateDemoToken(token);
-  if (demoPayload) {
-    const fullUser = DEMO_USER_LOOKUP[demoPayload.userId];
-    if (fullUser) {
-      return {
-        success: true,
-        user: {
-          id: fullUser.id,
-          email: fullUser.email,
-          phone: fullUser.phone,
-          role: fullUser.role,
-          firstName: fullUser.firstName,
-          lastName: fullUser.lastName,
-          avatar: fullUser.avatar,
-          language: 'fr',
-          isActive: fullUser.isActive !== false,
-          organizations: fullUser.organizations || [],
-        },
-        sessionId: token,
-      };
-    }
-  }
 
-  // 2. Check in-memory demo sessions (same instance, fast path)
-  const demoSession = getDemoSession(token);
-  if (demoSession) {
-    const user = demoSession.user;
+  if (!db) {
     return {
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        avatar: user.avatar,
-        language: 'fr',
-        isActive: user.isActive !== false,
-        organizations: user.organizations || [],
-      },
-      sessionId: token,
+      success: false,
+      error: apiError('Base de données non configurée', 503),
     };
   }
-
-  // 3. Check database sessions (persistent, production)
+  
   try {
     const session = await validateSession(token);
     
@@ -226,17 +121,17 @@ export async function authenticateRequest(
         avatar: user.avatar,
         language: user.language,
         isActive: user.isActive,
-        organizations: user.organizationUsers.map(ou => ({
+        organizations: user.organizationUsers?.map(ou => ({
           id: ou.organization.id,
           name: ou.organization.name,
           slug: ou.organization.slug,
           role: ou.role,
-        })),
+        })) || [],
       },
       sessionId: session.id,
     };
   } catch (dbError) {
-    // DB unavailable - if we're here, demo session also didn't match
+    console.error('[AUTH] Session validation error:', dbError);
     return {
       success: false,
       error: apiError('Session invalide ou service indisponible', 401),
@@ -325,8 +220,13 @@ export function withOptionalAuth<T>(
   ) => Promise<NextResponse>
 ) {
   return async (request: NextRequest, context?: T): Promise<NextResponse> => {
-    const authResult = await authenticateRequest(request);
+    const token = extractBearerToken(request);
     
+    if (!token) {
+      return handler(request, null, context);
+    }
+
+    const authResult = await authenticateRequest(request);
     const user = authResult.success ? authResult.user : null;
     
     return handler(request, user, context);

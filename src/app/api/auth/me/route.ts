@@ -1,12 +1,13 @@
-// Current user endpoint - supports demo sessions AND DB sessions
+// ============================================
+// Current user endpoint - Database-only
+// ============================================
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { authenticateRequest } from '@/lib/auth-middleware';
 import { NextRequest } from 'next/server';
 
-// GET /api/auth/me - Get current user
+// GET /api/auth/me - Get current user with restaurant access
 export async function GET(request: NextRequest) {
   return withErrorHandler(async () => {
-    // authenticateRequest checks demo in-memory sessions FIRST, then DB sessions
     const authResult = await authenticateRequest(request);
 
     if (!authResult.success) {
@@ -15,45 +16,38 @@ export async function GET(request: NextRequest) {
 
     const user = authResult.user;
 
-    // Try to get restaurant admin access from DB (if available)
+    // Get organization restaurants from DB
     let restaurants: any[] = [];
     try {
       const { db } = await import('@/lib/db');
-      if (db) {
-        const restaurantAdmins = await db.restaurantAdmin.findMany({
+      if (db && user.organizations.length > 0) {
+        const orgIds = user.organizations.map(org => org.id);
+        
+        // Get restaurants from the user's organizations
+        const orgRestaurants = await db.restaurant.findMany({
           where: {
-            userId: user.id,
+            organizationId: { in: orgIds },
             isActive: true,
           },
-          include: {
-            restaurant: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-                logo: true,
-                subdomain: true,
-                domain: true,
-                primaryColor: true,
-              },
-            },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo: true,
+            subdomain: true,
+            domain: true,
+            primaryColor: true,
+            organizationId: true,
           },
-          orderBy: { isDefault: 'desc' },
         });
-        restaurants = (restaurantAdmins || []).map((ra: any) => ({
-          id: ra.restaurant.id,
-          name: ra.restaurant.name,
-          slug: ra.restaurant.slug,
-          logo: ra.restaurant.logo,
-          subdomain: ra.restaurant.subdomain,
-          domain: ra.restaurant.domain,
-          primaryColor: ra.restaurant.primaryColor,
-          role: ra.role,
-          isDefault: ra.isDefault,
+
+        restaurants = orgRestaurants.map(r => ({
+          ...r,
+          role: user.organizations.find(o => o.id === r.organizationId)?.role || 'STAFF',
         }));
       }
-    } catch {
-      // DB unavailable - skip restaurant data (demo mode)
+    } catch (error) {
+      console.error('[AUTH/ME] Error fetching restaurants:', error);
     }
 
     return apiSuccess({

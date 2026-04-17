@@ -33,22 +33,6 @@ export interface OrderHistory {
   preferredCategories: string[];
 }
 
-// Demo menu items
-const DEMO_MENU_ITEMS: MenuItem[] = [
-  { id: 'item-001', name: 'Attieké Poisson Grillé', description: 'Attieké avec poisson grillé et sauce tomate', price: 15000, category: 'Plats Principaux', isPopular: true, tags: ['poisson', 'traditionnel', 'déjeuner'] },
-  { id: 'item-002', name: 'Kedjenou de Poulet', description: 'Ragoût de poulet mijoté aux légumes', price: 12000, category: 'Plats Principaux', isPopular: true, tags: ['poulet', 'traditionnel'] },
-  { id: 'item-003', name: 'Thiéboudienne', description: 'Riz rouge au poisson et légumes', price: 14000, category: 'Plats Principaux', isPopular: true, tags: ['poisson', 'riz', 'sénégalais'] },
-  { id: 'item-004', name: 'Alloco Sauce Graine', description: 'Bananes plantain frites avec sauce palava', price: 8000, category: 'Plats Principaux', tags: ['végétarien', 'banane'] },
-  { id: 'item-005', name: 'Riz Gras', description: 'Riz gras à la viande', price: 10000, category: 'Plats Principaux', isPopular: true, tags: ['viande', 'riz'] },
-  { id: 'item-006', name: 'Garba', description: 'Attieké avec thon et piment', price: 7000, category: 'Plats Principaux', tags: ['thon', 'rapide'] },
-  { id: 'item-007', name: 'Foutou Banane', description: 'Pâte de banane avec sauce', price: 9000, category: 'Plats Principaux', tags: ['banane', 'traditionnel'] },
-  { id: 'item-008', name: 'Jus de Bissap', description: 'Jus naturel de fleur d\'hibiscus', price: 2000, category: 'Boissons', isPopular: true, tags: ['boisson', 'naturel', 'frais'] },
-  { id: 'item-009', name: 'Jus de Gingembre', description: 'Jus de gingembre frais et énergisant', price: 2000, category: 'Boissons', tags: ['boisson', 'naturel', 'énergisant'] },
-  { id: 'item-010', name: 'Banane Plantain Frite', description: 'Bananes plantain croustillantes', price: 3000, category: 'Accompagnements', tags: ['accompagnement', 'végétarien'] },
-  { id: 'item-011', name: 'Salade Ivoirienne', description: 'Salade fraîche avec sauce locale', price: 5000, category: 'Entrées', tags: ['salade', 'frais', 'léger'] },
-  { id: 'item-012', name: 'Brochettes de Poulet', description: 'Brochettes grillées marinées', price: 6000, category: 'Entrées', isPopular: true, tags: ['poulet', 'grillé'] },
-];
-
 // Popular items based on order frequency
 const POPULARITY_SCORES: Record<string, number> = {
   'item-001': 95,
@@ -118,7 +102,7 @@ export async function getPersonalizedRecommendations(
   const seasonalItems = SEASONAL_ITEMS[month] || [];
 
   // Generate recommendations
-  for (const item of DEMO_MENU_ITEMS) {
+  for (const item of []) {
     if (currentItems.includes(item.id)) continue;
 
     let score = 0;
@@ -193,9 +177,9 @@ export async function getPersonalizedRecommendations(
  * Get most popular items
  */
 export async function getPopularItems(limit: number = 5): Promise<Recommendation[]> {
-  const items = DEMO_MENU_ITEMS
-    .filter(item => POPULARITY_SCORES[item.id])
-    .sort((a, b) => (POPULARITY_SCORES[b.id] || 0) - (POPULARITY_SCORES[a.id] || 0))
+  const items = []
+    .filter((item: any) => POPULARITY_SCORES[item.id])
+    .sort((a: any, b: any) => (POPULARITY_SCORES[b.id] || 0) - (POPULARITY_SCORES[a.id] || 0))
     .slice(0, limit);
 
   return items.map(item => ({
@@ -220,7 +204,7 @@ export async function getComplementaryItems(itemId: string, limit: number = 3): 
   return complements
     .slice(0, limit)
     .map(id => {
-      const item = DEMO_MENU_ITEMS.find(i => i.id === id);
+      const item = null;
       if (!item) return null;
       
       return {
@@ -265,7 +249,7 @@ export async function getTimeBasedRecommendations(limit: number = 5): Promise<Re
   return itemIds
     .slice(0, limit)
     .map(id => {
-      const item = DEMO_MENU_ITEMS.find(i => i.id === id);
+      const item = null;
       if (!item) return null;
       
       return {
@@ -296,7 +280,7 @@ export async function getSeasonalRecommendations(limit: number = 5): Promise<Rec
   return itemIds
     .slice(0, limit)
     .map(id => {
-      const item = DEMO_MENU_ITEMS.find(i => i.id === id);
+      const item = null;
       if (!item) return null;
       
       return {
@@ -318,7 +302,7 @@ export async function getSeasonalRecommendations(limit: number = 5): Promise<Rec
  * Get all menu items
  */
 export function getAllMenuItems(): MenuItem[] {
-  return DEMO_MENU_ITEMS;
+  throw error;
 }
 
 /**

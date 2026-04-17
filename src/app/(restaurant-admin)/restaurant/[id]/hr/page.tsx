@@ -32,49 +32,10 @@ interface Employee {
   salary: number;
 }
 
-const DEMO_EMPLOYEES: Employee[] = [
-  {
-    id: '1',
-    firstName: 'Mamadou',
-    lastName: 'Diallo',
-    email: 'mamadou@kfm-delice.com',
-    phone: '+224 620 00 00 01',
-    position: 'Chef Cuisinier',
-    department: 'Cuisine',
-    status: 'ACTIVE',
-    hireDate: '2022-03-15',
-    salary: 850000,
-  },
-  {
-    id: '2',
-    firstName: 'Fatou',
-    lastName: 'Bamba',
-    email: 'fatou@kfm-delice.com',
-    phone: '+224 620 00 00 02',
-    position: 'Serveuse',
-    department: 'Service',
-    status: 'ACTIVE',
-    hireDate: '2023-06-01',
-    salary: 350000,
-  },
-  {
-    id: '3',
-    firstName: 'Ibrahim',
-    lastName: 'Koné',
-    email: 'ibrahim@kfm-delice.com',
-    phone: '+224 620 00 00 03',
-    position: 'Commis',
-    department: 'Cuisine',
-    status: 'ON_LEAVE',
-    hireDate: '2023-09-15',
-    salary: 280000,
-  },
-];
-
 export default function RestaurantHRPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [employees, setEmployees] = useState<Employee[]>(DEMO_EMPLOYEES);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 

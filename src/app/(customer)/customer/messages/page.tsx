@@ -92,76 +92,9 @@ const getSenderColor = (type: string) => {
   }
 };
 
-const DEMO_MESSAGES: Record<string, Message[]> = {
-  'ORD-2024-0145': [
-    {
-      id: 'msg-1',
-      orderId: 'ORD-2024-0145',
-      senderId: 'driver-1',
-      senderName: 'Amadou Touré',
-      senderType: 'driver',
-      content: 'Bonjour! J\'ai bien pris en charge votre commande.',
-      timestamp: new Date(Date.now() - 15 * 60 * 1000),
-      read: true,
-    },
-    {
-      id: 'msg-2',
-      orderId: 'ORD-2024-0145',
-      senderId: 'customer-1',
-      senderName: 'Vous',
-      senderType: 'customer',
-      content: 'Parfait, merci! Combien de temps environ?',
-      timestamp: new Date(Date.now() - 14 * 60 * 1000),
-      read: true,
-    },
-    {
-      id: 'msg-3',
-      orderId: 'ORD-2024-0145',
-      senderId: 'driver-1',
-      senderName: 'Amadou Touré',
-      senderType: 'driver',
-      content: 'Environ 15-20 minutes. Je suis en route!',
-      timestamp: new Date(Date.now() - 10 * 60 * 1000),
-      read: true,
-    },
-    {
-      id: 'msg-4',
-      orderId: 'ORD-2024-0145',
-      senderId: 'driver-1',
-      senderName: 'Amadou Touré',
-      senderType: 'driver',
-      content: 'Je suis à 2 minutes.',
-      timestamp: new Date(Date.now() - 5 * 60 * 1000),
-      read: false,
-    },
-  ],
-  'ORD-2024-0144': [
-    {
-      id: 'msg-5',
-      orderId: 'ORD-2024-0144',
-      senderId: 'restaurant-1',
-      senderName: 'Le Petit Maquis',
-      senderType: 'restaurant',
-      content: 'Votre commande est en préparation.',
-      timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
-      read: true,
-    },
-    {
-      id: 'msg-6',
-      orderId: 'ORD-2024-0144',
-      senderId: 'restaurant-1',
-      senderName: 'Le Petit Maquis',
-      senderType: 'restaurant',
-      content: 'Votre commande est prête!',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      read: true,
-    },
-  ],
-};
-
 export default function CustomerMessagesPage() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<Record<string, Message[]>>(DEMO_MESSAGES);
+  const [messages, setMessages] = useState<Record<string, Message[]>>([]);
   const [newMessage, setNewMessage] = useState('');
   const { toast } = useToast();
 

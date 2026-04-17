@@ -83,24 +83,12 @@ interface TipsDistributionProps {
   loading?: boolean;
 }
 
-// Demo staff data
-const DEMO_STAFF: StaffMember[] = [
-  { id: 'staff-001', name: 'Aïssata Traoré', role: 'waiter', hoursWorked: 168 },
-  { id: 'staff-002', name: 'Moussa Bamba', role: 'waiter', hoursWorked: 168 },
-  { id: 'staff-003', name: 'Mariama Sy', role: 'kitchen', hoursWorked: 84 },
-  { id: 'staff-004', name: 'Ibrahim Koné', role: 'kitchen', hoursWorked: 168 },
-  { id: 'staff-005', name: 'Fatoumata Diallo', role: 'delivery', hoursWorked: 126 },
-  { id: 'staff-006', name: 'Seydou Konaté', role: 'delivery', hoursWorked: 126 },
-  { id: 'staff-007', name: 'Amadou Keita', role: 'waiter', hoursWorked: 200 },
-];
-
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
 export function TipsDistribution({ 
   pendingAmount = 63500, 
-  staff = DEMO_STAFF,
-  onDistribute,
+  staff = onDistribute,
   loading 
 }: TipsDistributionProps) {
   const [method, setMethod] = useState<DistributionRule['method']>('hours');

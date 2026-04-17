@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Demo dietary labels
-const DEMO_DIETARY_LABELS = [
-  { id: 'vegetarian', name: 'Végétarien', slug: 'vegetarian', icon: '🥬', description: 'Sans viande ni poisson', color: 'bg-green-100 text-green-700', isActive: true },
-  { id: 'vegan', name: 'Vegan', slug: 'vegan', icon: '🌱', description: 'Sans produits animaux', color: 'bg-emerald-100 text-emerald-700', isActive: true },
-  { id: 'halal', name: 'Halal', slug: 'halal', icon: '☪️', description: 'Conforme aux prescriptions islamiques', color: 'bg-blue-100 text-blue-700', isActive: true },
-  { id: 'gluten-free', name: 'Sans Gluten', slug: 'gluten-free', icon: '🌾', description: 'Sans gluten', color: 'bg-amber-100 text-amber-700', isActive: true },
-  { id: 'kosher', name: 'Casher', slug: 'kosher', icon: '✡️', description: 'Conforme aux prescriptions juives', color: 'bg-purple-100 text-purple-700', isActive: true },
-  { id: 'dairy-free', name: 'Sans Lait', slug: 'dairy-free', icon: '🥛', description: 'Sans produits laitiers', color: 'bg-cyan-100 text-cyan-700', isActive: true },
-  { id: 'nut-free', name: 'Sans Fruits à Coque', slug: 'nut-free', icon: '🌰', description: 'Sans fruits à coque', color: 'bg-orange-100 text-orange-700', isActive: true },
-  { id: 'low-carb', name: 'Faible en Glucides', slug: 'low-carb', icon: '🍖', description: 'Régime cétogène friendly', color: 'bg-red-100 text-red-700', isActive: true },
-];
-
 // GET - List all dietary labels
 export async function GET(request: NextRequest) {
   try {
@@ -20,14 +8,6 @@ export async function GET(request: NextRequest) {
       where: { isActive: true },
       orderBy: { name: 'asc' }
     });
-
-    // Return demo data if no labels exist
-    if (labels.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: DEMO_DIETARY_LABELS
-      });
-    }
 
     return NextResponse.json({
       success: true,
@@ -37,7 +17,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching dietary labels:', error);
     return NextResponse.json({
       success: true,
-      data: DEMO_DIETARY_LABELS
+      data: []
     });
   }
 }

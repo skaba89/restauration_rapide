@@ -3,69 +3,6 @@ import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { generateSlug } from '@/lib/utils-helpers';
 
-// Demo menu data
-const DEMO_MENUS = [
-  {
-    id: 'demo-menu-1',
-    name: 'Menu Principal',
-    slug: 'menu-principal',
-    description: 'Notre menu principal avec tous nos plats',
-    isActive: true,
-    menuType: 'main',
-    categories: [
-      {
-        id: 'demo-cat-1',
-        name: 'Plats Principaux',
-        slug: 'plats-principaux',
-        description: 'Nos spécialités principales',
-        image: null,
-        icon: 'utensils',
-        isActive: true,
-        sortOrder: 1,
-        _count: { items: 6 },
-        items: [
-          { id: 'demo-1', name: 'Attieké Poisson Grillé', price: 8000, isAvailable: true, isFeatured: true, isPopular: true, image: null, description: 'Attieké accompagné de poisson grillé', prepTime: 20 },
-          { id: 'demo-2', name: 'Kedjenou de Poulet', price: 7000, isAvailable: true, isFeatured: true, isPopular: true, image: null, description: 'Poulet braisé aux légumes', prepTime: 25 },
-          { id: 'demo-3', name: 'Thiéboudienne', price: 7000, isAvailable: true, isFeatured: false, isPopular: true, image: null, description: 'Riz rouge au poisson', prepTime: 30 },
-          { id: 'demo-5', name: 'Riz Gras', price: 5000, isAvailable: true, isFeatured: false, isPopular: false, image: null, description: 'Riz sauté à la viande', prepTime: 20 },
-          { id: 'demo-9', name: 'Garba', price: 3500, isAvailable: true, isFeatured: true, isPopular: true, image: null, description: 'Attiéké au thon et piment', prepTime: 15 },
-          { id: 'demo-10', name: 'Foutou Banane', price: 6000, isAvailable: true, isFeatured: false, isPopular: false, image: null, description: 'Pâte de banane plantain', prepTime: 30 },
-        ],
-      },
-      {
-        id: 'demo-cat-2',
-        name: 'Accompagnements',
-        slug: 'accompagnements',
-        description: 'Frites et accompagnements',
-        image: null,
-        icon: 'cookie',
-        isActive: true,
-        sortOrder: 2,
-        _count: { items: 2 },
-        items: [
-          { id: 'demo-4', name: 'Alloco Sauce Graine', price: 5000, isAvailable: true, isFeatured: false, isPopular: true, image: null, description: 'Bananes plantain frites avec sauce', prepTime: 15 },
-          { id: 'demo-8', name: 'Banane Plantain Frite', price: 2000, isAvailable: true, isFeatured: false, isPopular: false, image: null, description: 'Bananes plantain frites', prepTime: 10 },
-        ],
-      },
-      {
-        id: 'demo-cat-3',
-        name: 'Boissons',
-        slug: 'boissons',
-        description: 'Jus frais et boissons',
-        image: null,
-        icon: 'cup',
-        isActive: true,
-        sortOrder: 3,
-        _count: { items: 2 },
-        items: [
-          { id: 'demo-6', name: 'Jus de Bissap', price: 1500, isAvailable: true, isFeatured: false, isPopular: true, image: null, description: 'Jus frais d\'hibiscus', prepTime: 5 },
-          { id: 'demo-7', name: 'Jus de Gingembre', price: 1500, isAvailable: true, isFeatured: false, isPopular: false, image: null, description: 'Jus de gingembre frais', prepTime: 5 },
-        ],
-      },
-    ],
-  },
-];
-
 // GET /api/menu - List menus with categories and items
 export async function GET(request: Request) {
   return withErrorHandler(async () => {
@@ -73,19 +10,6 @@ export async function GET(request: Request) {
     const restaurantId = searchParams.get('restaurantId');
     const menuId = searchParams.get('menuId');
     const isActive = searchParams.get('isActive');
-    const demo = searchParams.get('demo');
-
-    // Return demo data if demo mode or no restaurantId/menuId
-    if (demo === 'true' || (!restaurantId && !menuId)) {
-      if (menuId) {
-        const menu = DEMO_MENUS.find(m => m.id === menuId);
-        if (!menu) {
-          return apiError('Menu non trouvé', 404);
-        }
-        return apiSuccess(menu);
-      }
-      return apiSuccess(DEMO_MENUS);
-    }
 
     // Get single menu with full details
     if (menuId) {

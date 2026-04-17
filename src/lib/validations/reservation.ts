@@ -101,9 +101,7 @@ export const reservationFilterSchema = z.object({
   date: z.string().datetime().optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
-  search: z.string().optional(),
-  demo: z.string().optional(),
-  page: z.coerce.number().int().positive().default(1),
+  search: z.string().optional(),page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 

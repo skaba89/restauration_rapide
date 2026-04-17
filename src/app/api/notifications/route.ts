@@ -18,68 +18,6 @@ interface Notification {
   actionUrl?: string;
 }
 
-// Demo notifications
-const demoNotifications: Notification[] = [
-  {
-    id: 'notif-1',
-    title: 'Nouvelle commande',
-    message: 'Commande #ORD-2847 reçue - 3 articles, 15,500 FCFA',
-    type: 'order',
-    priority: 'high',
-    read: false,
-    createdAt: new Date().toISOString(),
-    actionUrl: '/orders/ORD-2847',
-  },
-  {
-    id: 'notif-2',
-    title: 'Livraison en cours',
-    message: 'Votre livreur Amadou est en route - Arrivée estimée: 12 min',
-    type: 'delivery',
-    priority: 'normal',
-    read: false,
-    createdAt: new Date(Date.now() - 1800000).toISOString(),
-    actionUrl: '/deliveries/track',
-  },
-  {
-    id: 'notif-3',
-    title: 'Stock faible',
-    message: 'Coca-Cola 33cl: 5 unités restantes (seuil: 10)',
-    type: 'stock',
-    priority: 'high',
-    read: false,
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-    actionUrl: '/inventory',
-  },
-  {
-    id: 'notif-4',
-    title: 'Réservation confirmée',
-    message: 'Table 5 réservée pour 4 personnes à 19h30',
-    type: 'reservation',
-    priority: 'normal',
-    read: true,
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-    actionUrl: '/reservations',
-  },
-  {
-    id: 'notif-5',
-    title: 'Résumé du jour',
-    message: '27 commandes - 1,250,000 FCFA de chiffre d\'affaires',
-    type: 'summary',
-    priority: 'low',
-    read: true,
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: 'notif-6',
-    title: 'Paiement reçu',
-    message: 'Orange Money: 25,000 FCFA crédités sur votre compte',
-    type: 'payment',
-    priority: 'normal',
-    read: true,
-    createdAt: new Date(Date.now() - 172800000).toISOString(),
-  },
-];
-
 /**
  * GET /api/notifications
  * List notifications for current user
@@ -88,7 +26,6 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get('limit') || '20');
   const unreadOnly = searchParams.get('unread') === 'true';
-  const demo = searchParams.get('demo') === 'true';
 
   try {
     let notifications = demoNotifications;

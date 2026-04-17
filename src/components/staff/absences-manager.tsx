@@ -90,25 +90,6 @@ const STATUS_CONFIG = {
   excused: { label: 'Excusée', color: 'bg-blue-100 text-blue-700' },
 };
 
-// Demo data
-const DEMO_ABSENCES: Absence[] = [
-  { id: '1', staffId: '1', staffName: 'Amadou Diallo', date: new Date('2024-05-20'), type: 'late', typeLabel: 'Retard', reason: 'Embouteillages', durationMinutes: 45, status: 'justified', statusLabel: 'Justifiée', justification: 'Accident sur la route principale', documentUrl: null, reviewedBy: 'Admin', reviewedAt: new Date('2024-05-20'), notes: null, createdAt: new Date('2024-05-20') },
-  { id: '2', staffId: '2', staffName: 'Fatou Sylla', date: new Date('2024-05-18'), type: 'unjustified', typeLabel: 'Absence injustifiée', reason: null, durationMinutes: null, status: 'unjustified', statusLabel: 'Non justifiée', justification: null, documentUrl: null, reviewedBy: 'Admin', reviewedAt: new Date('2024-05-19'), notes: null, createdAt: new Date('2024-05-18') },
-  { id: '3', staffId: '3', staffName: 'Ibrahim Keita', date: new Date('2024-05-15'), type: 'early_departure', typeLabel: 'Départ anticipé', reason: 'Rendez-vous médical', durationMinutes: 60, status: 'justified', statusLabel: 'Justifiée', justification: 'Certificat médical fourni', documentUrl: '/documents/medical-cert-001.pdf', reviewedBy: 'Amadou Diallo', reviewedAt: new Date('2024-05-16'), notes: null, createdAt: new Date('2024-05-15') },
-  { id: '4', staffId: '4', staffName: 'Marie Koulibaly', date: new Date('2024-05-10'), type: 'late', typeLabel: 'Retard', reason: 'Problème de transport', durationMinutes: 30, status: 'excused', statusLabel: 'Excusée', justification: 'Grève des transports', documentUrl: null, reviewedBy: 'Admin', reviewedAt: new Date('2024-05-10'), notes: null, createdAt: new Date('2024-05-10') },
-  { id: '5', staffId: '5', staffName: 'Moussa Camara', date: new Date('2024-05-08'), type: 'no_show', typeLabel: 'Absence non justifiée', reason: null, durationMinutes: null, status: 'pending', statusLabel: 'En attente', justification: null, documentUrl: null, reviewedBy: null, reviewedAt: null, notes: null, createdAt: new Date('2024-05-08') },
-  { id: '6', staffId: '6', staffName: 'Aissatou Traore', date: new Date('2024-05-05'), type: 'late', typeLabel: 'Retard', reason: 'Enfant malade', durationMinutes: 20, status: 'justified', statusLabel: 'Justifiée', justification: 'Urgence familiale', documentUrl: null, reviewedBy: 'Amadou Diallo', reviewedAt: new Date('2024-05-05'), notes: null, createdAt: new Date('2024-05-05') },
-  { id: '7', staffId: '7', staffName: 'Sekou Konate', date: new Date('2024-05-03'), type: 'early_departure', typeLabel: 'Départ anticipé', reason: 'Fin de contrat', durationMinutes: 180, status: 'justified', statusLabel: 'Justifiée', justification: 'Préavis de démission', documentUrl: null, reviewedBy: 'Admin', reviewedAt: new Date('2024-05-03'), notes: null, createdAt: new Date('2024-05-03') },
-  { id: '8', staffId: '8', staffName: 'Fanta Diarra', date: new Date('2024-04-28'), type: 'late', typeLabel: 'Retard', reason: 'Premier jour - perdu', durationMinutes: 15, status: 'excused', statusLabel: 'Excusée', justification: 'Nouvel employé - période d\'adaptation', documentUrl: null, reviewedBy: 'Fatou Sylla', reviewedAt: new Date('2024-04-28'), notes: null, createdAt: new Date('2024-04-28') },
-  { id: '9', staffId: '9', staffName: 'Oumar Bah', date: new Date('2024-04-25'), type: 'unjustified', typeLabel: 'Absence injustifiée', reason: null, durationMinutes: null, status: 'pending', statusLabel: 'En attente', justification: null, documentUrl: null, reviewedBy: null, reviewedAt: null, notes: null, createdAt: new Date('2024-04-25') },
-  { id: '10', staffId: '10', staffName: 'Adama Sow', date: new Date('2024-04-20'), type: 'no_show', typeLabel: 'Absence non justifiée', reason: null, durationMinutes: null, status: 'unjustified', statusLabel: 'Non justifiée', justification: null, documentUrl: null, reviewedBy: 'Admin', reviewedAt: new Date('2024-04-21'), notes: 'Contrat non renouvelé suite à cette absence', createdAt: new Date('2024-04-20') },
-  { id: '11', staffId: '4', staffName: 'Marie Koulibaly', date: new Date('2024-04-15'), type: 'late', typeLabel: 'Retard', reason: 'Réveil tardif', durationMinutes: 25, status: 'pending', statusLabel: 'En attente', justification: null, documentUrl: null, reviewedBy: null, reviewedAt: null, notes: null, createdAt: new Date('2024-04-15') },
-  { id: '12', staffId: '3', staffName: 'Ibrahim Keita', date: new Date('2024-04-10'), type: 'early_departure', typeLabel: 'Départ anticipé', reason: 'Urgence personnelle', durationMinutes: 90, status: 'justified', statusLabel: 'Justifiée', justification: 'Appel téléphonique confirmé', documentUrl: null, reviewedBy: 'Fatou Sylla', reviewedAt: new Date('2024-04-10'), notes: null, createdAt: new Date('2024-04-10') },
-  { id: '13', staffId: '5', staffName: 'Moussa Camara', date: new Date('2024-04-05'), type: 'late', typeLabel: 'Retard', reason: 'Moto en panne', durationMinutes: 40, status: 'justified', statusLabel: 'Justifiée', justification: 'Facture de réparation fournie', documentUrl: '/documents/facture-moto.pdf', reviewedBy: 'Amadou Diallo', reviewedAt: new Date('2024-04-05'), notes: null, createdAt: new Date('2024-04-05') },
-  { id: '14', staffId: '6', staffName: 'Aissatou Traore', date: new Date('2024-04-02'), type: 'early_departure', typeLabel: 'Départ anticipé', reason: 'Rendez-vous bancaire', durationMinutes: 45, status: 'justified', statusLabel: 'Justifiée', justification: 'Heures récupérées le samedi', documentUrl: null, reviewedBy: 'Admin', reviewedAt: new Date('2024-04-02'), notes: null, createdAt: new Date('2024-04-02') },
-  { id: '15', staffId: '2', staffName: 'Fatou Sylla', date: new Date('2024-03-28'), type: 'late', typeLabel: 'Retard', reason: 'Fête familiale', durationMinutes: 60, status: 'unjustified', statusLabel: 'Non justifiée', justification: null, documentUrl: null, reviewedBy: 'Admin', reviewedAt: new Date('2024-03-28'), notes: 'Avertissement verbal', createdAt: new Date('2024-03-28') },
-];
-
 // Format date
 const formatDate = (date: Date | string) => {
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -125,7 +106,7 @@ const formatDuration = (minutes: number | null) => {
 };
 
 export function AbsencesManager() {
-  const [absences, setAbsences] = useState<Absence[]>(DEMO_ABSENCES);
+  const [absences, setAbsences] = useState<Absence[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');

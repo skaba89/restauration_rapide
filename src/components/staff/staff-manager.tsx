@@ -93,20 +93,6 @@ const STATUS_CONFIG = {
   inactive: { label: 'Inactif', color: 'bg-gray-100 text-gray-700' },
 };
 
-// Demo data
-const DEMO_STAFF: StaffMember[] = [
-  { id: '1', firstName: 'Amadou', lastName: 'Diallo', phone: '+224 62 123 45 67', email: 'amadou@kfmdelice.com', role: 'manager', roleLabel: 'Directeur', hourlyRate: 15000, salary: 5000000, hireDate: new Date('2022-01-15'), status: 'active', address: 'Conakry, Kaloum', emergencyContact: 'Fatou Diallo - +224 62 111 11 11' },
-  { id: '2', firstName: 'Fatou', lastName: 'Sylla', phone: '+224 62 234 56 78', email: 'fatou@kfmdelice.com', role: 'chef', roleLabel: 'Chef Cuisinier', hourlyRate: 12000, salary: 4000000, hireDate: new Date('2022-03-01'), status: 'active', address: 'Conakry, Dixinn', emergencyContact: 'Ibrahima Sylla - +224 62 222 22 22' },
-  { id: '3', firstName: 'Ibrahim', lastName: 'Keita', phone: '+224 62 345 67 89', email: 'ibrahim@kfmdelice.com', role: 'cook', roleLabel: 'Cuisinier', hourlyRate: 8000, salary: 2500000, hireDate: new Date('2023-01-10'), status: 'active', address: 'Conakry, Matam', emergencyContact: 'Aminata Keita - +224 62 333 33 33' },
-  { id: '4', firstName: 'Marie', lastName: 'Koulibaly', phone: '+224 62 456 78 90', email: 'marie@kfmdelice.com', role: 'waiter', roleLabel: 'Serveuse', hourlyRate: 5000, salary: 1500000, hireDate: new Date('2023-06-15'), status: 'active', address: 'Conakry, Ratoma', emergencyContact: 'Jean Koulibaly - +224 62 444 44 44' },
-  { id: '5', firstName: 'Moussa', lastName: 'Camara', phone: '+224 62 567 89 01', email: 'moussa@kfmdelice.com', role: 'delivery_driver', roleLabel: 'Livreur', hourlyRate: 5000, salary: 1200000, hireDate: new Date('2023-09-01'), status: 'active', address: 'Conakry, Matoto', emergencyContact: 'Aissata Camara - +224 62 555 55 55' },
-  { id: '6', firstName: 'Aissatou', lastName: 'Traore', phone: '+224 62 678 90 12', email: 'aissatou@kfmdelice.com', role: 'cashier', roleLabel: 'Caissière', hourlyRate: 6000, salary: 1800000, hireDate: new Date('2023-04-20'), status: 'active', address: 'Conakry, Kaloum', emergencyContact: 'Mamadou Traore - +224 62 666 66 66' },
-  { id: '7', firstName: 'Sekou', lastName: 'Konate', phone: '+224 62 789 01 23', email: 'sekou@kfmdelice.com', role: 'cook', roleLabel: 'Cuisinier', hourlyRate: 7500, salary: 2200000, hireDate: new Date('2023-11-05'), status: 'on_leave', address: 'Conakry, Dixinn', emergencyContact: 'Fatoumata Konate - +224 62 777 77 77' },
-  { id: '8', firstName: 'Fanta', lastName: 'Diarra', phone: '+224 62 890 12 34', email: 'fanta@kfmdelice.com', role: 'waiter', roleLabel: 'Serveuse', hourlyRate: 5000, salary: 1500000, hireDate: new Date('2024-01-15'), status: 'active', address: 'Conakry, Matam', emergencyContact: 'Moussa Diarra - +224 62 888 88 88' },
-  { id: '9', firstName: 'Oumar', lastName: 'Bah', phone: '+224 62 901 23 45', email: 'oumar@kfmdelice.com', role: 'cleaner', roleLabel: 'Agent d\'entretien', hourlyRate: 4000, salary: 1000000, hireDate: new Date('2024-02-01'), status: 'active', address: 'Conakry, Ratoma', emergencyContact: 'Mariama Bah - +224 62 999 99 99' },
-  { id: '10', firstName: 'Adama', lastName: 'Sow', phone: '+224 62 012 34 56', email: 'adama@kfmdelice.com', role: 'delivery_driver', roleLabel: 'Livreur', hourlyRate: 5000, salary: 1200000, hireDate: new Date('2024-03-10'), status: 'inactive', address: 'Conakry, Matoto', emergencyContact: 'Ibrahima Sow - +224 62 000 00 00' },
-];
-
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
@@ -123,7 +109,7 @@ interface StaffManagerProps {
 }
 
 export function StaffManager({ onScheduleView, onTimeEntriesView }: StaffManagerProps) {
-  const [staff, setStaff] = useState<StaffMember[]>(DEMO_STAFF);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');

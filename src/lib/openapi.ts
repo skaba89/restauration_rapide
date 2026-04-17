@@ -383,7 +383,6 @@ export const openApiSpec = {
           { name: 'search', in: 'query', schema: { type: 'string' } },
           { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20, maximum: 100 } },
-          { name: 'demo', in: 'query', schema: { type: 'string' }, description: 'Set to "true" for demo data' },
         ],
         responses: {
           200: { description: 'List of orders', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } },
@@ -412,7 +411,6 @@ export const openApiSpec = {
           { name: 'organizationId', in: 'query', schema: { type: 'string' } },
           { name: 'restaurantId', in: 'query', schema: { type: 'string' } },
           { name: 'period', in: 'query', schema: { type: 'string', enum: ['today', 'week', 'month'], default: 'today' } },
-          { name: 'demo', in: 'query', schema: { type: 'string' } },
         ],
         responses: {
           200: { description: 'Dashboard data', content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } } },

@@ -10,35 +10,6 @@ export async function GET(request: NextRequest) {
     const restaurantId = searchParams.get('restaurantId');
     const type = searchParams.get('type');
     const status = searchParams.get('status');
-    const demo = searchParams.get('demo') === 'true';
-
-    if (demo || !organizationId) {
-      // Return demo data
-      const demoInvoices = [
-        {
-          id: '1',
-          invoiceNumber: 'FAC-2024-001',
-          type: 'client',
-          status: 'paid',
-          clientName: 'Entreprise ABC',
-          clientEmail: 'contact@abc.com',
-          clientPhone: '+224 620 00 00 10',
-          issueDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-          dueDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-          items: [
-            { id: '1', description: 'Service traiteur - Réunion annuelle', quantity: 1, unitPrice: 2500000, totalPrice: 2500000 },
-          ],
-          subtotal: 2500000,
-          tax: 0,
-          discount: 0,
-          total: 2500000,
-          currency: 'GNF',
-          createdAt: new Date(),
-        },
-      ];
-      
-      return NextResponse.json({ success: true, data: { invoices: demoInvoices } });
-    }
 
     const where: any = { organizationId };
     if (restaurantId) where.restaurantId = restaurantId;
@@ -81,23 +52,6 @@ export async function POST(request: NextRequest) {
       notes,
       terms,
     } = body;
-
-    const demo = new URL(request.url).searchParams.get('demo') === 'true';
-    
-    if (demo || !organizationId) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          invoice: {
-            id: `demo-${Date.now()}`,
-            invoiceNumber: `FAC-2024-${Date.now().toString().slice(-3)}`,
-            ...body,
-            status: 'draft',
-            createdAt: new Date(),
-          },
-        },
-      });
-    }
 
     // Generate invoice number
     const lastInvoice = await db.invoice.findFirst({
@@ -161,21 +115,6 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, status, ...updateData } = body;
 
-    const demo = new URL(request.url).searchParams.get('demo') === 'true';
-    
-    if (demo || !id) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          invoice: {
-            id: id || `demo-${Date.now()}`,
-            ...body,
-            updatedAt: new Date(),
-          },
-        },
-      });
-    }
-
     const updatePayload: any = { ...updateData };
     
     if (status === 'paid') {
@@ -207,11 +146,6 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const demo = searchParams.get('demo') === 'true';
-
-    if (demo || !id) {
-      return NextResponse.json({ success: true });
-    }
 
     await db.invoice.delete({
       where: { id },

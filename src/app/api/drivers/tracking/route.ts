@@ -1,167 +1,15 @@
 // Drivers Tracking API - Real-time driver location tracking
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 import { broadcastDeliveryLocation } from '@/lib/sync-engine';
 
-// Demo driver locations (simulated real-time GPS data)
-const DEMO_DRIVER_LOCATIONS: Record<string, {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  avatar: string | null;
-  vehicleType: string;
-  vehiclePlate: string | null;
-  vehicleColor: string | null;
-  status: string;
-  isAvailable: boolean;
-  currentLat: number;
-  currentLng: number;
-  heading: number;
-  speed: number;
-  lastLocationAt: string;
-  activeDelivery: {
-    orderId: string;
-    orderNumber: string;
-    customerName: string;
-    deliveryAddress: string;
-    status: string;
-    destinationLat: number;
-    destinationLng: number;
-  } | null;
-}> = {};
+// In-memory store for real-time locations (persisted to DB periodically)
+const driverLocations: Record<string, any> = {};
 
-// Initialize demo drivers with positions and random movement
-function initDemoDrivers() {
-  const drivers = [
-    {
-      id: 'demo-driver-1',
-      firstName: 'Amadou',
-      lastName: 'Touré',
-      phone: '+2250700000100',
-      avatar: null,
-      vehicleType: 'motorcycle',
-      vehiclePlate: 'AB 1234 CD',
-      vehicleColor: 'Noir',
-      status: 'busy',
-      isAvailable: false,
-      currentLat: 5.3599,
-      currentLng: -4.0083,
-      heading: 45,
-      speed: 25,
-      lastLocationAt: new Date().toISOString(),
-      activeDelivery: {
-        orderId: 'demo-ord-2',
-        orderNumber: 'ORD-2024-0145',
-        customerName: 'Kouamé Jean',
-        deliveryAddress: 'Cocody, Riviera 3',
-        status: 'IN_TRANSIT',
-        destinationLat: 5.3699,
-        destinationLng: -4.0283,
-      },
-    },
-    {
-      id: 'demo-driver-2',
-      firstName: 'Ibrahim',
-      lastName: 'Koné',
-      phone: '+2250700000101',
-      avatar: null,
-      vehicleType: 'motorcycle',
-      vehiclePlate: 'AB 5678 EF',
-      vehicleColor: 'Rouge',
-      status: 'busy',
-      isAvailable: false,
-      currentLat: 5.3364,
-      currentLng: -4.0267,
-      heading: 120,
-      speed: 30,
-      lastLocationAt: new Date().toISOString(),
-      activeDelivery: {
-        orderId: 'demo-ord-3',
-        orderNumber: 'ORD-2024-0146',
-        customerName: 'Aya Marie',
-        deliveryAddress: 'Plateau, Rue du Commerce',
-        status: 'PICKED_UP',
-        destinationLat: 5.3489,
-        destinationLng: -4.0110,
-      },
-    },
-    {
-      id: 'demo-driver-3',
-      firstName: 'Moussa',
-      lastName: 'Diallo',
-      phone: '+2250700000102',
-      avatar: null,
-      vehicleType: 'bicycle',
-      vehiclePlate: null,
-      vehicleColor: 'Bleu',
-      status: 'online',
-      isAvailable: true,
-      currentLat: 5.3412,
-      currentLng: -4.0156,
-      heading: 200,
-      speed: 0,
-      lastLocationAt: new Date().toISOString(),
-      activeDelivery: null,
-    },
-    {
-      id: 'demo-driver-4',
-      firstName: 'Yao',
-      lastName: 'Kouassi',
-      phone: '+2250700000103',
-      avatar: null,
-      vehicleType: 'motorcycle',
-      vehiclePlate: 'AB 9012 GH',
-      vehicleColor: 'Blanc',
-      status: 'busy',
-      isAvailable: false,
-      currentLat: 5.3289,
-      currentLng: -3.9987,
-      heading: 315,
-      speed: 20,
-      lastLocationAt: new Date().toISOString(),
-      activeDelivery: {
-        orderId: 'demo-ord-4',
-        orderNumber: 'ORD-2024-0147',
-        customerName: 'Koné Ibrahim',
-        deliveryAddress: 'Cocody, Angré 7ème tranche',
-        status: 'IN_TRANSIT',
-        destinationLat: 5.3550,
-        destinationLng: -4.0050,
-      },
-    },
-    {
-      id: 'demo-driver-6',
-      firstName: 'Aïssata',
-      lastName: 'Traoré',
-      phone: '+2250700000105',
-      avatar: null,
-      vehicleType: 'scooter',
-      vehiclePlate: 'AB 7890 KL',
-      vehicleColor: 'Gris',
-      status: 'online',
-      isAvailable: true,
-      currentLat: 5.3756,
-      currentLng: -4.0421,
-      heading: 90,
-      speed: 0,
-      lastLocationAt: new Date().toISOString(),
-      activeDelivery: null,
-    },
-  ];
-
-  drivers.forEach(d => {
-    DEMO_DRIVER_LOCATIONS[d.id] = d;
-  });
-}
-
-// Initialize on first import
-initDemoDrivers();
-
-// Simulate driver movement (called on each request to create illusion of real-time)
+// Simulate driver movement for drivers with active deliveries
 function simulateDriverMovement() {
-  Object.values(DEMO_DRIVER_LOCATIONS).forEach(driver => {
+  Object.values(driverLocations).forEach((driver: any) => {
     if (driver.status === 'busy' && driver.activeDelivery && driver.speed > 0) {
-      // Move towards destination with some randomness
       const destLat = driver.activeDelivery.destinationLat;
       const destLng = driver.activeDelivery.destinationLng;
       const dLat = destLat - driver.currentLat;
@@ -169,20 +17,17 @@ function simulateDriverMovement() {
       const distance = Math.sqrt(dLat * dLat + dLng * dLng);
 
       if (distance > 0.001) {
-        // Move a small step towards destination
         const step = 0.0005 + Math.random() * 0.0005;
         driver.currentLat += (dLat / distance) * step + (Math.random() - 0.5) * 0.0002;
         driver.currentLng += (dLng / distance) * step + (Math.random() - 0.5) * 0.0002;
         driver.heading = Math.atan2(dLng, dLat) * (180 / Math.PI);
       } else {
-        // Arrived at destination
         driver.speed = 0;
         driver.activeDelivery.status = 'ARRIVED_AT_CUSTOMER';
       }
 
       driver.lastLocationAt = new Date().toISOString();
     } else if (driver.status === 'online' && driver.isAvailable) {
-      // Random small drift for available drivers
       driver.currentLat += (Math.random() - 0.5) * 0.0001;
       driver.currentLng += (Math.random() - 0.5) * 0.0001;
       driver.lastLocationAt = new Date().toISOString();
@@ -196,15 +41,75 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const driverId = searchParams.get('driverId');
     const status = searchParams.get('status');
+    const organizationId = searchParams.get('organizationId');
 
     // Simulate movement
     simulateDriverMovement();
 
-    let drivers = Object.values(DEMO_DRIVER_LOCATIONS);
+    // Try to get real data from database
+    let drivers = [];
+    try {
+      const where: any = { isActive: true };
+      if (organizationId) where.organizationId = organizationId;
+      
+      const dbDrivers = await db.driver.findMany({
+        where,
+        include: {
+          deliveries: {
+            where: { status: { in: ['PENDING', 'DRIVER_ASSIGNED', 'PICKED_UP'] } },
+            take: 1,
+            include: {
+              order: {
+                select: {
+                  id: true,
+                  orderNumber: true,
+                  customerName: true,
+                  deliveryAddress: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-    // Filter by specific driver
+      drivers = dbDrivers.map((d: any) => {
+        const activeDelivery = d.deliveries[0];
+        const stored = driverLocations[d.id];
+        
+        return {
+          id: d.id,
+          firstName: d.firstName || d.user?.firstName || '',
+          lastName: d.lastName || d.user?.lastName || '',
+          phone: d.phone || d.user?.phone || '',
+          avatar: d.avatar || d.user?.avatar || null,
+          vehicleType: d.vehicleType || 'motorcycle',
+          vehiclePlate: d.vehiclePlate || null,
+          vehicleColor: d.vehicleColor || null,
+          status: d.isAvailable ? 'online' : 'offline',
+          isAvailable: d.isAvailable,
+          currentLat: stored?.currentLat || d.currentLat || 5.3599,
+          currentLng: stored?.currentLng || d.currentLng || -4.0083,
+          heading: stored?.heading || 0,
+          speed: stored?.speed || 0,
+          lastLocationAt: stored?.lastLocationAt || new Date().toISOString(),
+          activeDelivery: activeDelivery ? {
+            orderId: activeDelivery.order?.id,
+            orderNumber: activeDelivery.order?.orderNumber,
+            customerName: activeDelivery.order?.customerName,
+            deliveryAddress: activeDelivery.dropoffAddress || activeDelivery.order?.deliveryAddress,
+            status: activeDelivery.status === 'PICKED_UP' ? 'IN_TRANSIT' : 'PENDING',
+            destinationLat: activeDelivery.dropoffLat || 5.3599,
+            destinationLng: activeDelivery.dropoffLng || -4.0083,
+          } : null,
+        };
+      });
+    } catch (dbError) {
+      console.error('DB error in driver tracking:', dbError);
+    }
+
+    // Merge in-memory locations
     if (driverId) {
-      const driver = DEMO_DRIVER_LOCATIONS[driverId];
+      const driver = drivers.find((d: any) => d.id === driverId) || driverLocations[driverId];
       if (!driver) {
         return NextResponse.json({ success: false, message: 'Driver non trouvé' }, { status: 404 });
       }
@@ -213,17 +118,16 @@ export async function GET(request: Request) {
 
     // Filter by status
     if (status) {
-      drivers = drivers.filter(d => d.status === status);
+      drivers = drivers.filter((d: any) => d.status === status);
     }
 
-    // Return all active drivers (online + busy)
-    const activeDrivers = drivers.filter(d => d.status !== 'offline' && d.status !== 'suspended');
+    const activeDrivers = drivers.filter((d: any) => d.status !== 'offline' && d.status !== 'suspended');
 
     const stats = {
       total: activeDrivers.length,
-      online: activeDrivers.filter(d => d.status === 'online').length,
-      busy: activeDrivers.filter(d => d.status === 'busy').length,
-      offline: drivers.filter(d => d.status === 'offline').length,
+      online: activeDrivers.filter((d: any) => d.status === 'online').length,
+      busy: activeDrivers.filter((d: any) => d.status === 'busy').length,
+      offline: drivers.filter((d: any) => d.status === 'offline').length,
     };
 
     return NextResponse.json({
@@ -253,7 +157,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate coordinates (Conakry area roughly)
+    // Validate coordinates
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
       return NextResponse.json(
         { success: false, message: 'Coordonnées invalides' },
@@ -261,50 +165,58 @@ export async function POST(request: Request) {
       );
     }
 
-    // Update in demo store
-    if (DEMO_DRIVER_LOCATIONS[driverId]) {
-      DEMO_DRIVER_LOCATIONS[driverId].currentLat = lat;
-      DEMO_DRIVER_LOCATIONS[driverId].currentLng = lng;
-      DEMO_DRIVER_LOCATIONS[driverId].heading = heading ?? DEMO_DRIVER_LOCATIONS[driverId].heading;
-      DEMO_DRIVER_LOCATIONS[driverId].speed = speed ?? 0;
-      DEMO_DRIVER_LOCATIONS[driverId].lastLocationAt = new Date().toISOString();
-      if (status) {
-        DEMO_DRIVER_LOCATIONS[driverId].status = status;
-        DEMO_DRIVER_LOCATIONS[driverId].isAvailable = status === 'online';
-      }
+    // Update in-memory store
+    if (!driverLocations[driverId]) {
+      driverLocations[driverId] = {};
+    }
+    driverLocations[driverId].currentLat = lat;
+    driverLocations[driverId].currentLng = lng;
+    driverLocations[driverId].heading = heading ?? 0;
+    driverLocations[driverId].speed = speed ?? 0;
+    driverLocations[driverId].lastLocationAt = new Date().toISOString();
+    if (status) {
+      driverLocations[driverId].status = status;
+      driverLocations[driverId].isAvailable = status === 'online';
+    }
 
-      // Broadcast to Pusher for real-time admin tracking
-      const driver = DEMO_DRIVER_LOCATIONS[driverId];
+    // Update database
+    try {
+      await db.driver.update({
+        where: { id: driverId },
+        data: { currentLat: lat, currentLng: lng },
+      });
+    } catch (dbError) {
+      console.warn('Failed to persist driver location:', dbError);
+    }
 
-      // Broadcast to the orders channel (admin can see driver movement)
-      if (driver.activeDelivery) {
-        try {
-          await broadcastDeliveryLocation({
-            orderId: driver.activeDelivery.orderId,
-            driverId: driver.id,
-            lat: driver.currentLat,
-            lng: driver.currentLng,
-            status: driver.activeDelivery.status,
-            etaMinutes: driver.speed > 0
-              ? Math.round(calculateDistance(
-                  driver.currentLat,
-                  driver.currentLng,
-                  driver.activeDelivery.destinationLat,
-                  driver.activeDelivery.destinationLng
-                ) / (driver.speed / 60))
-              : undefined,
-          });
-        } catch (pusherError) {
-          // Don't fail if Pusher is not configured
-          console.warn('Pusher broadcast failed:', pusherError);
-        }
+    // Broadcast to Pusher for real-time admin tracking
+    const driver = driverLocations[driverId];
+    if (driver.activeDelivery) {
+      try {
+        await broadcastDeliveryLocation({
+          orderId: driver.activeDelivery.orderId,
+          driverId: driver.id,
+          lat: driver.currentLat,
+          lng: driver.currentLng,
+          status: driver.activeDelivery.status,
+          etaMinutes: driver.speed > 0
+            ? Math.round(calculateDistance(
+                driver.currentLat,
+                driver.currentLng,
+                driver.activeDelivery.destinationLat,
+                driver.activeDelivery.destinationLng
+              ) / (driver.speed / 60))
+            : undefined,
+        });
+      } catch (pusherError) {
+        console.warn('Pusher broadcast failed:', pusherError);
       }
     }
 
     return NextResponse.json({
       success: true,
       message: 'Position mise à jour',
-      data: DEMO_DRIVER_LOCATIONS[driverId] || null,
+      data: driverLocations[driverId] || null,
     });
   } catch (error) {
     console.error('Error updating driver location:', error);
@@ -325,19 +237,31 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const driver = DEMO_DRIVER_LOCATIONS[driverId];
-    if (!driver) {
-      return NextResponse.json({ success: false, message: 'Driver non trouvé' }, { status: 404 });
+    // Update database
+    try {
+      const updateData: any = {};
+      if (status) updateData.isActive = status === 'online';
+      if (isAvailable !== undefined) updateData.isAvailable = isAvailable;
+      
+      await db.driver.update({
+        where: { id: driverId },
+        data: updateData,
+      });
+    } catch (dbError) {
+      console.error('Failed to update driver in DB:', dbError);
     }
 
-    if (status) driver.status = status;
-    if (isAvailable !== undefined) driver.isAvailable = isAvailable;
-    driver.lastLocationAt = new Date().toISOString();
+    // Update in-memory
+    if (driverLocations[driverId]) {
+      if (status) driverLocations[driverId].status = status;
+      if (isAvailable !== undefined) driverLocations[driverId].isAvailable = isAvailable;
+      driverLocations[driverId].lastLocationAt = new Date().toISOString();
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Statut du driver mis à jour',
-      data: driver,
+      data: driverLocations[driverId] || null,
     });
   } catch (error) {
     console.error('Error updating driver tracking:', error);

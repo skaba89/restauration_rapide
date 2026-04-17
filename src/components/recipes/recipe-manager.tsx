@@ -159,7 +159,7 @@ export function RecipeManager() {
   const fetchRecipes = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/recipes?demo=true&search=${searchTerm}&category=${categoryFilter === 'all' ? '' : categoryFilter}`);
+      const response = await fetch(`/api/recipes&search=${searchTerm}&category=${categoryFilter === 'all' ? '' : categoryFilter}`);
       if (response.ok) {
         const data = await response.json();
         setRecipes(data.data || []);
@@ -261,7 +261,6 @@ export function RecipeManager() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          demo: true,
           name: `${selectedRecipe.name} (Copie)`
         }),
       });
@@ -287,8 +286,7 @@ export function RecipeManager() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          targetServings: scaleServings,
-          demo: true
+          targetServings: scaleServings
         }),
       });
       
@@ -309,7 +307,7 @@ export function RecipeManager() {
     if (!selectedRecipe) return;
     
     try {
-      const response = await fetch(`/api/recipes/${selectedRecipe.id}?demo=true`, {
+      const response = await fetch(`/api/recipes/${selectedRecipe.id}`, {
         method: 'DELETE',
       });
       
@@ -338,7 +336,6 @@ export function RecipeManager() {
       totalCost,
       sellingPrice,
       margin: Math.round(margin * 10) / 10,
-      demo: true,
     };
 
     try {

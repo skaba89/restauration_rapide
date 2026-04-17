@@ -1,11 +1,25 @@
+// ============================================
 // Restaurants API - Restaurant CRUD with location search
+// Database-only, no demo fallback
+// ============================================
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/lib/api-responses';
 import { generateSlug, calculateDistance } from '@/lib/utils-helpers';
 
+// Helper: check db availability
+function requireDb() {
+  if (!db) {
+    return apiError('Base de données non configurée. Contactez l\'administrateur.', 503);
+  }
+  return null;
+}
+
 // GET /api/restaurants - List restaurants with location search
 export async function GET(request: Request) {
   return withErrorHandler(async () => {
+    const dbError = requireDb();
+    if (dbError) return dbError;
+
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = getPaginationParams(searchParams);
     const organizationId = searchParams.get('organizationId');
@@ -90,6 +104,9 @@ export async function GET(request: Request) {
 // POST /api/restaurants - Create restaurant
 export async function POST(request: Request) {
   return withErrorHandler(async () => {
+    const dbError = requireDb();
+    if (dbError) return dbError;
+
     const body = await request.json();
     const {
       organizationId,
@@ -220,6 +237,9 @@ export async function POST(request: Request) {
 // PATCH /api/restaurants - Update restaurant
 export async function PATCH(request: Request) {
   return withErrorHandler(async () => {
+    const dbError = requireDb();
+    if (dbError) return dbError;
+
     const body = await request.json();
     const { id, hours, ...updateData } = body;
 
@@ -267,6 +287,9 @@ export async function PATCH(request: Request) {
 // DELETE /api/restaurants - Delete restaurant
 export async function DELETE(request: Request) {
   return withErrorHandler(async () => {
+    const dbError = requireDb();
+    if (dbError) return dbError;
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

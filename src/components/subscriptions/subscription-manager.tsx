@@ -135,7 +135,7 @@ export function SubscriptionManager() {
   const fetchSubscriptions = async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ demo: 'true' });
+      const params = new URLSearchParams();
       if (selectedStatus !== 'all') params.append('status', selectedStatus);
 
       const response = await fetch(`/api/subscriptions?${params.toString()}`);
@@ -172,7 +172,7 @@ export function SubscriptionManager() {
   const handlePauseResume = async (subscription: Subscription) => {
     try {
       const action = subscription.status === 'active' ? 'pause' : 'resume';
-      const response = await fetch('/api/subscriptions?demo=true', {
+      const response = await fetch('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: subscription.id, action })
@@ -213,7 +213,7 @@ export function SubscriptionManager() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/subscriptions?demo=true', {
+      const response = await fetch('/api/subscriptions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

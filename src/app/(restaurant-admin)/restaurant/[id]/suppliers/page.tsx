@@ -32,48 +32,10 @@ interface Supplier {
   lastOrder?: string;
 }
 
-const DEMO_SUPPLIERS: Supplier[] = [
-  {
-    id: '1',
-    name: 'Poisserie du Port',
-    contactName: 'Amadou Koné',
-    phone: '+224 620 00 00 01',
-    email: 'amadou@poisserie-port.com',
-    address: 'Port de Conakry',
-    category: 'Poisson',
-    status: 'ACTIVE',
-    totalOrders: 156,
-    lastOrder: new Date(Date.now() - 2 * 86400000).toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Legumes Frais SARL',
-    contactName: 'Fatou Diallo',
-    phone: '+224 620 00 00 02',
-    email: 'fatou@legumes-frais.com',
-    address: 'Marché de Kaloum',
-    category: 'Légumes',
-    status: 'ACTIVE',
-    totalOrders: 89,
-    lastOrder: new Date(Date.now() - 5 * 86400000).toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Boucherie Centrale',
-    contactName: 'Ibrahim Sylla',
-    phone: '+224 620 00 00 03',
-    email: 'ibrahim@boucherie-centrale.com',
-    address: 'Hamdallaye, Conakry',
-    category: 'Viande',
-    status: 'INACTIVE',
-    totalOrders: 45,
-  },
-];
-
 export default function RestaurantSuppliersPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [suppliers, setSuppliers] = useState<Supplier[]>(DEMO_SUPPLIERS);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 

@@ -103,7 +103,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
         body.pauseEndDate = pauseEndDate;
       }
 
-      const response = await fetch('/api/subscriptions?demo=true', {
+      const response = await fetch('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -131,7 +131,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/subscriptions?demo=true', {
+      const response = await fetch('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -160,7 +160,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
   const handleUnskipDay = async (date: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/subscriptions?demo=true', {
+      const response = await fetch('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -186,7 +186,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
   const handleCancel = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/subscriptions?demo=true', {
+      const response = await fetch('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,7 +212,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
   const handleAutoRenewToggle = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/subscriptions?demo=true', {
+      const response = await fetch('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

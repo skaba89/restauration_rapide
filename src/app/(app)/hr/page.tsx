@@ -57,104 +57,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Demo employees data
-const DEMO_EMPLOYEES = [
-  {
-    id: '1',
-    firstName: 'Kouassi',
-    lastName: 'Emmanuel',
-    email: 'kouassi.emmanuel@kfm-delice.com',
-    phone: '+224 620 00 01 01',
-    position: 'Chef Cuisinier',
-    department: 'Cuisine',
-    status: 'active',
-    startDate: new Date('2022-03-15'),
-    salary: 2500000,
-    avatar: null,
-    address: 'Kaloum, Conakry',
-    schedule: 'Matin (6h-14h)',
-    performance: 92,
-  },
-  {
-    id: '2',
-    firstName: 'Diallo',
-    lastName: 'Fatou',
-    email: 'diallo.fatou@kfm-delice.com',
-    phone: '+224 620 00 01 02',
-    position: 'Serveuse',
-    department: 'Service',
-    status: 'active',
-    startDate: new Date('2023-01-10'),
-    salary: 1200000,
-    avatar: null,
-    address: 'Dixinn, Conakry',
-    schedule: 'Soir (14h-22h)',
-    performance: 88,
-  },
-  {
-    id: '3',
-    firstName: 'Camara',
-    lastName: 'Ibrahima',
-    email: 'camara.ibrahima@kfm-delice.com',
-    phone: '+224 620 00 01 03',
-    position: 'Livreur',
-    department: 'Livraison',
-    status: 'active',
-    startDate: new Date('2023-06-20'),
-    salary: 800000,
-    avatar: null,
-    address: 'Ratoma, Conakry',
-    schedule: 'Plein temps',
-    performance: 95,
-  },
-  {
-    id: '4',
-    firstName: 'Touré',
-    lastName: 'Aminata',
-    email: 'toure.aminata@kfm-delice.com',
-    phone: '+224 620 00 01 04',
-    position: 'Comptable',
-    department: 'Administration',
-    status: 'active',
-    startDate: new Date('2022-01-01'),
-    salary: 2000000,
-    avatar: null,
-    address: 'Matam, Conakry',
-    schedule: 'Bureau (8h-17h)',
-    performance: 90,
-  },
-  {
-    id: '5',
-    firstName: 'Sy',
-    lastName: 'Mamadou',
-    email: 'sy.mamadou@kfm-delice.com',
-    phone: '+224 620 00 01 05',
-    position: 'Aide-Cuisinier',
-    department: 'Cuisine',
-    status: 'on_leave',
-    startDate: new Date('2023-09-01'),
-    salary: 600000,
-    avatar: null,
-    address: 'Matoto, Conakry',
-    schedule: 'Matin (6h-14h)',
-    performance: 78,
-  },
-];
-
-// Demo leave requests
-const DEMO_LEAVE_REQUESTS = [
-  { id: '1', employeeId: '5', employeeName: 'Sy Mamadou', type: 'Congé annuel', startDate: '2024-03-20', endDate: '2024-04-05', status: 'approved', days: 15 },
-  { id: '2', employeeId: '2', employeeName: 'Diallo Fatou', type: 'Congé maladie', startDate: '2024-03-28', endDate: '2024-03-30', status: 'pending', days: 3 },
-  { id: '3', employeeId: '1', employeeName: 'Kouassi Emmanuel', type: 'Permission', startDate: '2024-04-01', endDate: '2024-04-01', status: 'pending', days: 1 },
-];
-
-// Demo attendance
-const DEMO_ATTENDANCE = [
-  { id: '1', date: '2024-03-25', present: 4, absent: 1, late: 0, onLeave: 1 },
-  { id: '2', date: '2024-03-26', present: 5, absent: 0, late: 1, onLeave: 0 },
-  { id: '3', date: '2024-03-27', present: 4, absent: 1, late: 0, onLeave: 1 },
-];
-
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
     active: 'bg-green-100 text-green-700',
@@ -186,12 +88,12 @@ const getDepartmentColor = (department: string) => {
 export default function HRPage() {
   const { toast } = useToast();
   const { formatCurrency } = useCurrency();
-  const [employees, setEmployees] = useState(DEMO_EMPLOYEES);
-  const [leaveRequests, setLeaveRequests] = useState(DEMO_LEAVE_REQUESTS);
+  const [employees, setEmployees] = useState([]);
+  const [leaveRequests, setLeaveRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<typeof DEMO_EMPLOYEES[0] | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<typeof null | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   const filteredEmployees = employees.filter((e) => {
@@ -220,7 +122,7 @@ export default function HRPage() {
     });
   };
 
-  const openViewDialog = (employee: typeof DEMO_EMPLOYEES[0]) => {
+  const openViewDialog = (employee: typeof null) => {
     setSelectedEmployee(employee);
     setIsViewDialogOpen(true);
   };
@@ -465,7 +367,7 @@ export default function HRPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {DEMO_ATTENDANCE.map((day) => (
+                {[].map((day: any) => (
                   <div key={day.id} className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                     <div>
                       <p className="font-medium">{new Date(day.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>

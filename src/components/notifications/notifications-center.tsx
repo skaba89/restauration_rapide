@@ -34,12 +34,6 @@ interface Notification {
   error?: string;
 }
 
-const DEMO_NOTIFICATIONS: Notification[] = [
-  { id: '1', type: 'whatsapp', recipient: '+224622123456', message: 'Votre commande #1234 est prête!', status: 'sent', sentAt: '2024-01-20 12:30' },
-  { id: '2', type: 'sms', recipient: '+224622654321', message: 'Livraison en cours - Arrivée estimée: 15 min', status: 'sent', sentAt: '2024-01-20 12:15' },
-  { id: '3', type: 'email', recipient: 'client@email.com', message: 'Confirmation de votre réservation', status: 'pending' },
-];
-
 const CHANNEL_CONFIG = {
   sms: { name: 'SMS', icon: MessageSquare, color: 'text-blue-500', enabled: true },
   whatsapp: { name: 'WhatsApp', icon: Smartphone, color: 'text-green-500', enabled: true },
@@ -48,7 +42,7 @@ const CHANNEL_CONFIG = {
 };
 
 export function NotificationsCenter() {
-  const [notifications, setNotifications] = useState<Notification[]>(DEMO_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [channels, setChannels] = useState(CHANNEL_CONFIG);
   const [quickMessage, setQuickMessage] = useState({
     type: 'whatsapp' as const,

@@ -8,20 +8,6 @@ import { withAdminAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/db';
 import { z } from 'zod';
 
-// Demo staff data for KFM DELICE
-const DEMO_STAFF = [
-  { id: '1', firstName: 'Amadou', lastName: 'Diallo', phone: '+224 62 123 45 67', email: 'amadou@kfmdelice.com', role: 'manager', hourlyRate: 15000, salary: 5000000, hireDate: new Date('2022-01-15'), status: 'active', avatar: null, address: 'Conakry, Kaloum', emergencyContact: 'Fatou Diallo - +224 62 111 11 11', department: 'Direction' },
-  { id: '2', firstName: 'Fatou', lastName: 'Sylla', phone: '+224 62 234 56 78', email: 'fatou@kfmdelice.com', role: 'chef', hourlyRate: 12000, salary: 4000000, hireDate: new Date('2022-03-01'), status: 'active', avatar: null, address: 'Conakry, Dixinn', emergencyContact: 'Ibrahima Sylla - +224 62 222 22 22', department: 'Cuisine' },
-  { id: '3', firstName: 'Ibrahim', lastName: 'Keita', phone: '+224 62 345 67 89', email: 'ibrahim@kfmdelice.com', role: 'cook', hourlyRate: 8000, salary: 2500000, hireDate: new Date('2023-01-10'), status: 'active', avatar: null, address: 'Conakry, Matam', emergencyContact: 'Aminata Keita - +224 62 333 33 33', department: 'Cuisine' },
-  { id: '4', firstName: 'Marie', lastName: 'Koulibaly', phone: '+224 62 456 78 90', email: 'marie@kfmdelice.com', role: 'waiter', hourlyRate: 5000, salary: 1500000, hireDate: new Date('2023-06-15'), status: 'active', avatar: null, address: 'Conakry, Ratoma', emergencyContact: 'Jean Koulibaly - +224 62 444 44 44', department: 'Service' },
-  { id: '5', firstName: 'Moussa', lastName: 'Camara', phone: '+224 62 567 89 01', email: 'moussa@kfmdelice.com', role: 'delivery_driver', hourlyRate: 5000, salary: 1200000, hireDate: new Date('2023-09-01'), status: 'active', avatar: null, address: 'Conakry, Matoto', emergencyContact: 'Aissata Camara - +224 62 555 55 55', department: 'Livraison' },
-  { id: '6', firstName: 'Aissatou', lastName: 'Traore', phone: '+224 62 678 90 12', email: 'aissatou@kfmdelice.com', role: 'cashier', hourlyRate: 6000, salary: 1800000, hireDate: new Date('2023-04-20'), status: 'active', avatar: null, address: 'Conakry, Kaloum', emergencyContact: 'Mamadou Traore - +224 62 666 66 66', department: 'Service' },
-  { id: '7', firstName: 'Sekou', lastName: 'Konate', phone: '+224 62 789 01 23', email: 'sekou@kfmdelice.com', role: 'cook', hourlyRate: 7500, salary: 2200000, hireDate: new Date('2023-11-05'), status: 'on_leave', avatar: null, address: 'Conakry, Dixinn', emergencyContact: 'Fatoumata Konate - +224 62 777 77 77', department: 'Cuisine' },
-  { id: '8', firstName: 'Fanta', lastName: 'Diarra', phone: '+224 62 890 12 34', email: 'fanta@kfmdelice.com', role: 'waiter', hourlyRate: 5000, salary: 1500000, hireDate: new Date('2024-01-15'), status: 'active', avatar: null, address: 'Conakry, Matam', emergencyContact: 'Moussa Diarra - +224 62 888 88 88', department: 'Service' },
-  { id: '9', firstName: 'Oumar', lastName: 'Bah', phone: '+224 62 901 23 45', email: 'oumar@kfmdelice.com', role: 'cleaner', hourlyRate: 4000, salary: 1000000, hireDate: new Date('2024-02-01'), status: 'active', avatar: null, address: 'Conakry, Ratoma', emergencyContact: 'Mariama Bah - +224 62 999 99 99', department: 'Maintenance' },
-  { id: '10', firstName: 'Adama', lastName: 'Sow', phone: '+224 62 012 34 56', email: 'adama@kfmdelice.com', role: 'delivery_driver', hourlyRate: 5000, salary: 1200000, hireDate: new Date('2024-03-10'), status: 'inactive', avatar: null, address: 'Conakry, Matoto', emergencyContact: 'Ibrahima Sow - +224 62 000 00 00', department: 'Livraison' },
-];
-
 // Role labels in French
 const ROLE_LABELS: Record<string, string> = {
   manager: 'Directeur',
@@ -63,7 +49,6 @@ const createEmployeeSchema = z.object({
 export const GET = withAdminAuth(async (request: NextRequest, user) => {
   return withErrorHandler<any>(async () => {
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true';
   const organizationId = searchParams.get('organizationId') || '';
   const restaurantId = searchParams.get('restaurantId') || '';
   const role = searchParams.get('role');
@@ -71,65 +56,6 @@ export const GET = withAdminAuth(async (request: NextRequest, user) => {
   const department = searchParams.get('department');
   const search = searchParams.get('search');
   const { page, limit, skip } = getPagination(searchParams);
-
-  // Return demo data
-  if (demo || !organizationId) {
-    let filteredStaff = [...DEMO_STAFF];
-
-    if (role && role !== 'all') {
-      filteredStaff = filteredStaff.filter(s => s.role === role);
-    }
-    if (status && status !== 'all') {
-      filteredStaff = filteredStaff.filter(s => s.status === status);
-    }
-    if (department && department !== 'all') {
-      filteredStaff = filteredStaff.filter(s => s.department === department);
-    }
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredStaff = filteredStaff.filter(s =>
-        `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchLower) ||
-        s.phone.includes(search) ||
-        s.email?.toLowerCase().includes(searchLower)
-      );
-    }
-
-    const total = filteredStaff.length;
-    const paginatedStaff = filteredStaff.slice(skip, skip + limit);
-
-    // Calculate stats
-    const stats = {
-      total: filteredStaff.length,
-      active: filteredStaff.filter(s => s.status === 'active').length,
-      onLeave: filteredStaff.filter(s => s.status === 'on_leave').length,
-      inactive: filteredStaff.filter(s => s.status === 'inactive').length,
-      byDepartment: {
-        direction: filteredStaff.filter(s => s.department === 'Direction').length,
-        cuisine: filteredStaff.filter(s => s.department === 'Cuisine').length,
-        service: filteredStaff.filter(s => s.department === 'Service').length,
-        livraison: filteredStaff.filter(s => s.department === 'Livraison').length,
-        maintenance: filteredStaff.filter(s => s.department === 'Maintenance').length,
-      },
-      byRole: {
-        manager: filteredStaff.filter(s => s.role === 'manager').length,
-        chef: filteredStaff.filter(s => s.role === 'chef').length,
-        cook: filteredStaff.filter(s => s.role === 'cook').length,
-        waiter: filteredStaff.filter(s => s.role === 'waiter').length,
-        cashier: filteredStaff.filter(s => s.role === 'cashier').length,
-        delivery_driver: filteredStaff.filter(s => s.role === 'delivery_driver').length,
-        cleaner: filteredStaff.filter(s => s.role === 'cleaner').length,
-      },
-    };
-
-    return apiSuccess({
-      employees: paginatedStaff.map(s => ({
-        ...s,
-        roleLabel: ROLE_LABELS[s.role] || s.role,
-      })),
-      stats,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    });
-  }
 
   // Real database query
   try {
@@ -182,7 +108,6 @@ export const GET = withAdminAuth(async (request: NextRequest, user) => {
 export const POST = withAdminAuth(async (request: NextRequest, user) => {
   return withErrorHandler<any>(async () => {
   const body = await request.json();
-  const demo = body.demo === true;
   const organizationId = body.organizationId || '';
 
   const validated = createEmployeeSchema.safeParse(body);
@@ -191,21 +116,6 @@ export const POST = withAdminAuth(async (request: NextRequest, user) => {
   }
 
   const data = validated.data;
-
-  // Demo mode
-  if (demo || !organizationId) {
-    const newEmployee = {
-      id: `${Date.now()}`,
-      ...data,
-      status: 'active',
-      hireDate: data.hireDate ? new Date(data.hireDate) : new Date(),
-      avatar: null,
-    };
-    return apiSuccess({
-      employee: { ...newEmployee, roleLabel: ROLE_LABELS[data.role] || data.role },
-      message: 'Employé créé (mode démo)',
-    });
-  }
 
   // Real database creation
   try {

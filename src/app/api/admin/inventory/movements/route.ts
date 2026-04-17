@@ -3,98 +3,6 @@ import { NextRequest } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { apiSuccess, apiError, getPaginationParams } from '@/lib/api-responses';
 
-// Demo stock movements
-const DEMO_MOVEMENTS = [
-  {
-    id: 'mov-1',
-    itemId: 'inv-1',
-    item: { name: 'Riz' },
-    type: 'IN',
-    quantity: 200,
-    reason: 'Réapprovisionnement',
-    date: new Date('2025-01-15').toISOString(),
-    user: 'Admin',
-    organizationId: 'demo-org-1',
-  },
-  {
-    id: 'mov-2',
-    itemId: 'inv-2',
-    item: { name: 'Poulet' },
-    type: 'OUT',
-    quantity: 20,
-    reason: 'Utilisation cuisine',
-    date: new Date('2025-01-15').toISOString(),
-    user: 'Chef',
-    organizationId: 'demo-org-1',
-  },
-  {
-    id: 'mov-3',
-    itemId: 'inv-5',
-    item: { name: 'Tomates' },
-    type: 'IN',
-    quantity: 100,
-    reason: 'Achat marché',
-    date: new Date('2025-01-16').toISOString(),
-    user: 'Admin',
-    organizationId: 'demo-org-1',
-  },
-  {
-    id: 'mov-4',
-    itemId: 'inv-4',
-    item: { name: 'Poisson frais' },
-    type: 'OUT',
-    quantity: 50,
-    reason: 'Utilisation cuisine',
-    date: new Date('2025-01-14').toISOString(),
-    user: 'Chef',
-    organizationId: 'demo-org-1',
-  },
-  {
-    id: 'mov-5',
-    itemId: 'inv-7',
-    item: { name: 'Coca-Cola' },
-    type: 'OUT',
-    quantity: 30,
-    reason: 'Ventes',
-    date: new Date('2025-01-15').toISOString(),
-    user: 'Caissier',
-    organizationId: 'demo-org-1',
-  },
-  {
-    id: 'mov-6',
-    itemId: 'inv-8',
-    item: { name: 'Attiéké' },
-    type: 'IN',
-    quantity: 50,
-    reason: 'Réapprovisionnement',
-    date: new Date('2025-01-15').toISOString(),
-    user: 'Admin',
-    organizationId: 'demo-org-1',
-  },
-  {
-    id: 'mov-7',
-    itemId: 'inv-3',
-    item: { name: 'Huile végétale' },
-    type: 'OUT',
-    quantity: 15,
-    reason: 'Utilisation cuisine',
-    date: new Date('2025-01-14').toISOString(),
-    user: 'Chef',
-    organizationId: 'demo-org-1',
-  },
-  {
-    id: 'mov-8',
-    itemId: 'inv-6',
-    item: { name: 'Oignons' },
-    type: 'ADJUSTMENT',
-    quantity: -5,
-    reason: 'Correction inventaire',
-    date: new Date('2025-01-13').toISOString(),
-    user: 'Admin',
-    organizationId: 'demo-org-1',
-  },
-];
-
 // GET /api/admin/inventory/movements - List stock movements
 export async function GET(request: NextRequest) {
   try {
@@ -148,9 +56,7 @@ export async function GET(request: NextRequest) {
 
       return apiSuccess({ data: transformedMovements, total, page, limit });
     }
-
-    // Fallback to demo data
-    let filteredMovements = [...DEMO_MOVEMENTS];
+    let filteredMovements = [];
     
     if (type && type !== 'all') {
       filteredMovements = filteredMovements.filter(m => m.type === type);

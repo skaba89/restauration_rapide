@@ -27,42 +27,10 @@ interface Branch {
   openingHours: string;
 }
 
-const DEMO_BRANCHES: Branch[] = [
-  {
-    id: '1',
-    name: 'KFM Delice - Kaloum',
-    address: 'Kaloum, Conakry',
-    phone: '+224 620 00 00 00',
-    status: 'ACTIVE',
-    managerName: 'Mamadou Diallo',
-    staffCount: 12,
-    openingHours: '07:00 - 23:00',
-  },
-  {
-    id: '2',
-    name: 'KFM Delice - Cocody',
-    address: 'Cocody, Abidjan',
-    phone: '+225 07 00 00 00',
-    status: 'ACTIVE',
-    managerName: 'Fatou Bamba',
-    staffCount: 8,
-    openingHours: '08:00 - 22:00',
-  },
-  {
-    id: '3',
-    name: 'KFM Delice - Plateau',
-    address: 'Plateau, Abidjan',
-    phone: '+225 07 00 00 01',
-    status: 'INACTIVE',
-    staffCount: 0,
-    openingHours: 'Fermé',
-  },
-];
-
 export default function RestaurantBranchesPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [branches, setBranches] = useState<Branch[]>(DEMO_BRANCHES);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

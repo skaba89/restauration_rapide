@@ -1,6 +1,5 @@
 // ============================================
 // Inventory Management API for KFM DELICE
-// CRUD operations with demo mode support
 // ============================================
 
 import { NextRequest } from 'next/server';
@@ -67,92 +66,13 @@ interface Supplier {
   email?: string;
   address?: string;
 }
-
-// Demo Data - 15+ items for KFM DELICE
-const DEMO_INVENTORY_ITEMS: InventoryItem[] = [
-  { id: '1', name: 'Riz', category: 'ingredients', quantity: 50, unit: 'kg', minStock: 20, cost: 5000, supplier: 'Marché Central', location: 'Entrepôt A', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), lastRestocked: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-  { id: '2', name: 'Huile', category: 'ingredients', quantity: 20, unit: 'L', minStock: 10, cost: 8000, supplier: 'Fournisseur Pro', location: 'Entrepôt A', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '3', name: 'Tomates', category: 'ingredients', quantity: 10, unit: 'kg', minStock: 15, cost: 4000, supplier: 'Marché Central', location: 'Réfrigérateur 1', status: 'low_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '4', name: 'Oignons', category: 'ingredients', quantity: 15, unit: 'kg', minStock: 10, cost: 2500, supplier: 'Marché Central', location: 'Entrepôt B', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '5', name: 'Poulet', category: 'ingredients', quantity: 20, unit: 'kg', minStock: 15, cost: 18000, supplier: 'Boucherie Diallo', location: 'Congélateur 1', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), lastRestocked: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
-  { id: '6', name: 'Poisson', category: 'ingredients', quantity: 15, unit: 'kg', minStock: 10, cost: 25000, supplier: 'Pêcherie du Port', location: 'Congélateur 2', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '7', name: 'Bouteilles d\'eau', category: 'beverages', quantity: 50, unit: 'unités', minStock: 30, cost: 500, supplier: 'Boissons Plus', location: 'Stock B', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '8', name: 'Sacs plastique', category: 'packaging', quantity: 100, unit: 'unités', minStock: 50, cost: 200, supplier: 'Emballages Express', location: 'Stock C', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '9', name: 'Jus de Bissap', category: 'beverages', quantity: 10, unit: 'L', minStock: 5, cost: 5000, supplier: 'Production locale', location: 'Réfrigérateur 2', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '10', name: 'Charbon', category: 'supplies', quantity: 30, unit: 'kg', minStock: 20, cost: 3000, supplier: 'Fournisseur Village', location: 'Extérieur', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '11', name: 'Attieké', category: 'ingredients', quantity: 8, unit: 'kg', minStock: 10, cost: 3500, supplier: 'Marché Central', location: 'Réfrigérateur 1', status: 'low_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '12', name: 'Piment', category: 'ingredients', quantity: 3, unit: 'kg', minStock: 2, cost: 6000, supplier: 'Marché Central', location: 'Entrepôt B', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '13', name: 'Gingembre', category: 'ingredients', quantity: 5, unit: 'kg', minStock: 3, cost: 6000, supplier: 'Marché Central', location: 'Réfrigérateur 1', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '14', name: 'Ail', category: 'ingredients', quantity: 4, unit: 'kg', minStock: 5, cost: 8000, supplier: 'Marché Central', location: 'Entrepôt B', status: 'low_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '15', name: 'Boîtes emballage', category: 'packaging', quantity: 200, unit: 'unités', minStock: 100, cost: 300, supplier: 'Emballages Express', location: 'Stock C', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '16', name: 'Serviettes', category: 'packaging', quantity: 150, unit: 'unités', minStock: 50, cost: 150, supplier: 'Fournitures Pro', location: 'Stock C', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '17', name: 'Savon vaisselle', category: 'supplies', quantity: 5, unit: 'L', minStock: 3, cost: 4000, supplier: 'Supermarché', location: 'Cuisine', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '18', name: 'Coca-Cola', category: 'beverages', quantity: 24, unit: 'bouteilles', minStock: 20, cost: 800, supplier: 'Boissons Plus', location: 'Stock B', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '19', name: 'Frites surgelées', category: 'ingredients', quantity: 0, unit: 'kg', minStock: 5, cost: 12000, supplier: 'Aliments Frais', location: 'Congélateur 1', status: 'out_of_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '20', name: 'Banane plantain', category: 'ingredients', quantity: 12, unit: 'régimes', minStock: 5, cost: 3000, supplier: 'Marché Central', location: 'Entrepôt A', status: 'in_stock', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-];
-
-// Demo stock movements
-const DEMO_STOCK_MOVEMENTS: StockMovement[] = [
-  { id: '1', itemId: '1', itemName: 'Riz', type: 'in', quantity: 50, previousQty: 0, newQty: 50, reason: 'Livraison fournisseur', notes: 'Livraison du Marché Central', createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), createdBy: 'Admin' },
-  { id: '2', itemId: '5', itemName: 'Poulet', type: 'in', quantity: 20, previousQty: 5, newQty: 25, reason: 'Achat', notes: 'Commande Boucherie Diallo', createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), createdBy: 'Admin' },
-  { id: '3', itemId: '5', itemName: 'Poulet', type: 'out', quantity: 5, previousQty: 25, newQty: 20, reason: 'Utilisation cuisine', notes: 'Service du jour', createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), createdBy: 'Chef' },
-  { id: '4', itemId: '11', itemName: 'Attieké', type: 'out', quantity: 7, previousQty: 15, newQty: 8, reason: 'Utilisation cuisine', notes: 'Service midi', createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), createdBy: 'Chef' },
-  { id: '5', itemId: '2', itemName: 'Huile', type: 'adjustment', quantity: 20, previousQty: 22, newQty: 20, reason: 'Inventaire', notes: 'Vérification stock', createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), createdBy: 'Admin' },
-  { id: '6', itemId: '19', itemName: 'Frites surgelées', type: 'out', quantity: 10, previousQty: 10, newQty: 0, reason: 'Utilisation cuisine', notes: 'Stock épuisé', createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), createdBy: 'Chef' },
-];
-
-// Demo suppliers
-const DEMO_SUPPLIERS: Supplier[] = [
-  { id: '1', name: 'Marché Central', contact: 'Mamadou Diallo', phone: '+224 620 00 00 01', email: 'marche.central@email.com', address: 'Marché Central, Conakry' },
-  { id: '2', name: 'Boucherie Diallo', contact: 'Ibrahima Diallo', phone: '+224 620 00 00 02', address: 'Kaloum, Conakry' },
-  { id: '3', name: 'Pêcherie du Port', contact: 'Fatou Camara', phone: '+224 620 00 00 03', address: 'Port de Conakry' },
-  { id: '4', name: 'Boissons Plus', contact: 'Sekou Traoré', phone: '+224 620 00 00 04', email: 'boissons.plus@email.com', address: 'Ratoma, Conakry' },
-  { id: '5', name: 'Emballages Express', contact: 'Aminata Sylla', phone: '+224 620 00 00 05', address: 'Dixinn, Conakry' },
-  { id: '6', name: 'Fournisseur Pro', contact: 'Mohamed Koné', phone: '+224 620 00 00 06', email: 'fournisseur.pro@email.com', address: 'Matam, Conakry' },
-];
-
-// Demo purchase orders
-const DEMO_PURCHASE_ORDERS: PurchaseOrder[] = [
-  {
-    id: '1',
-    supplierId: '1',
-    supplierName: 'Marché Central',
-    items: [
-      { itemId: '1', itemName: 'Riz', quantity: 30, unitPrice: 5000, totalPrice: 150000 },
-      { itemId: '3', itemName: 'Tomates', quantity: 20, unitPrice: 4000, totalPrice: 80000 },
-    ],
-    totalAmount: 230000,
-    status: 'pending',
-    expectedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    notes: 'Commande hebdomadaire',
-    createdAt: new Date().toISOString(),
-    createdBy: 'Admin',
-  },
-  {
-    id: '2',
-    supplierId: '2',
-    supplierName: 'Boucherie Diallo',
-    items: [
-      { itemId: '5', itemName: 'Poulet', quantity: 25, unitPrice: 18000, totalPrice: 450000 },
-    ],
-    totalAmount: 450000,
-    status: 'ordered',
-    expectedDelivery: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    createdBy: 'Admin',
-  },
-];
-
-// In-memory storage for demo mode
-let inventoryItems = [...DEMO_INVENTORY_ITEMS];
-let stockMovements = [...DEMO_STOCK_MOVEMENTS];
-let purchaseOrders = [...DEMO_PURCHASE_ORDERS];
+let inventoryItems = [];
+let stockMovements = [];
+let purchaseOrders = [];
 
 // GET - List items with filters
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo') === 'true' || !searchParams.get('organizationId');
   const action = searchParams.get('action');
   const category = searchParams.get('category');
   const lowStock = searchParams.get('lowStock') === 'true';
@@ -199,7 +119,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   // Get suppliers
   if (action === 'suppliers') {
-    return apiSuccess({ suppliers: DEMO_SUPPLIERS });
+    return apiSuccess({ suppliers: [] });
   }
 
   // Get purchase orders

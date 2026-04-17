@@ -4,69 +4,6 @@ import { db, isDatabaseAvailable } from '@/lib/db';
 import { apiSuccess, apiError } from '@/lib/api-responses';
 import { withAdminAuth } from '@/lib/auth-middleware';
 
-// Demo report data
-const DEMO_REPORT_DATA = {
-  kpis: {
-    totalRevenue: 108600000,
-    totalOrders: 11570,
-    totalCustomers: 3730,
-    avgOrderValue: 9400,
-    revenueGrowth: 18.5,
-    ordersGrowth: 15.2,
-    customerGrowth: 22.8,
-  },
-  monthlyRevenue: [
-    { month: 'Jan', revenue: 12500000, orders: 1250, customers: 450 },
-    { month: 'Fév', revenue: 15200000, orders: 1480, customers: 520 },
-    { month: 'Mar', revenue: 18900000, orders: 1820, customers: 610 },
-    { month: 'Avr', revenue: 16500000, orders: 1590, customers: 580 },
-    { month: 'Mai', revenue: 21000000, orders: 2050, customers: 720 },
-    { month: 'Juin', revenue: 24500000, orders: 2380, customers: 850 },
-  ],
-  categoryPerformance: [
-    { name: 'Plats principaux', value: 45, revenue: 15000000 },
-    { name: 'Grillades', value: 25, revenue: 8500000 },
-    { name: 'Boissons', value: 15, revenue: 5000000 },
-    { name: 'Desserts', value: 10, revenue: 3500000 },
-    { name: 'Autres', value: 5, revenue: 1750000 },
-  ],
-  restaurantPerformance: [
-    { id: 'rest-1', name: 'KFM DELICE - Kaloum', revenue: 32000000, orders: 3200, rating: 4.8 },
-    { id: 'rest-2', name: 'KFM DELICE - Dixinn', revenue: 18500000, orders: 1850, rating: 4.6 },
-    { id: 'rest-3', name: 'KFM DELICE - Matam', revenue: 12000000, orders: 1200, rating: 4.5 },
-  ],
-  topProducts: [
-    { id: 'item-1', name: 'Attieké Poisson', quantity: 1250, revenue: 56250000, category: 'Plats Ivoiriens' },
-    { id: 'item-4', name: 'Thiéboudienne', quantity: 980, revenue: 44100000, category: 'Plats Sénégalais' },
-    { id: 'item-6', name: 'Mix Grill', quantity: 650, revenue: 42250000, category: 'Grillades' },
-    { id: 'item-3', name: 'Garba', quantity: 890, revenue: 26700000, category: 'Plats Ivoiriens' },
-    { id: 'item-5', name: 'Yassa Poulet', quantity: 720, revenue: 28800000, category: 'Plats Sénégalais' },
-  ],
-  paymentMethods: [
-    { method: 'Orange Money', count: 4500, amount: 45000000, percentage: 41 },
-    { method: 'MTN MoMo', count: 3200, amount: 32000000, percentage: 29 },
-    { method: 'Wave', count: 1800, amount: 18000000, percentage: 16 },
-    { method: 'Espèces', count: 1500, amount: 15000000, percentage: 14 },
-  ],
-  hourlyDistribution: [
-    { hour: '08:00', orders: 45 },
-    { hour: '09:00', orders: 78 },
-    { hour: '10:00', orders: 120 },
-    { hour: '11:00', orders: 180 },
-    { hour: '12:00', orders: 350 },
-    { hour: '13:00', orders: 420 },
-    { hour: '14:00', orders: 280 },
-    { hour: '15:00', orders: 150 },
-    { hour: '16:00', orders: 90 },
-    { hour: '17:00', orders: 120 },
-    { hour: '18:00', orders: 250 },
-    { hour: '19:00', orders: 380 },
-    { hour: '20:00', orders: 320 },
-    { hour: '21:00', orders: 180 },
-    { hour: '22:00', orders: 85 },
-  ],
-};
-
 // GET /api/admin/reports - Get report data
 export const GET = withAdminAuth(async (request: NextRequest) => {
   try {
@@ -172,18 +109,17 @@ export const GET = withAdminAuth(async (request: NextRequest) => {
           customerGrowth: 22.8, // Would need historical data
         },
         monthlyRevenue: monthlyData,
-        categoryPerformance: DEMO_REPORT_DATA.categoryPerformance,
-        restaurantPerformance: DEMO_REPORT_DATA.restaurantPerformance,
+        categoryPerformance: [],
+        restaurantPerformance: [],
         topProducts,
         paymentMethods: paymentDistribution,
-        hourlyDistribution: DEMO_REPORT_DATA.hourlyDistribution,
+        hourlyDistribution: [],
       };
 
       return apiSuccess(reportData);
     }
 
-    // Return demo data
-    return apiSuccess(DEMO_REPORT_DATA);
+    return apiSuccess([]);
   } catch (error) {
     console.error('Error generating report:', error);
     return apiError('Erreur lors de la génération du rapport', 500);
@@ -192,7 +128,7 @@ export const GET = withAdminAuth(async (request: NextRequest) => {
 
 // Helper to get monthly revenue data
 async function getMonthlyRevenueData(orderWhere: any, period: string) {
-  if (!db) return DEMO_REPORT_DATA.monthlyRevenue;
+  if (!db) return [];
 
   try {
     const now = new Date();
@@ -239,13 +175,13 @@ async function getMonthlyRevenueData(orderWhere: any, period: string) {
     return data;
   } catch (error) {
     console.error('Error getting monthly revenue:', error);
-    return DEMO_REPORT_DATA.monthlyRevenue;
+    return [];
   }
 }
 
 // Helper to get top products
 async function getTopProducts(orderWhere: any) {
-  if (!db) return DEMO_REPORT_DATA.topProducts;
+  if (!db) return [];
 
   try {
     const orderItems = await db.orderItem.groupBy({
@@ -275,13 +211,13 @@ async function getTopProducts(orderWhere: any) {
     }));
   } catch (error) {
     console.error('Error getting top products:', error);
-    return DEMO_REPORT_DATA.topProducts;
+    return [];
   }
 }
 
 // Helper to get payment distribution
 async function getPaymentDistribution(orderWhere: any) {
-  if (!db) return DEMO_REPORT_DATA.paymentMethods;
+  if (!db) return [];
 
   try {
     const payments = await db.payment.groupBy({
@@ -304,6 +240,6 @@ async function getPaymentDistribution(orderWhere: any) {
     }));
   } catch (error) {
     console.error('Error getting payment distribution:', error);
-    return DEMO_REPORT_DATA.paymentMethods;
+    return [];
   }
 }

@@ -27,42 +27,10 @@ interface WaitlistEntry {
   createdAt: string;
 }
 
-const DEMO_WAITLIST: WaitlistEntry[] = [
-  {
-    id: '1',
-    customerName: 'Fatou Bamba',
-    phone: '+225 07 00 00 01',
-    partySize: 3,
-    status: 'WAITING',
-    estimatedWait: 15,
-    notes: 'Préfère terrasse',
-    createdAt: new Date(Date.now() - 15 * 60000).toISOString(),
-  },
-  {
-    id: '2',
-    customerName: 'Ibrahim Sylla',
-    phone: '+225 07 00 00 02',
-    partySize: 2,
-    status: 'WAITING',
-    estimatedWait: 25,
-    createdAt: new Date(Date.now() - 10 * 60000).toISOString(),
-  },
-  {
-    id: '3',
-    customerName: 'Marie Kouassi',
-    phone: '+225 07 00 00 03',
-    partySize: 5,
-    status: 'WAITING',
-    estimatedWait: 35,
-    notes: 'Allergie fruits de mer',
-    createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
-  },
-];
-
 export default function RestaurantWaitlistPage() {
   const params = useParams();
   const restaurantId = params.id as string;
-  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>(DEMO_WAITLIST);
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

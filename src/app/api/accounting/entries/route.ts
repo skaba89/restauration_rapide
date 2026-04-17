@@ -2,81 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { withErrorHandler } from '@/lib/api-responses';
 
-// Demo journal entries for KFM DELICE
-const DEMO_JOURNAL_ENTRIES = [
-  {
-    id: 'je-001',
-    entryNumber: 'ECR-2024-001',
-    date: new Date(2024, 0, 15),
-    reference: 'ORD-2024-0001',
-    description: 'Ventes du 15/01/2024',
-    source: 'order',
-    status: 'POSTED',
-    totalDebit: 500000,
-    totalCredit: 500000,
-    isBalanced: true,
-    lines: [
-      { id: 'jl-001-1', lineNumber: 1, accountId: '17', accountCode: '57', accountName: 'Caisse', debit: 575000, credit: 0, description: 'Encaissement vente' },
-      { id: 'jl-001-2', lineNumber: 2, accountId: '31', accountCode: '701', accountName: 'Ventes de plats', debit: 0, credit: 400000, description: 'Ventes plats' },
-      { id: 'jl-001-3', lineNumber: 3, accountId: '32', accountCode: '702', accountName: 'Ventes de boissons', debit: 0, credit: 100000, description: 'Ventes boissons' },
-      { id: 'jl-001-4', lineNumber: 4, accountId: '37', accountCode: '4421', accountName: 'TVA collectée', debit: 0, credit: 75000, description: 'TVA 18%' },
-    ],
-    createdAt: new Date(2024, 0, 15),
-    postedAt: new Date(2024, 0, 15),
-  },
-  {
-    id: 'je-002',
-    entryNumber: 'ECR-2024-002',
-    date: new Date(2024, 0, 20),
-    reference: 'FAC-2024-001',
-    description: 'Achat denrées alimentaires',
-    source: 'purchase',
-    status: 'POSTED',
-    totalDebit: 150000,
-    totalCredit: 150000,
-    isBalanced: true,
-    lines: [
-      { id: 'jl-002-1', lineNumber: 1, accountId: '10', accountCode: '31', accountName: 'Stocks de marchandises', debit: 150000, credit: 0, description: 'Achat poissons et viandes' },
-      { id: 'jl-002-2', lineNumber: 2, accountId: '12', accountCode: '40', accountName: 'Fournisseurs', debit: 0, credit: 150000, description: 'Achat à crédit' },
-    ],
-    createdAt: new Date(2024, 0, 20),
-    postedAt: new Date(2024, 0, 20),
-  },
-  {
-    id: 'je-003',
-    entryNumber: 'ECR-2024-003',
-    date: new Date(2024, 0, 31),
-    reference: 'PAY-2024-001',
-    description: 'Paiement salaires janvier',
-    source: 'payroll',
-    status: 'POSTED',
-    totalDebit: 850000,
-    totalCredit: 850000,
-    isBalanced: true,
-    lines: [
-      { id: 'jl-003-1', lineNumber: 1, accountId: '24', accountCode: '64', accountName: 'Charges de personnel', debit: 850000, credit: 0, description: 'Salaires janvier' },
-      { id: 'jl-003-2', lineNumber: 2, accountId: '17', accountCode: '57', accountName: 'Caisse', debit: 0, credit: 850000, description: 'Paiement salaires' },
-    ],
-    createdAt: new Date(2024, 0, 31),
-    postedAt: new Date(2024, 0, 31),
-  },
-  {
-    id: 'je-004',
-    entryNumber: 'ECR-2024-004',
-    date: new Date(2024, 1, 1),
-    reference: 'FAC-2024-002',
-    description: 'Achat boissons',
-    source: 'purchase',
-    status: 'DRAFT',
-    totalDebit: 0,
-    totalCredit: 0,
-    isBalanced: true,
-    lines: [],
-    createdAt: new Date(2024, 1, 1),
-    postedAt: null,
-  },
-];
-
 // GET - Get journal entries
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
@@ -117,31 +42,17 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
     const total = await db.journalEntry.count({ where });
 
-    // Return demo data if no entries found
-    if (entries.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: DEMO_JOURNAL_ENTRIES,
-        pagination: {
-          total: DEMO_JOURNAL_ENTRIES.length,
-          limit,
-          offset,
-        },
-      });
-    }
-
     return NextResponse.json({
       success: true,
       data: entries,
       pagination: { total, limit, offset },
     });
   } catch (error) {
-    // Return demo data on error
     return NextResponse.json({
       success: true,
-      data: DEMO_JOURNAL_ENTRIES,
+      data: [],
       pagination: {
-        total: DEMO_JOURNAL_ENTRIES.length,
+        total: 0,
         limit,
         offset,
       },

@@ -11,10 +11,6 @@ function generateOrderNumber(): string {
   return `ORD-${timestamp}-${random}`;
 }
 
-// Demo orders storage (in-memory for demo mode)
-let demoOrderCounter = 145;
-const demoOrders: any[] = [];
-
 // POST /api/public/orders - Create a new order from public menu
 export async function POST(request: NextRequest) {
   return withErrorHandler(async () => {
@@ -46,41 +42,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if we're in demo mode (no database)
-    const demoMode = !db || !restaurantId || restaurantId === 'demo-rest-1' || restaurantId.startsWith('demo-');
-
     if (demoMode) {
-      // Demo mode - create order in memory
       demoOrderCounter++;
       const orderNumber = `ORD-2024-${String(demoOrderCounter).padStart(4, '0')}`;
       
-      const demoOrder = {
-        id: `demo-ord-${Date.now()}`,
-        orderNumber,
-        restaurantId: restaurantId || 'demo-rest-1',
-        customerName,
-        customerPhone,
-        customerEmail,
-        orderType: orderType || 'DELIVERY',
-        source: 'web',
-        status: 'PENDING',
-        paymentStatus: 'PENDING',
-        deliveryAddress,
-        deliveryCity,
-        deliveryNotes,
-        deliveryFee: deliveryFee || 0,
-        subtotal: subtotal || 0,
-        total: total || 0,
-        notes,
-        items: items.map((item: any) => ({
-          id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          itemName: item.name,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice || item.price,
-          totalPrice: item.totalPrice || (item.price * item.quantity),
-        })),
-        createdAt: new Date(),
-      };
-
       demoOrders.unshift(demoOrder);
 
       // Emit WebSocket event for real-time update
@@ -221,14 +186,6 @@ export async function POST(request: NextRequest) {
 // GET /api/public/orders - Get demo orders
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const demo = searchParams.get('demo');
-
-  if (demo === 'true' || !db) {
-    return apiSuccess({
-      orders: demoOrders.slice(0, 50),
-      total: demoOrders.length,
-    });
-  }
 
   return apiSuccess({
     orders: [],

@@ -108,7 +108,7 @@ export default function SuppliersPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiGet<{ suppliers: Supplier[] }>('/inventory/suppliers', { demo: true });
+      const response = await apiGet<{ suppliers: Supplier[] }>('/inventory/suppliers', { });
       if (response?.suppliers && response.suppliers.length > 0) {
         setSuppliers(response.suppliers);
       } else {

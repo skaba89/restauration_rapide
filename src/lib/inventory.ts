@@ -137,21 +137,6 @@ class InventoryService {
    * Initialize demo data
    */
   private initializeDemoData(): void {
-    const demoItems: InventoryItem[] = [
-      { id: '1', name: 'Poisson Thiof', sku: 'POI-001', category: 'Poisson & Fruits de mer', unit: 'kg', currentStock: 45, minStock: 10, maxStock: 100, reorderPoint: 20, cost: 8500, supplier: 'Pêcheur Abidjan', status: 'in_stock' },
-      { id: '2', name: 'Poulet Fermier', sku: 'POU-001', category: 'Viandes', unit: 'kg', currentStock: 25, minStock: 15, maxStock: 80, reorderPoint: 25, cost: 4500, supplier: 'Volaille Plus', status: 'in_stock' },
-      { id: '3', name: 'Attieké', sku: 'ATT-001', category: 'Féculents', unit: 'kg', currentStock: 8, minStock: 10, maxStock: 50, reorderPoint: 15, cost: 1500, supplier: 'Manioc Express', status: 'low_stock' },
-      { id: '4', name: 'Riz Local', sku: 'RIZ-001', category: 'Féculents', unit: 'kg', currentStock: 150, minStock: 50, maxStock: 300, reorderPoint: 75, cost: 800, supplier: 'Riz Ivoire', status: 'in_stock' },
-      { id: '5', name: 'Huile de Palme', sku: 'HUI-001', category: 'Huiles & Graisses', unit: 'L', currentStock: 35, minStock: 20, maxStock: 100, reorderPoint: 30, cost: 2500, supplier: 'Palme Or', status: 'in_stock' },
-      { id: '6', name: 'Tomates Fraîches', sku: 'TOM-001', category: 'Légumes', unit: 'kg', currentStock: 2, minStock: 10, maxStock: 40, reorderPoint: 15, cost: 1200, supplier: 'Maraicher Local', status: 'low_stock' },
-      { id: '7', name: 'Oignons', sku: 'OIG-001', category: 'Légumes', unit: 'kg', currentStock: 28, minStock: 15, maxStock: 60, reorderPoint: 20, cost: 800, supplier: 'Maraicher Local', status: 'in_stock' },
-      { id: '8', name: 'Bananes Plantain', sku: 'BAN-001', category: 'Fruits', unit: 'kg', currentStock: 40, minStock: 20, maxStock: 80, reorderPoint: 30, cost: 600, supplier: 'Fruit Express', status: 'in_stock' },
-      { id: '9', name: 'Jus de Bissap', sku: 'JUS-001', category: 'Boissons', unit: 'L', currentStock: 18, minStock: 10, maxStock: 50, reorderPoint: 15, cost: 2000, status: 'in_stock' },
-      { id: '10', name: 'Gingembre', sku: 'GIN-001', category: 'Épices', unit: 'kg', currentStock: 5, minStock: 3, maxStock: 15, reorderPoint: 5, cost: 3500, status: 'in_stock' },
-      { id: '11', name: 'Piment', sku: 'PIM-001', category: 'Épices', unit: 'kg', currentStock: 0, minStock: 2, maxStock: 10, reorderPoint: 3, cost: 5000, status: 'out_of_stock' },
-      { id: '12', name: 'Crème Fraîche', sku: 'CRE-001', category: 'Produits Laitiers', unit: 'L', currentStock: 12, minStock: 5, maxStock: 25, reorderPoint: 8, cost: 4500, expiryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), status: 'in_stock' },
-    ];
-
     demoItems.forEach(item => this.items.set(item.id, item));
   }
 

@@ -61,17 +61,6 @@ interface TipsByEmployeeProps {
   onExport?: () => void;
 }
 
-// Demo earnings data
-const DEMO_EARNINGS: StaffTipEarnings[] = [
-  { staffId: 'staff-001', staffName: 'Aïssata Traoré', role: 'waiter', hoursWorked: 168, tipsEarned: 13917, pendingTips: 9071, paidTips: 13917, tipsPerHour: 83 },
-  { staffId: 'staff-002', staffName: 'Moussa Bamba', role: 'waiter', hoursWorked: 168, tipsEarned: 17167, pendingTips: 9071, paidTips: 17167, tipsPerHour: 102 },
-  { staffId: 'staff-003', staffName: 'Mariama Sy', role: 'kitchen', hoursWorked: 84, tipsEarned: 11416, pendingTips: 9071, paidTips: 11416, tipsPerHour: 136 },
-  { staffId: 'staff-004', staffName: 'Ibrahim Koné', role: 'kitchen', hoursWorked: 168, tipsEarned: 12500, pendingTips: 9071, paidTips: 12500, tipsPerHour: 74 },
-  { staffId: 'staff-005', staffName: 'Fatoumata Diallo', role: 'delivery', hoursWorked: 126, tipsEarned: 9500, pendingTips: 9071, paidTips: 9500, tipsPerHour: 75 },
-  { staffId: 'staff-006', staffName: 'Seydou Konaté', role: 'delivery', hoursWorked: 126, tipsEarned: 9500, pendingTips: 9071, paidTips: 9500, tipsPerHour: 75 },
-  { staffId: 'staff-007', staffName: 'Amadou Keita', role: 'waiter', hoursWorked: 200, tipsEarned: 15000, pendingTips: 9071, paidTips: 15000, tipsPerHour: 75 },
-];
-
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
@@ -92,8 +81,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function TipsByEmployee({ 
-  earnings = DEMO_EARNINGS, 
-  loading,
+  earnings = loading,
   onExport 
 }: TipsByEmployeeProps) {
   const [searchTerm, setSearchTerm] = useState('');

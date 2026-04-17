@@ -94,8 +94,8 @@ export function InspectionCalendar() {
   const fetchData = async () => {
     try {
       const [inspectionsRes, certsRes] = await Promise.all([
-        fetch('/api/compliance?type=inspections&demo=true'),
-        fetch('/api/compliance?type=certificates&demo=true'),
+        fetch('/api/compliance?type=inspections'),
+        fetch('/api/compliance?type=certificates'),
       ]);
       
       const inspectionsData = await inspectionsRes.json();

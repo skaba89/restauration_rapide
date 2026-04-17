@@ -70,20 +70,6 @@ interface TipDistribution {
   status: 'pending' | 'paid';
 }
 
-// Demo tips
-const DEMO_TIPS: Tip[] = [
-  { id: '1', orderId: 'ord-001', orderNumber: 'ORD-2024-0145', amount: 5000, method: 'cash', distributionStatus: 'distributed', distributions: [{ id: 'd1', tipId: '1', staffId: 's1', staffName: 'Aïssata Traoré', amount: 2500, percentage: 50, status: 'paid' }, { id: 'd2', tipId: '1', staffId: 's2', staffName: 'Moussa Bamba', amount: 2500, percentage: 50, status: 'paid' }], createdAt: new Date(Date.now() - 30 * 60 * 1000) },
-  { id: '2', orderId: 'ord-002', orderNumber: 'ORD-2024-0144', amount: 10000, method: 'mobile_money', distributionStatus: 'pending', distributions: [], createdAt: new Date(Date.now() - 60 * 60 * 1000) },
-  { id: '3', orderId: 'ord-003', orderNumber: 'ORD-2024-0143', amount: 7500, method: 'cash', distributionStatus: 'distributed', distributions: [{ id: 'd3', tipId: '3', staffId: 's3', staffName: 'Mariama Sy', amount: 7500, percentage: 100, status: 'paid' }], createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000) },
-  { id: '4', orderId: 'ord-004', orderNumber: 'ORD-2024-0142', amount: 15000, method: 'cash', distributionStatus: 'pending', distributions: [], staffId: 's1', staffName: 'Aïssata Traoré', createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000) },
-  { id: '5', orderId: 'ord-005', orderNumber: 'ORD-2024-0141', amount: 8000, method: 'mobile_money', distributionStatus: 'distributed', distributions: [{ id: 'd4', tipId: '5', staffId: 's4', staffName: 'Fatoumata Diallo', amount: 4000, percentage: 50, status: 'paid' }, { id: 'd5', tipId: '5', staffId: 's5', staffName: 'Seydou Konaté', amount: 4000, percentage: 50, status: 'paid' }], createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000) },
-  { id: '6', orderId: 'ord-006', orderNumber: 'ORD-2024-0140', amount: 12000, method: 'card', distributionStatus: 'pending', distributions: [], createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000) },
-  { id: '7', orderId: 'ord-007', orderNumber: 'ORD-2024-0139', amount: 6500, method: 'cash', distributionStatus: 'distributed', distributions: [{ id: 'd6', tipId: '7', staffId: 's6', staffName: 'Amadou Keita', amount: 6500, percentage: 100, status: 'paid' }], createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000) },
-  { id: '8', orderId: 'ord-008', orderNumber: 'ORD-2024-0138', amount: 9000, method: 'cash', distributionStatus: 'pending', distributions: [], createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000) },
-  { id: '9', orderId: 'ord-009', orderNumber: 'ORD-2024-0137', amount: 20000, method: 'mobile_money', distributionStatus: 'distributed', distributions: [{ id: 'd7', tipId: '9', staffId: 's1', staffName: 'Aïssata Traoré', amount: 6667, percentage: 33, status: 'paid' }, { id: 'd8', tipId: '9', staffId: 's2', staffName: 'Moussa Bamba', amount: 6667, percentage: 33, status: 'paid' }, { id: 'd9', tipId: '9', staffId: 's3', staffName: 'Mariama Sy', amount: 6666, percentage: 34, status: 'paid' }], createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-  { id: '10', orderId: 'ord-010', orderNumber: 'ORD-2024-0136', amount: 3500, method: 'cash', distributionStatus: 'pending', distributions: [], createdAt: new Date(Date.now() - 36 * 60 * 60 * 1000) },
-];
-
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
@@ -101,7 +87,7 @@ const METHOD_LABELS: Record<string, string> = {
 };
 
 export function TipsManager() {
-  const [tips, setTips] = useState<Tip[]>(DEMO_TIPS);
+  const [tips, setTips] = useState<Tip[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');

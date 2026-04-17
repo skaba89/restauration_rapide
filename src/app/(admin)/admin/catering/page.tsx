@@ -53,13 +53,6 @@ interface CateringOrder {
   createdAt: string;
 }
 
-const DEMO_ORDERS: CateringOrder[] = [
-  { id: '1', clientName: 'Entreprise ABC', clientPhone: '+224 620 00 00 01', eventName: 'Réunion annuelle', eventType: 'corporate', date: '2026-04-10', time: '12:00', guestCount: 50, location: 'Siège ABC, Kaloum', menu: 'Menu complet buffet', amount: 2500000, deposit: 500000, status: 'confirmed', createdAt: new Date().toISOString() },
-  { id: '2', clientName: 'Famille Diallo', clientPhone: '+224 620 00 00 02', eventName: 'Mariage de Fatou', eventType: 'wedding', date: '2026-04-15', time: '14:00', guestCount: 200, location: 'Salle des fêtes, Dixinn', menu: 'Menu prestige', amount: 8500000, deposit: 2000000, status: 'pending', notes: 'Menu végétarien pour 20 personnes', createdAt: new Date().toISOString() },
-  { id: '3', clientName: 'ONG Guinée', clientPhone: '+224 620 00 00 03', clientEmail: 'contact@ongguinee.org', eventName: 'Conférence', eventType: 'corporate', date: '2026-04-12', time: '08:00', guestCount: 30, location: 'Hôtel Riviera', menu: 'Petit-déjeuner + Déjeuner', amount: 1500000, deposit: 0, status: 'confirmed', createdAt: new Date().toISOString() },
-  { id: '4', clientName: 'Mariama Sylla', clientPhone: '+224 620 00 00 04', eventName: 'Anniversaire 50 ans', eventType: 'birthday', date: '2026-04-08', time: '19:00', guestCount: 40, location: 'Domicile - Matam', menu: 'Cocktail dinatoire', amount: 1200000, deposit: 300000, status: 'completed', createdAt: new Date().toISOString() },
-];
-
 const EVENT_TYPES = [
   { value: 'wedding', label: 'Mariage' },
   { value: 'birthday', label: 'Anniversaire' },
@@ -166,7 +159,7 @@ const initialFormData = {
 };
 
 export default function CateringPage() {
-  const [orders, setOrders] = useState<CateringOrder[]>(DEMO_ORDERS);
+  const [orders, setOrders] = useState<CateringOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
@@ -350,8 +343,6 @@ export default function CateringPage() {
     totalRevenue: orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.amount, 0),
     upcomingRevenue: orders.filter(o => o.status !== 'cancelled' && o.status !== 'completed').reduce((sum, o) => sum + o.amount, 0),
   };
-
-
 
   return (
     <div className="space-y-6">

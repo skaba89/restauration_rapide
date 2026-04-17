@@ -56,7 +56,6 @@ const DAYS = [
   { value: 0, label: 'Dimanche', short: 'Dim' },
 ];
 
-// Demo staff for selection
 const STAFF_LIST = [
   { id: '1', name: 'Amadou Diallo', role: 'Directeur' },
   { id: '2', name: 'Fatou Sylla', role: 'Chef Cuisinier' },
@@ -68,45 +67,6 @@ const STAFF_LIST = [
   { id: '9', name: 'Oumar Bah', role: 'Agent d\'entretien' },
 ];
 
-// Demo availability
-const DEMO_AVAILABILITY: Availability[] = [
-  // Amadou - Manager
-  { id: '1', staffId: '1', staffName: 'Amadou Diallo', dayOfWeek: 1, dayLabel: 'Lundi', startTime: '08:00', endTime: '18:00', isAvailable: true },
-  { id: '2', staffId: '1', staffName: 'Amadou Diallo', dayOfWeek: 2, dayLabel: 'Mardi', startTime: '08:00', endTime: '18:00', isAvailable: true },
-  { id: '3', staffId: '1', staffName: 'Amadou Diallo', dayOfWeek: 3, dayLabel: 'Mercredi', startTime: '08:00', endTime: '18:00', isAvailable: true },
-  { id: '4', staffId: '1', staffName: 'Amadou Diallo', dayOfWeek: 4, dayLabel: 'Jeudi', startTime: '08:00', endTime: '18:00', isAvailable: true },
-  { id: '5', staffId: '1', staffName: 'Amadou Diallo', dayOfWeek: 5, dayLabel: 'Vendredi', startTime: '08:00', endTime: '20:00', isAvailable: true },
-  { id: '6', staffId: '1', staffName: 'Amadou Diallo', dayOfWeek: 6, dayLabel: 'Samedi', startTime: '09:00', endTime: '15:00', isAvailable: true },
-  { id: '7', staffId: '1', staffName: 'Amadou Diallo', dayOfWeek: 0, dayLabel: 'Dimanche', startTime: '00:00', endTime: '00:00', isAvailable: false },
-
-  // Fatou - Chef
-  { id: '11', staffId: '2', staffName: 'Fatou Sylla', dayOfWeek: 2, dayLabel: 'Mardi', startTime: '10:00', endTime: '22:00', isAvailable: true },
-  { id: '12', staffId: '2', staffName: 'Fatou Sylla', dayOfWeek: 3, dayLabel: 'Mercredi', startTime: '10:00', endTime: '22:00', isAvailable: true },
-  { id: '13', staffId: '2', staffName: 'Fatou Sylla', dayOfWeek: 4, dayLabel: 'Jeudi', startTime: '10:00', endTime: '22:00', isAvailable: true },
-  { id: '14', staffId: '2', staffName: 'Fatou Sylla', dayOfWeek: 5, dayLabel: 'Vendredi', startTime: '10:00', endTime: '23:00', isAvailable: true },
-  { id: '15', staffId: '2', staffName: 'Fatou Sylla', dayOfWeek: 6, dayLabel: 'Samedi', startTime: '10:00', endTime: '23:00', isAvailable: true },
-  { id: '16', staffId: '2', staffName: 'Fatou Sylla', dayOfWeek: 0, dayLabel: 'Dimanche', startTime: '11:00', endTime: '20:00', isAvailable: true },
-  { id: '17', staffId: '2', staffName: 'Fatou Sylla', dayOfWeek: 1, dayLabel: 'Lundi', startTime: '00:00', endTime: '00:00', isAvailable: false },
-
-  // Ibrahim - Cook
-  { id: '21', staffId: '3', staffName: 'Ibrahim Keita', dayOfWeek: 1, dayLabel: 'Lundi', startTime: '08:00', endTime: '16:00', isAvailable: true },
-  { id: '22', staffId: '3', staffName: 'Ibrahim Keita', dayOfWeek: 2, dayLabel: 'Mardi', startTime: '08:00', endTime: '16:00', isAvailable: true },
-  { id: '23', staffId: '3', staffName: 'Ibrahim Keita', dayOfWeek: 3, dayLabel: 'Mercredi', startTime: '08:00', endTime: '16:00', isAvailable: true },
-  { id: '24', staffId: '3', staffName: 'Ibrahim Keita', dayOfWeek: 4, dayLabel: 'Jeudi', startTime: '08:00', endTime: '16:00', isAvailable: true },
-  { id: '25', staffId: '3', staffName: 'Ibrahim Keita', dayOfWeek: 5, dayLabel: 'Vendredi', startTime: '08:00', endTime: '16:00', isAvailable: true },
-  { id: '26', staffId: '3', staffName: 'Ibrahim Keita', dayOfWeek: 6, dayLabel: 'Samedi', startTime: '00:00', endTime: '00:00', isAvailable: false },
-  { id: '27', staffId: '3', staffName: 'Ibrahim Keita', dayOfWeek: 0, dayLabel: 'Dimanche', startTime: '00:00', endTime: '00:00', isAvailable: false },
-
-  // Marie - Waiter
-  { id: '31', staffId: '4', staffName: 'Marie Koulibaly', dayOfWeek: 3, dayLabel: 'Mercredi', startTime: '11:00', endTime: '22:00', isAvailable: true },
-  { id: '32', staffId: '4', staffName: 'Marie Koulibaly', dayOfWeek: 4, dayLabel: 'Jeudi', startTime: '11:00', endTime: '22:00', isAvailable: true },
-  { id: '33', staffId: '4', staffName: 'Marie Koulibaly', dayOfWeek: 5, dayLabel: 'Vendredi', startTime: '11:00', endTime: '23:00', isAvailable: true },
-  { id: '34', staffId: '4', staffName: 'Marie Koulibaly', dayOfWeek: 6, dayLabel: 'Samedi', startTime: '11:00', endTime: '23:00', isAvailable: true },
-  { id: '35', staffId: '4', staffName: 'Marie Koulibaly', dayOfWeek: 0, dayLabel: 'Dimanche', startTime: '11:00', endTime: '21:00', isAvailable: true },
-  { id: '36', staffId: '4', staffName: 'Marie Koulibaly', dayOfWeek: 1, dayLabel: 'Lundi', startTime: '00:00', endTime: '00:00', isAvailable: false },
-  { id: '37', staffId: '4', staffName: 'Marie Koulibaly', dayOfWeek: 2, dayLabel: 'Mardi', startTime: '00:00', endTime: '00:00', isAvailable: false },
-];
-
 // Templates
 const TEMPLATES = [
   { name: 'Temps plein', days: [1, 2, 3, 4, 5], start: '08:00', end: '17:00' },
@@ -116,7 +76,7 @@ const TEMPLATES = [
 ];
 
 export function AvailabilityManager() {
-  const [availability, setAvailability] = useState<Availability[]>(DEMO_AVAILABILITY);
+  const [availability, setAvailability] = useState<Availability[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string>('1');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDay, setEditingDay] = useState<number | null>(null);

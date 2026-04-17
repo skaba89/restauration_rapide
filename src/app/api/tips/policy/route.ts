@@ -21,14 +21,6 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const organizationId = searchParams.get('organizationId');
-    const demo = searchParams.get('demo') === 'true';
-
-    if (demo || !organizationId) {
-      return NextResponse.json({
-        success: true,
-        data: DEFAULT_POLICY
-      });
-    }
 
     const policy = await db.tipPolicy.findUnique({
       where: { organizationId }

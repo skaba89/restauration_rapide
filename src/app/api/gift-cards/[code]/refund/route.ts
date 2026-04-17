@@ -1,40 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withErrorHandler } from '@/lib/api-responses';
 
-// Demo gift cards storage (in-memory, same as main route)
-const DEMO_GIFT_CARDS = [
-  {
-    id: '1',
-    code: 'KFM-A7X2-M9P4',
-    initialAmount: 50000,
-    currentBalance: 50000,
-    status: 'active' as const,
-    buyerName: 'Koné Ibrahim',
-    buyerPhone: '+225 07 12 34 56 78',
-    recipientName: 'Diallo Fatou',
-    recipientPhone: '+225 05 98 76 54 32',
-    deliveryMethod: 'sms' as const,
-    purchasedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 363 * 24 * 60 * 60 * 1000),
-    transactions: [] as any[],
-  },
-  {
-    id: '6',
-    code: 'KFM-F8H3-L5N2',
-    initialAmount: 15000,
-    currentBalance: 0,
-    status: 'cancelled' as const,
-    buyerName: 'Ouattara Issouf',
-    buyerPhone: '+225 07 11 99 88 77',
-    recipientName: 'Konaté Fanta',
-    recipientPhone: '+225 05 33 22 11 00',
-    deliveryMethod: 'print' as const,
-    purchasedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    expiresAt: new Date(Date.now() + 360 * 24 * 60 * 60 * 1000),
-    transactions: [] as any[],
-  },
-];
-
 // POST - Refund gift card
 export const POST = withErrorHandler(async (
   request: NextRequest,
@@ -47,7 +13,8 @@ export const POST = withErrorHandler(async (
   const upperCode = code.toUpperCase();
 
   // Find the gift card
-  const cardIndex = DEMO_GIFT_CARDS.findIndex(c => c.code === upperCode);
+  const giftCards: any[] = [];
+  const cardIndex = giftCards.findIndex(c => c.code === upperCode);
 
   if (cardIndex === -1) {
     return NextResponse.json({
@@ -56,7 +23,7 @@ export const POST = withErrorHandler(async (
     }, { status: 404 });
   }
 
-  const card = DEMO_GIFT_CARDS[cardIndex];
+  const card = giftCards[cardIndex];
 
   // Check if already cancelled
   if (card.status === 'cancelled') {
@@ -112,7 +79,7 @@ export const POST = withErrorHandler(async (
   card.transactions.push(transaction);
 
   // Update the array
-  DEMO_GIFT_CARDS[cardIndex] = card;
+  giftCards[cardIndex] = card;
 
   return NextResponse.json({
     success: true,

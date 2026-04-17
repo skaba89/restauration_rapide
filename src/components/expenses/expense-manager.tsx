@@ -155,7 +155,6 @@ export function ExpenseManager() {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
-      params.append('demo', 'true');
       if (selectedCategory !== 'all') params.append('category', selectedCategory);
       if (selectedStatus !== 'all') params.append('status', selectedStatus);
       if (dateFrom) params.append('startDate', dateFrom);
@@ -207,7 +206,6 @@ export function ExpenseManager() {
         body: JSON.stringify({
           ...newExpense,
           amount: parseFloat(newExpense.amount),
-          demo: true,
         }),
       });
 
@@ -241,7 +239,7 @@ export function ExpenseManager() {
       const response = await fetch('/api/expenses', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status, demo: true }),
+        body: JSON.stringify({ id, status }),
       });
 
       const data = await response.json();

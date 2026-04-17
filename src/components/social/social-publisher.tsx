@@ -39,43 +39,6 @@ import {
   TrendingUp
 } from 'lucide-react';
 
-// Demo social posts
-const DEMO_POSTS = [
-  {
-    id: '1',
-    platform: 'facebook',
-    type: 'daily_special',
-    content: '🍽️ Spécial du jour: Attieké Poisson Grillé avec sauce tomamarinade! Seulement 15 000 GNF au lieu de 20 000 GNF. Disponible à midi et soir.',
-    status: 'published',
-    publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    engagementStats: { likes: 45, shares: 12, comments: 8 },
-  },
-  {
-    id: '2',
-    platform: 'instagram',
-    type: 'promotion',
-    content: '🎉 CE WEEKEND! 20% de réduction sur toutes les commandes de livraison ce samedi et dimanche. Code promo: WEEKEND20',
-    status: 'published',
-    publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    engagementStats: { likes: 128, shares: 34, comments: 22 },
-  },
-  {
-    id: '3',
-    platform: 'facebook',
-    type: 'event',
-    content: '🎊 Grand Opening de notre nouvelle terrasse! Rejoignez-nous ce vendredi pour découvrir notre tout nouvel espace avec vue panoramique.',
-    status: 'scheduled',
-    scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: '4',
-    platform: 'instagram',
-    type: 'daily_special',
-    content: '🍹 Nouveau: Jus de Gingembre frais maison! Énergisant et délicieux. Essayez-le aujourd!',
-    status: 'draft',
-  },
-];
-
 // Platform config
 const PLATFORMS = [
   { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'text-blue-600' },
@@ -83,7 +46,7 @@ const PLATFORMS = [
 ];
 
 export function SocialMediaManager() {
-  const [posts, setPosts] = useState(DEMO_POSTS);
+  const [posts, setPosts] = useState([]);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [newPost, setNewPost] = useState({
     platform: 'facebook',

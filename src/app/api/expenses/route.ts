@@ -276,7 +276,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const restaurantId = searchParams.get('restaurantId');
     const organizationId = searchParams.get('organizationId');
-    const demo = searchParams.get('demo') === 'true';
     const category = searchParams.get('category') as ExpenseCategory | null;
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
@@ -284,53 +283,6 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
-
-    // Return demo data if requested
-    if (demo || !organizationId) {
-      let expenses = generateDemoExpenses();
-
-      // Apply filters
-      if (category) {
-        expenses = expenses.filter(e => e.category === category);
-      }
-      if (status) {
-        expenses = expenses.filter(e => e.status === status);
-      }
-      if (startDate) {
-        const start = new Date(startDate);
-        expenses = expenses.filter(e => new Date(e.date) >= start);
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        expenses = expenses.filter(e => new Date(e.date) <= end);
-      }
-      if (search) {
-        const searchLower = search.toLowerCase();
-        expenses = expenses.filter(e => 
-          e.description.toLowerCase().includes(searchLower) ||
-          e.supplier?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      // Calculate stats
-      const stats = calculateStats(expenses);
-
-      // Apply pagination
-      const paginatedExpenses = expenses.slice(offset, offset + limit);
-
-      return NextResponse.json({
-        success: true,
-        data: paginatedExpenses,
-        stats,
-        categories: CATEGORY_CONFIG,
-        pagination: {
-          total: expenses.length,
-          limit,
-          offset,
-          hasMore: offset + limit < expenses.length,
-        },
-      });
-    }
 
     // Real database query
     const where: Record<string, unknown> = { organizationId };
@@ -413,7 +365,6 @@ export async function POST(request: NextRequest) {
       receipt,
       status = 'pending',
       createdById,
-      demo = false,
     } = body;
 
     // Validation
@@ -430,29 +381,6 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Catégorie invalide' },
         { status: 400 }
       );
-    }
-
-    // Demo mode
-    if (demo || !organizationId) {
-      const newExpense: DemoExpense = {
-        id: `exp-${Date.now()}`,
-        category,
-        description,
-        amount: parseFloat(amount),
-        date: date ? new Date(date) : new Date(),
-        status: status as ExpenseStatus,
-        paymentMethod: paymentMethod || 'Espèces',
-        supplier: supplierName,
-        notes,
-        receiptUrl: receipt,
-        createdBy: 'Admin',
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: newExpense,
-        message: 'Dépense enregistrée avec succès',
-      });
     }
 
     // Real database insert
@@ -520,7 +448,6 @@ export async function PUT(request: NextRequest) {
       updates.approvedAt = new Date();
     }
 
-    // Demo mode - return mock response
     if (!organizationId) {
       return NextResponse.json({
         success: true,
@@ -570,7 +497,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Demo mode - return success
     if (!organizationId) {
       return NextResponse.json({
         success: true,

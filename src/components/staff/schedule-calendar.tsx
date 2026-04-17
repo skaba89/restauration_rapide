@@ -67,77 +67,14 @@ interface StaffMember {
   roleLabel: string;
 }
 
-// Demo staff
-const DEMO_STAFF: StaffMember[] = [
-  { id: '1', firstName: 'Amadou', lastName: 'Diallo', role: 'manager', roleLabel: 'Directeur' },
-  { id: '2', firstName: 'Fatou', lastName: 'Sylla', role: 'chef', roleLabel: 'Chef Cuisinier' },
-  { id: '3', firstName: 'Ibrahim', lastName: 'Keita', role: 'cook', roleLabel: 'Cuisinier' },
-  { id: '4', firstName: 'Marie', lastName: 'Koulibaly', role: 'waiter', roleLabel: 'Serveuse' },
-  { id: '5', firstName: 'Moussa', lastName: 'Camara', role: 'delivery_driver', roleLabel: 'Livreur' },
-  { id: '6', firstName: 'Aissatou', lastName: 'Traore', role: 'cashier', roleLabel: 'Caissière' },
-  { id: '8', firstName: 'Fanta', lastName: 'Diarra', role: 'waiter', roleLabel: 'Serveuse' },
-  { id: '9', firstName: 'Oumar', lastName: 'Bah', role: 'cleaner', roleLabel: 'Agent d\'entretien' },
-];
-
-// Demo shifts
-const DEMO_SHIFTS: Shift[] = [
-  // Monday
-  { id: 's1', staffId: '1', staffName: 'Amadou Diallo', role: 'manager', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 0), 'yyyy-MM-dd'), startTime: '08:00', endTime: '17:00', status: 'scheduled', color: '#8B5CF6', notes: 'Réunion direction' },
-  { id: 's2', staffId: '2', staffName: 'Fatou Sylla', role: 'chef', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 0), 'yyyy-MM-dd'), startTime: '06:00', endTime: '14:00', status: 'scheduled', color: '#EF4444' },
-  { id: 's3', staffId: '3', staffName: 'Ibrahim Keita', role: 'cook', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 0), 'yyyy-MM-dd'), startTime: '06:00', endTime: '14:00', status: 'scheduled', color: '#F97316' },
-  { id: 's4', staffId: '4', staffName: 'Marie Koulibaly', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 0), 'yyyy-MM-dd'), startTime: '10:00', endTime: '18:00', status: 'scheduled', color: '#3B82F6' },
-  { id: 's5', staffId: '6', staffName: 'Aissatou Traore', role: 'cashier', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 0), 'yyyy-MM-dd'), startTime: '08:00', endTime: '16:00', status: 'scheduled', color: '#10B981' },
-
-  // Tuesday
-  { id: 's6', staffId: '1', staffName: 'Amadou Diallo', role: 'manager', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 'yyyy-MM-dd'), startTime: '08:00', endTime: '17:00', status: 'scheduled', color: '#8B5CF6' },
-  { id: 's7', staffId: '2', staffName: 'Fatou Sylla', role: 'chef', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 'yyyy-MM-dd'), startTime: '06:00', endTime: '14:00', status: 'scheduled', color: '#EF4444' },
-  { id: 's8', staffId: '3', staffName: 'Ibrahim Keita', role: 'cook', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 'yyyy-MM-dd'), startTime: '10:00', endTime: '18:00', status: 'scheduled', color: '#F97316' },
-  { id: 's9', staffId: '4', staffName: 'Marie Koulibaly', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 'yyyy-MM-dd'), startTime: '10:00', endTime: '18:00', status: 'scheduled', color: '#3B82F6' },
-  { id: 's10', staffId: '5', staffName: 'Moussa Camara', role: 'delivery_driver', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 'yyyy-MM-dd'), startTime: '11:00', endTime: '22:00', status: 'scheduled', color: '#F59E0B' },
-
-  // Wednesday
-  { id: 's11', staffId: '2', staffName: 'Fatou Sylla', role: 'chef', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 2), 'yyyy-MM-dd'), startTime: '06:00', endTime: '14:00', status: 'scheduled', color: '#EF4444' },
-  { id: 's12', staffId: '3', staffName: 'Ibrahim Keita', role: 'cook', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 2), 'yyyy-MM-dd'), startTime: '06:00', endTime: '14:00', status: 'scheduled', color: '#F97316' },
-  { id: 's13', staffId: '8', staffName: 'Fanta Diarra', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 2), 'yyyy-MM-dd'), startTime: '10:00', endTime: '18:00', status: 'scheduled', color: '#3B82F6' },
-  { id: 's14', staffId: '5', staffName: 'Moussa Camara', role: 'delivery_driver', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 2), 'yyyy-MM-dd'), startTime: '11:00', endTime: '22:00', status: 'scheduled', color: '#F59E0B' },
-  { id: 's15', staffId: '9', staffName: 'Oumar Bah', role: 'cleaner', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 2), 'yyyy-MM-dd'), startTime: '06:00', endTime: '10:00', status: 'scheduled', color: '#6B7280' },
-
-  // Thursday
-  { id: 's16', staffId: '1', staffName: 'Amadou Diallo', role: 'manager', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 3), 'yyyy-MM-dd'), startTime: '08:00', endTime: '17:00', status: 'scheduled', color: '#8B5CF6' },
-  { id: 's17', staffId: '2', staffName: 'Fatou Sylla', role: 'chef', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 3), 'yyyy-MM-dd'), startTime: '10:00', endTime: '18:00', status: 'scheduled', color: '#EF4444' },
-  { id: 's18', staffId: '4', staffName: 'Marie Koulibaly', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 3), 'yyyy-MM-dd'), startTime: '10:00', endTime: '18:00', status: 'scheduled', color: '#3B82F6' },
-  { id: 's19', staffId: '6', staffName: 'Aissatou Traore', role: 'cashier', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 3), 'yyyy-MM-dd'), startTime: '10:00', endTime: '18:00', status: 'scheduled', color: '#10B981' },
-
-  // Friday
-  { id: 's20', staffId: '1', staffName: 'Amadou Diallo', role: 'manager', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 4), 'yyyy-MM-dd'), startTime: '08:00', endTime: '17:00', status: 'scheduled', color: '#8B5CF6' },
-  { id: 's21', staffId: '2', staffName: 'Fatou Sylla', role: 'chef', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 4), 'yyyy-MM-dd'), startTime: '10:00', endTime: '22:00', status: 'scheduled', color: '#EF4444', notes: 'Service soir busy' },
-  { id: 's22', staffId: '3', staffName: 'Ibrahim Keita', role: 'cook', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 4), 'yyyy-MM-dd'), startTime: '10:00', endTime: '22:00', status: 'scheduled', color: '#F97316' },
-  { id: 's23', staffId: '4', staffName: 'Marie Koulibaly', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 4), 'yyyy-MM-dd'), startTime: '12:00', endTime: '22:00', status: 'scheduled', color: '#3B82F6' },
-  { id: 's24', staffId: '8', staffName: 'Fanta Diarra', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 4), 'yyyy-MM-dd'), startTime: '12:00', endTime: '22:00', status: 'scheduled', color: '#3B82F6' },
-  { id: 's25', staffId: '5', staffName: 'Moussa Camara', role: 'delivery_driver', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 4), 'yyyy-MM-dd'), startTime: '11:00', endTime: '23:00', status: 'scheduled', color: '#F59E0B' },
-
-  // Saturday
-  { id: 's26', staffId: '2', staffName: 'Fatou Sylla', role: 'chef', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 5), 'yyyy-MM-dd'), startTime: '10:00', endTime: '22:00', status: 'scheduled', color: '#EF4444' },
-  { id: 's27', staffId: '3', staffName: 'Ibrahim Keita', role: 'cook', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 5), 'yyyy-MM-dd'), startTime: '10:00', endTime: '22:00', status: 'scheduled', color: '#F97316' },
-  { id: 's28', staffId: '4', staffName: 'Marie Koulibaly', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 5), 'yyyy-MM-dd'), startTime: '11:00', endTime: '23:00', status: 'scheduled', color: '#3B82F6' },
-  { id: 's29', staffId: '8', staffName: 'Fanta Diarra', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 5), 'yyyy-MM-dd'), startTime: '11:00', endTime: '23:00', status: 'scheduled', color: '#3B82F6' },
-  { id: 's30', staffId: '5', staffName: 'Moussa Camara', role: 'delivery_driver', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 5), 'yyyy-MM-dd'), startTime: '11:00', endTime: '23:00', status: 'scheduled', color: '#F59E0B' },
-  { id: 's31', staffId: '6', staffName: 'Aissatou Traore', role: 'cashier', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 5), 'yyyy-MM-dd'), startTime: '11:00', endTime: '23:00', status: 'scheduled', color: '#10B981' },
-
-  // Sunday
-  { id: 's32', staffId: '2', staffName: 'Fatou Sylla', role: 'chef', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6), 'yyyy-MM-dd'), startTime: '10:00', endTime: '20:00', status: 'scheduled', color: '#EF4444' },
-  { id: 's33', staffId: '3', staffName: 'Ibrahim Keita', role: 'cook', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6), 'yyyy-MM-dd'), startTime: '10:00', endTime: '20:00', status: 'scheduled', color: '#F97316' },
-  { id: 's34', staffId: '4', staffName: 'Marie Koulibaly', role: 'waiter', date: format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6), 'yyyy-MM-dd'), startTime: '11:00', endTime: '21:00', status: 'scheduled', color: '#3B82F6' },
-];
-
 // Day names
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const FULL_DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
 export function ScheduleCalendar() {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  const [shifts, setShifts] = useState<Shift[]>(DEMO_SHIFTS);
-  const [staff] = useState<StaffMember[]>(DEMO_STAFF);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [staff] = useState<StaffMember[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

@@ -2,6 +2,7 @@
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { apiSuccess, apiError, getPaginationParams } from '@/lib/api-responses';
 import { NextRequest } from 'next/server';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 // GET /api/admin/categories - List categories
 export async function GET(request: NextRequest) {
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/admin/categories - Create a new category
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { name, description, icon, image, isActive, menuId } = body;
@@ -112,4 +113,4 @@ export async function POST(request: NextRequest) {
     console.error('Error creating category:', error);
     return apiError('Erreur lors de la création de la catégorie', 500);
   }
-}
+});

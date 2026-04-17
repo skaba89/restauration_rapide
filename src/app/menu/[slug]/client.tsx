@@ -202,20 +202,29 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
         const dataRestaurant = await resRestaurant.json();
         setRestaurant(dataRestaurant.data);
         
-        // Fetch menu from the same source as POS and Admin menu
+        // Fetch menu from the unified public menu API (same source as POS)
         const resMenu = await fetch(`/api/public/menu?restaurantSlug=${slug}`);
         if (resMenu.ok) {
-          const dataMenu = await resMenu.json();
-          if (dataMenu.success && dataMenu.data && dataMenu.data.length > 0) {
-            // Transform menu data to match restaurant structure
-            const menuData = dataMenu.data[0];
+          const json = await resMenu.json();
+          if (json.success && json.data && json.data.menus && json.data.menus.length > 0) {
+            // Replace restaurant menus with data from unified API
+            const unifiedMenus = json.data.menus;
             setRestaurant((prev: any) => prev ? {
               ...prev,
-              menus: [{
-                id: menuData.id || 'default-menu',
-                name: menuData.name || 'Menu Principal',
-                categories: menuData.categories || [],
-              }]
+              currency: json.data.restaurant?.currency || prev.currency,
+              menus: unifiedMenus.map((menu: any) => ({
+                id: menu.id || 'default-menu',
+                name: menu.name || 'Menu Principal',
+                slug: menu.slug || 'menu-principal',
+                description: menu.description || '',
+                categories: (menu.categories || []).map((cat: any) => ({
+                  ...cat,
+                  items: (cat.items || []).map((item: any) => ({
+                    ...item,
+                    imageUrl: item.imageUrl || item.image,
+                  })),
+                })),
+              })),
             } : null);
           }
         }

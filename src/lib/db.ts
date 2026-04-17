@@ -7,12 +7,15 @@ const globalForPrisma = globalThis as unknown as {
 // Track database connection status
 let dbConnectionStatus: 'unknown' | 'connected' | 'error' = 'unknown'
 let dbInstance: PrismaClient | null = null
+let connectionPromise: Promise<boolean> | null = null
+let connectionTestedAt = 0
+const CONNECTION_TEST_INTERVAL = 30000 // Re-test every 30s
 
 // Create Prisma client with error handling
 function createPrismaClient(): PrismaClient | null {
   // Check if DATABASE_URL is set
   if (!process.env.DATABASE_URL) {
-    console.log('ℹ️ No DATABASE_URL set - running in demo mode')
+    console.log('[DB] No DATABASE_URL set - running in demo mode')
     dbConnectionStatus = 'error'
     return null
   }
@@ -27,13 +30,10 @@ function createPrismaClient(): PrismaClient | null {
       },
     })
     
-    // Don't test connection on startup - let it fail lazily
-    // This prevents crashes if DB is unavailable at startup
     dbConnectionStatus = 'unknown'
-    
     return client
   } catch (error) {
-    console.error('Failed to create Prisma client:', error)
+    console.error('[DB] Failed to create Prisma client:', error)
     dbConnectionStatus = 'error'
     return null
   }
@@ -46,9 +46,49 @@ if (process.env.NODE_ENV !== 'production' && db) {
   globalForPrisma.prisma = db
 }
 
-// Helper to check if database is available
+// Helper to check if database is available (fast, synchronous check)
+// Note: Returns true only if connection has been tested and confirmed
 export function isDatabaseAvailable(): boolean {
-  return db !== null && dbConnectionStatus !== 'error'
+  return db !== null && dbConnectionStatus === 'connected'
+}
+
+// Async check that tests connection with timeout
+export async function ensureDbConnection(timeoutMs: number = 5000): Promise<boolean> {
+  if (!db) return false
+
+  // If recently tested and connected, skip re-test
+  const now = Date.now()
+  if (dbConnectionStatus === 'connected' && (now - connectionTestedAt) < CONNECTION_TEST_INTERVAL) {
+    return true
+  }
+
+  // If currently testing, wait for that result
+  if (connectionPromise) {
+    return connectionPromise
+  }
+
+  connectionPromise = (async () => {
+    try {
+      const result = await Promise.race([
+        db!.$queryRaw`SELECT 1`,
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout')), timeoutMs)
+        ),
+      ])
+      dbConnectionStatus = 'connected'
+      connectionTestedAt = Date.now()
+      return true
+    } catch (error) {
+      console.error('[DB] Connection test failed:', error instanceof Error ? error.message : 'Unknown error')
+      dbConnectionStatus = 'error'
+      connectionTestedAt = Date.now()
+      return false
+    } finally {
+      connectionPromise = null
+    }
+  })()
+
+  return connectionPromise
 }
 
 // Helper to get database status
@@ -59,22 +99,10 @@ export function getDatabaseStatus(): 'unknown' | 'connected' | 'error' {
 // Helper to mark database as unavailable (called when DB errors occur)
 export function markDatabaseUnavailable(): void {
   dbConnectionStatus = 'error'
+  connectionTestedAt = 0
 }
 
 // Test database connection (can be called explicitly)
 export async function testDatabaseConnection(): Promise<boolean> {
-  if (!db) {
-    return false
-  }
-  
-  try {
-    await db.$queryRaw`SELECT 1`
-    dbConnectionStatus = 'connected'
-    console.log('✅ Database connection established')
-    return true
-  } catch (error) {
-    console.error('❌ Database connection failed:', error instanceof Error ? error.message : 'Unknown error')
-    dbConnectionStatus = 'error'
-    return false
-  }
+  return ensureDbConnection()
 }

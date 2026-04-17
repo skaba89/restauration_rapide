@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 // Demo stats for when database is not available
 const DEMO_STATS = {
@@ -16,7 +17,7 @@ const DEMO_STATS = {
   activeSubscriptions: 89,
 };
 
-export async function GET() {
+export const GET = withAdminAuth(async (request: NextRequest) => {
   try {
     // In production, add authentication check here
     // const session = await getServerSession(authOptions);
@@ -39,4 +40,4 @@ export async function GET() {
     // Return demo stats on any error
     return NextResponse.json(DEMO_STATS);
   }
-}
+});

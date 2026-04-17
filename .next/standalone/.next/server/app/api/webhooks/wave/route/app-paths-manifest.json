@@ -1,0 +1,3 @@
+{
+  "/api/webhooks/wave/route": "app/api/webhooks/wave/route.js"
+}

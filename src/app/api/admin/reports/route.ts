@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { apiSuccess, apiError } from '@/lib/api-responses';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 // Demo report data
 const DEMO_REPORT_DATA = {
@@ -67,7 +68,7 @@ const DEMO_REPORT_DATA = {
 };
 
 // GET /api/admin/reports - Get report data
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'month';
@@ -187,7 +188,7 @@ export async function GET(request: NextRequest) {
     console.error('Error generating report:', error);
     return apiError('Erreur lors de la génération du rapport', 500);
   }
-}
+});
 
 // Helper to get monthly revenue data
 async function getMonthlyRevenueData(orderWhere: any, period: string) {

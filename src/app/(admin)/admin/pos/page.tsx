@@ -83,28 +83,65 @@ export default function AdminPOSPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Fetch menu data
+  // Fetch menu data - uses unified /api/public/menu endpoint (same as /menu and POS)
   useEffect(() => {
     async function fetchMenu() {
       try {
-        const response = await fetch('/api/menu?demo=true');
-        const data = await response.json();
-        
-        // API returns { success: true, data: [menus] } or { success: true, data: menu }
-        if (data.success && data.data) {
-          // If data is an array of menus, get categories from first menu
-          if (Array.isArray(data.data) && data.data.length > 0 && data.data[0].categories) {
-            setCategories(data.data[0].categories);
-          } 
-          // If data is a single menu with categories
-          else if (data.data.categories) {
-            setCategories(data.data.categories);
-          } 
-          else {
+        // Use the unified public menu API - single source of truth for all pages
+        const response = await fetch('/api/public/menu?restaurantSlug=kfm-delice');
+        const json = await response.json();
+
+        if (json.success && json.data) {
+          const data = json.data;
+
+          // Extract categories from unified response format
+          // data.categories contains flattened categories OR data.menus contains full hierarchy
+          if (data.categories && data.categories.length > 0) {
+            setCategories(data.categories.map((cat: any) => ({
+              id: cat.id,
+              name: cat.name,
+              slug: cat.slug,
+              items: (cat.items || []).map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                slug: item.slug,
+                price: item.price,
+                description: item.description,
+                image: item.image || item.imageUrl,
+                isAvailable: item.isAvailable,
+                isPopular: item.isPopular,
+                isFeatured: item.isFeatured,
+              })),
+            })));
+          } else if (data.menus && data.menus.length > 0) {
+            // Flatten categories from all menus
+            const allCats = data.menus.flatMap((menu: any) =>
+              (menu.categories || []).map((cat: any) => ({
+                id: cat.id,
+                name: cat.name,
+                slug: cat.slug,
+                items: (cat.items || []).map((item: any) => ({
+                  id: item.id,
+                  name: item.name,
+                  slug: item.slug,
+                  price: item.price,
+                  description: item.description,
+                  image: item.image || item.imageUrl,
+                  isAvailable: item.isAvailable,
+                  isPopular: item.isPopular,
+                  isFeatured: item.isFeatured,
+                })),
+              }))
+            );
+            if (allCats.length > 0) {
+              setCategories(allCats);
+            } else {
+              setCategories(getDemoCategories());
+            }
+          } else {
             setCategories(getDemoCategories());
           }
         } else {
-          // Use demo data if API fails
           setCategories(getDemoCategories());
         }
       } catch (err) {
@@ -114,7 +151,7 @@ export default function AdminPOSPage() {
         setIsLoading(false);
       }
     }
-    
+
     fetchMenu();
   }, []);
 

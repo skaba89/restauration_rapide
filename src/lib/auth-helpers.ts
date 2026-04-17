@@ -4,7 +4,7 @@
 // ============================================
 
 import { db } from '@/lib/db';
-import { randomBytes } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
 import bcrypt from 'bcryptjs';
 
 // Session configuration
@@ -27,12 +27,12 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
-// Generate OTP code
+// Generate OTP code (cryptographically secure)
 export function generateOtpCode(length: number = 6): string {
   const digits = '0123456789';
   let code = '';
   for (let i = 0; i < length; i++) {
-    code += digits[Math.floor(Math.random() * digits.length)];
+    code += digits[randomInt(0, 10)]; // Cryptographically secure
   }
   return code;
 }

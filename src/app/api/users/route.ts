@@ -1,11 +1,13 @@
 // Users API - User CRUD with pagination
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/lib/api-responses';
+import { withAdminAuth } from '@/lib/auth-middleware';
+import { NextRequest } from 'next/server';
 import { hashPassword } from '@/lib/auth-helpers';
 import { isValidEmail, isValidPassword } from '@/lib/utils-helpers';
 
-// GET /api/users - List users with pagination
-export async function GET(request: Request) {
+// GET /api/users - List users with pagination (admin only)
+export const GET = withAdminAuth(async (request: NextRequest, user) => {
   return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = getPaginationParams(searchParams);
@@ -72,10 +74,10 @@ export async function GET(request: Request) {
       totalPages: Math.ceil(total / limit),
     });
   });
-}
+});
 
-// POST /api/users - Create new user
-export async function POST(request: Request) {
+// POST /api/users - Create new user (admin only)
+export const POST = withAdminAuth(async (request: NextRequest, user) => {
   return withErrorHandler(async () => {
     const body = await request.json();
     const {
@@ -145,10 +147,10 @@ export async function POST(request: Request) {
       organizations: user.organizationUsers,
     }, 'Utilisateur créé avec succès', 201);
   });
-}
+});
 
-// PATCH /api/users - Update user
-export async function PATCH(request: Request) {
+// PATCH /api/users - Update user (admin only)
+export const PATCH = withAdminAuth(async (request: NextRequest, user) => {
   return withErrorHandler(async () => {
     const body = await request.json();
     const {
@@ -217,10 +219,10 @@ export async function PATCH(request: Request) {
 
     return apiSuccess(user, 'Utilisateur mis à jour');
   });
-}
+});
 
-// DELETE /api/users - Soft delete user
-export async function DELETE(request: Request) {
+// DELETE /api/users - Soft delete user (SECURITY P1: now protected with admin auth)
+export const DELETE = withAdminAuth(async (request: NextRequest, user) => {
   return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

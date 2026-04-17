@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchUsers, createUser, updateUser, deleteUser, resetUserPassword, fetchOrganizations, fetchRestaurants } from '@/lib/admin/service';
+import { fetchUsers, createUser, updateUser, deleteUser, fetchOrganizations, fetchRestaurants } from '@/lib/admin/service';
 import { UserRole } from '@prisma/client';
+import { withAdminAuth, withRole } from '@/lib/auth-middleware';
 
-// GET /api/admin/users - List users
-export async function GET(request: NextRequest) {
+// GET /api/admin/users - List users (ADMIN only)
+export const GET = withAdminAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
@@ -32,10 +33,10 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-// POST /api/admin/users - Create new user
-export async function POST(request: NextRequest) {
+// POST /api/admin/users - Create new user (SUPER_ADMIN only - prevents privilege escalation)
+export const POST = withRole(['SUPER_ADMIN', 'ORG_ADMIN'], async (request: NextRequest) => {
   try {
     const body = await request.json();
     
@@ -90,10 +91,10 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-// PATCH /api/admin/users - Update user
-export async function PATCH(request: NextRequest) {
+// PATCH /api/admin/users - Update user (ADMIN only)
+export const PATCH = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     
@@ -124,10 +125,10 @@ export async function PATCH(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-// DELETE /api/admin/users - Delete user (soft delete)
-export async function DELETE(request: NextRequest) {
+// DELETE /api/admin/users - Delete user (SUPER_ADMIN only - destructive)
+export const DELETE = withRole(['SUPER_ADMIN'], async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get('id');
@@ -152,4 +153,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

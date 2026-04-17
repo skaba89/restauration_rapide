@@ -6,8 +6,9 @@ import {
   fetchGrowthData,
   fetchRecentSignups
 } from '@/lib/admin/service';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const days = parseInt(searchParams.get('days') || '30');
@@ -35,4 +36,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

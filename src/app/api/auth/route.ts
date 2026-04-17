@@ -1,12 +1,17 @@
+// SECURITY (P1): Rate limiting added to login/register. Demo OTP gate strengthened.
 // Authentication API - Simplified version for standalone deployment
 import { NextResponse } from 'next/server';
+import { randomBytes } from 'crypto';
+import { authRateLimiter } from '@/lib/rate-limiter';
+
+const IS_DEMO_MODE = process.env.DEMO_MODE === 'true';
 
 // Demo users - In production, these would come from the database
-// Using simple passwords for demo mode
+// In demo mode, a shared password hash is loaded from DEMO_PASSWORD_HASH env var
 const DEMO_USERS: Record<string, { password: string; user: any }> = {
   // Super Admin account
   'admin@kfm-delice.com': {
-    password: 'AdminKFM2024!',
+    password: process.env.DEMO_PASSWORD_HASH || '',
     user: {
       id: 'admin-user-1',
       email: 'admin@kfm-delice.com',
@@ -26,7 +31,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Demo account
   'demo@kfm-delice.com': {
-    password: 'demo123',
+    password: process.env.DEMO_PASSWORD_HASH || '',
     user: {
       id: 'demo-user-1',
       email: 'demo@kfm-delice.com',
@@ -46,7 +51,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Contact account
   'contact@kfm-delice.com': {
-    password: 'KfmDelice2024!',
+    password: process.env.DEMO_PASSWORD_HASH || '',
     user: {
       id: 'kfm-user-1',
       email: 'contact@kfm-delice.com',
@@ -66,7 +71,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Restaurant Manager account
   'amadou@kfm-delice.com': {
-    password: 'kfm2024!',
+    password: process.env.DEMO_PASSWORD_HASH || '',
     user: {
       id: 'amadou-user-1',
       email: 'amadou@kfm-delice.com',
@@ -86,7 +91,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Kitchen/Cook account
   'kitchen@kfm-delice.com': {
-    password: 'kitchen123',
+    password: process.env.DEMO_PASSWORD_HASH || '',
     user: {
       id: 'kitchen-user-1',
       email: 'kitchen@kfm-delice.com',
@@ -106,7 +111,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Driver account
   'driver@kfm-delice.com': {
-    password: 'driver123',
+    password: process.env.DEMO_PASSWORD_HASH || '',
     user: {
       id: 'driver-user-1',
       email: 'driver@kfm-delice.com',
@@ -129,9 +134,9 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
 // In-memory sessions for demo mode
 const sessions = new Map<string, { user: any; expiresAt: Date }>();
 
-// Generate a unique token
+// Generate a cryptographically secure unique token (256-bit entropy)
 function generateToken(): string {
-  return `token-${Date.now()}-${Math.random().toString(36).substr(2, 16)}`;
+  return randomBytes(32).toString('hex');
 }
 
 // Helper for JSON responses
@@ -183,6 +188,12 @@ export async function POST(request: Request) {
 
     // Login with password
     if (action === 'login') {
+      // SECURITY (P1): Rate limit login attempts
+      const loginResult = await authRateLimiter(request as any);
+      if (!loginResult.success) {
+        return loginResult.response;
+      }
+
       const identifier = (email || phone || '').toLowerCase().trim();
       const passwordStr = String(password || '').trim();
       
@@ -192,35 +203,35 @@ export async function POST(request: Request) {
         return json(false, { error: 'Email/téléphone et mot de passe sont requis' }, 400);
       }
 
-      // Check demo users
-      const demoUser = DEMO_USERS[identifier];
-      console.log('[AUTH] Demo user found:', !!demoUser, 'password match:', demoUser ? demoUser.password === passwordStr : false);
-      
-      if (demoUser && demoUser.password === passwordStr) {
-        const token = generateToken();
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-        
-        sessions.set(token, { user: demoUser.user, expiresAt });
+      // Check demo users (only in demo mode)
+      if (IS_DEMO_MODE) {
+        const demoUser = DEMO_USERS[identifier];
+        if (demoUser && demoUser.password && demoUser.password === passwordStr) {
+          const token = generateToken();
+          const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-        return json(true, {
-          data: {
-            user: {
-              id: demoUser.user.id,
-              email: demoUser.user.email,
-              phone: demoUser.user.phone,
-              role: demoUser.user.role,
-              firstName: demoUser.user.firstName,
-              lastName: demoUser.user.lastName,
-              avatar: demoUser.user.avatar,
-              organizations: demoUser.user.organizations,
+          sessions.set(token, { user: demoUser.user, expiresAt });
+
+          return json(true, {
+            data: {
+              user: {
+                id: demoUser.user.id,
+                email: demoUser.user.email,
+                phone: demoUser.user.phone,
+                role: demoUser.user.role,
+                firstName: demoUser.user.firstName,
+                lastName: demoUser.user.lastName,
+                avatar: demoUser.user.avatar,
+                organizations: demoUser.user.organizations,
+              },
+              token: token,
+              refreshToken: `refresh-${Date.now()}`,
+              expiresAt: expiresAt.toISOString(),
             },
-            token: token,
-            refreshToken: `refresh-${Date.now()}`,
-            expiresAt: expiresAt.toISOString(),
-          },
-          message: 'Connexion réussie'
-        });
-      }
+            message: 'Connexion réussie'
+          });
+        }
+      } // end IS_DEMO_MODE demo user check
 
       // Try database authentication
       try {
@@ -266,13 +277,21 @@ export async function POST(request: Request) {
       }
 
       console.log('[AUTH] Login failed for:', identifier);
-      return json(false, { 
-        error: 'Identifiants incorrects. Comptes démo disponibles:\n• admin@kfm-delice.com / AdminKFM2024! (SUPER_ADMIN)\n• demo@kfm-delice.com / demo123 (ORG_ADMIN)\n• contact@kfm-delice.com / KfmDelice2024! (ORG_ADMIN)\n• amadou@kfm-delice.com / kfm2024! (RESTAURANT_MANAGER)\n• kitchen@kfm-delice.com / kitchen123 (CUISINIER)\n• driver@kfm-delice.com / driver123 (LIVREUR)' 
-      }, 401);
+      const failResponse: Record<string, string> = { error: 'Identifiants incorrects' };
+      if (IS_DEMO_MODE) {
+        failResponse.hint = 'Mode demo active - consultez la documentation pour les comptes de demonstration';
+      }
+      return json(false, failResponse, 401);
     }
 
     // Register new user
     if (action === 'register') {
+      // SECURITY (P1): Rate limit registration attempts
+      const regResult = await authRateLimiter(request as any);
+      if (!regResult.success) {
+        return regResult.response;
+      }
+
       if (!email || !password) {
         return json(false, { error: 'Email et mot de passe sont requis' }, 400);
       }
@@ -330,13 +349,24 @@ export async function POST(request: Request) {
 
     // Request OTP
     if (action === 'request-otp') {
-      // Demo mode OTP - always return success with demo code
-      return json(true, {
-        data: {
-          message: 'Code OTP envoyé',
-          otpCode: '123456', // Demo OTP code
-        }
-      });
+      // In production, a real OTP would be sent via SMS using a provider like Twilio
+      if (IS_DEMO_MODE) {
+        return json(true, {
+          data: {
+            message: 'Code OTP envoye (mode demo)',
+          }
+        });
+      }
+
+      // Non-demo mode: use proper OTP sending from auth-helpers
+      try {
+        const { sendOtp } = await import('@/lib/auth-helpers');
+        const recipient = email || phone;
+        await sendOtp(recipient);
+        return json(true, { data: { message: 'Code OTP envoye' } });
+      } catch {
+        return json(false, { error: 'Erreur lors de l\'envoi du code OTP' }, 500);
+      }
     }
 
     // Verify OTP
@@ -345,10 +375,18 @@ export async function POST(request: Request) {
         return json(false, { error: 'Code OTP et téléphone/email sont requis' }, 400);
       }
 
-      // Demo mode OTP verification
-      if (otpCode === '123456') {
+      // SECURITY (P1): Demo OTP gate strengthened - only works for demo-specific emails
+      if (IS_DEMO_MODE && otpCode === '123456') {
+        const recipient = (email || phone || '').toLowerCase().trim();
+        // Only allow demo OTP for known demo email addresses, not any random user
+        const demoUserEntry = recipient && DEMO_USERS[recipient];
+        if (!demoUserEntry) {
+          console.warn('[AUTH] Demo OTP attempt for non-demo user:', recipient);
+          return json(false, { error: 'Code OTP invalide' }, 400);
+        }
+
         const token = generateToken();
-        const demoUser = DEMO_USERS['demo@kfm-delice.com'].user;
+        const demoUser = demoUserEntry.user;
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         
         sessions.set(token, { user: demoUser, expiresAt });
@@ -370,7 +408,31 @@ export async function POST(request: Request) {
           message: 'Connexion réussie'
         });
       }
-      return json(false, { error: 'Code OTP invalide (mode démo - utilisez 123456)' }, 400);
+
+      // Non-demo mode: use proper OTP verification from auth-helpers
+      try {
+        const { verifyOtp } = await import('@/lib/auth-helpers');
+        const recipient = email || phone;
+        const otpResult = await verifyOtp(recipient, otpCode);
+        if (otpResult.valid) {
+          const token = generateToken();
+          const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          sessions.set(token, { user: otpResult.user, expiresAt });
+          return json(true, {
+            data: {
+              user: otpResult.user,
+              token,
+              refreshToken: `refresh-${Date.now()}`,
+              expiresAt: expiresAt.toISOString(),
+            },
+            message: 'Connexion réussie'
+          });
+        }
+      } catch {
+        // auth-helpers not available
+      }
+
+      return json(false, { error: 'Code OTP invalide' }, 400);
     }
 
     // Refresh token

@@ -2,6 +2,7 @@
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { apiSuccess, apiError, getPaginationParams } from '@/lib/api-responses';
 import { NextRequest } from 'next/server';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 // GET /api/admin/menus - Get all restaurants with their menus
 export async function GET(request: NextRequest) {
@@ -160,7 +161,7 @@ function getDemoRestaurants() {
 }
 
 // POST /api/admin/menus - Create a new menu
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { name, description, menuType, isActive, restaurantId } = body;
@@ -216,4 +217,4 @@ export async function POST(request: NextRequest) {
     console.error('Error creating menu:', error);
     return apiError('Erreur lors de la création du menu', 500);
   }
-}
+});

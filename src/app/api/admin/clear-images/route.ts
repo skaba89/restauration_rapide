@@ -1,9 +1,11 @@
 // Admin API - Clear external image URLs to prevent timeout issues
+import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 // POST /api/admin/clear-images - Clear all external image URLs
-export async function POST() {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   return withErrorHandler(async () => {
     // Update all menu items to remove external image URLs
     const result = await db.menuItem.updateMany({
@@ -37,4 +39,4 @@ export async function POST() {
       message: `${result.count} images d'articles supprimées, ${restaurantResult.count} images de restaurant supprimées`,
     });
   });
-}
+});

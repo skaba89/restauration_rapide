@@ -108,25 +108,47 @@ export default function RestaurantPOSPage() {
   const loadMenuItems = async () => {
     try {
       setLoading(true);
-      // Utiliser la même API que la page Menu pour avoir les mêmes données
-      const menuData = await fetch(`/api/menu?restaurantId=${restaurantId}`);
-      if (menuData.ok) {
-        const menus = await menuData.json();
-        if (Array.isArray(menus) && menus.length > 0) {
-          // Extraire tous les items de toutes les catégories du premier menu
-          const allItems: MenuItem[] = [];
-          menus[0].categories?.forEach((category: any) => {
-            category.items?.forEach((item: any) => {
-              allItems.push({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                category: category.name || 'autres',
-                isPopular: item.isPopular,
-                isAvailable: item.isAvailable !== false,
+      // Use the unified /api/public/menu endpoint - same source as /menu pages
+      const menuRes = await fetch(`/api/public/menu?restaurantId=${restaurantId}`);
+      if (menuRes.ok) {
+        const json = await menuRes.json();
+        if (json.success && json.data) {
+          const data = json.data;
+
+          // Extract items from unified response format
+          let allItems: MenuItem[] = [];
+          const cats = data.categories || [];
+          if (cats.length > 0) {
+            cats.forEach((category: any) => {
+              (category.items || []).forEach((item: any) => {
+                allItems.push({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  category: category.name || 'autres',
+                  isPopular: item.isPopular,
+                  isAvailable: item.isAvailable !== false,
+                });
               });
             });
-          });
+          } else if (data.menus && data.menus.length > 0) {
+            // Fallback: flatten from menus structure
+            data.menus.forEach((menu: any) => {
+              (menu.categories || []).forEach((category: any) => {
+                (category.items || []).forEach((item: any) => {
+                  allItems.push({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    category: category.name || 'autres',
+                    isPopular: item.isPopular,
+                    isAvailable: item.isAvailable !== false,
+                  });
+                });
+              });
+            });
+          }
+
           if (allItems.length > 0) {
             setMenuItems(allItems);
             return;
@@ -138,7 +160,6 @@ export default function RestaurantPOSPage() {
       setMenuItems(DEMO_MENU_ITEMS);
     } catch (error) {
       console.error('Failed to load menu items:', error);
-      // En cas d'erreur, utiliser les données de démo
       setMenuItems(DEMO_MENU_ITEMS);
     } finally {
       setLoading(false);

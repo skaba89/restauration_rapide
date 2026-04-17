@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchOrganizations, createOrganization } from '@/lib/admin/service';
 import { Plan } from '@prisma/client';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     
@@ -62,4 +63,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

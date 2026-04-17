@@ -1,7 +1,10 @@
 // Seed API - Initialize KFM DELICE data in database
+// SECURITY (P1): POST is now protected with withAdminAuth
+// SECURITY (P1): Passwords are no longer returned in API responses
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
-import { NextRequest } from 'next/server';
+import { withAdminAuth } from '@/lib/auth-middleware';
+import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 
 // GET /api/seed - Check database status
@@ -61,8 +64,8 @@ export async function GET() {
   });
 }
 
-// POST /api/seed - Run seed script
-export async function POST(request: NextRequest) {
+// POST /api/seed - Run seed script (protected)
+export const POST = withAdminAuth(async (request: NextRequest) => {
   return withErrorHandler(async () => {
     const body = await request.json().catch(() => ({}));
     const force = body.force === true;
@@ -79,8 +82,8 @@ export async function POST(request: NextRequest) {
     // Run seed
     const result = await runSeed();
     return apiSuccess(result);
-  });
-}
+  })();
+});
 
 async function runSeed() {
   // 1. Get or create currency
@@ -229,12 +232,18 @@ async function runSeed() {
     }
   }
 
-  // 7. Create or update admin user
+  // 7. Create or update users (passwords from env vars)
+  const adminPwd = process.env.SEED_ADMIN_PASSWORD || 'KFM@Admin2024!';
+  const driverPwd = process.env.SEED_DRIVER_PASSWORD || 'Driver@2024!';
+  const customerPwd = process.env.SEED_CUSTOMER_PASSWORD || 'Client@2024!';
+  const passwordHash = await bcrypt.hash(adminPwd, 12);
+  const driverPasswordHash = await bcrypt.hash(driverPwd, 12);
+  const customerPasswordHash = await bcrypt.hash(customerPwd, 12);
+
+  // 7a. Create or update admin user
   const existingAdmin = await db.user.findFirst({ where: { email: 'admin@kfm-delice.com' } });
   let adminCreated = false;
   let adminUpdated = false;
-
-  const passwordHash = await bcrypt.hash('KFM@Admin2024!', 12);
 
   if (!existingAdmin) {
     const adminUser = await db.user.create({
@@ -266,8 +275,6 @@ async function runSeed() {
   const existingDriver = await db.user.findFirst({ where: { email: 'driver@kfm-delice.com' } });
   let driverCreated = false;
   let driverUpdated = false;
-
-  const driverPasswordHash = await bcrypt.hash('Driver@2024!', 12);
 
   if (!existingDriver) {
     const driverUser = await db.user.create({
@@ -312,8 +319,6 @@ async function runSeed() {
   const existingCustomer = await db.user.findFirst({ where: { email: 'client@kfm-delice.com' } });
   let customerCreated = false;
 
-  const customerPasswordHash = await bcrypt.hash('Client@2024!', 12);
-
   if (!existingCustomer) {
     const customerUser = await db.user.create({
       data: {
@@ -357,19 +362,6 @@ async function runSeed() {
       driverUpdated,
       customerCreated
     },
-    credentials: {
-      admin: {
-        email: 'admin@kfm-delice.com',
-        password: 'KFM@Admin2024!'
-      },
-      driver: {
-        email: 'driver@kfm-delice.com',
-        password: 'Driver@2024!'
-      },
-      customer: {
-        email: 'client@kfm-delice.com',
-        password: 'Client@2024!'
-      }
-    }
+    // SECURITY: credentials removed from response - use env vars or secure admin reset
   };
 }

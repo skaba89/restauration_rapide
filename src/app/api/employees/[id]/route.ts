@@ -4,6 +4,7 @@
 
 import { NextRequest } from 'next/server';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
+import { withAdminAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/db';
 import { z } from 'zod';
 
@@ -52,8 +53,10 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// GET - Get employee by ID
-export const GET = withErrorHandler(async (request: NextRequest, { params }: RouteParams) => {
+// GET - Get employee by ID (admin only)
+export const GET = withAdminAuth(async (request: NextRequest, user, context: any) => {
+  return withErrorHandler<any>(async () => {
+  const { params } = (context || {}) as RouteParams;
   const { id } = await params;
   const searchParams = request.nextUrl.searchParams;
   const demo = searchParams.get('demo') === 'true';
@@ -129,10 +132,13 @@ export const GET = withErrorHandler(async (request: NextRequest, { params }: Rou
     console.error('Error fetching employee:', error);
     return apiError('Erreur lors de la récupération de l\'employé', 500);
   }
+  });
 });
 
-// PUT - Update employee
-export const PUT = withErrorHandler(async (request: NextRequest, { params }: RouteParams) => {
+// PUT - Update employee (admin only)
+export const PUT = withAdminAuth(async (request: NextRequest, user, context: any) => {
+  return withErrorHandler<any>(async () => {
+  const { params } = (context || {}) as RouteParams;
   const { id } = await params;
   const body = await request.json();
   const demo = body.demo === true;
@@ -197,10 +203,13 @@ export const PUT = withErrorHandler(async (request: NextRequest, { params }: Rou
     }
     return apiError('Erreur lors de la mise à jour de l\'employé', 500);
   }
+  });
 });
 
-// DELETE - Delete employee
-export const DELETE = withErrorHandler(async (request: NextRequest, { params }: RouteParams) => {
+// DELETE - Delete employee (admin only)
+export const DELETE = withAdminAuth(async (request: NextRequest, user, context: any) => {
+  return withErrorHandler<any>(async () => {
+  const { params } = (context || {}) as RouteParams;
   const { id } = await params;
   const searchParams = request.nextUrl.searchParams;
   const demo = searchParams.get('demo') === 'true';
@@ -226,4 +235,5 @@ export const DELETE = withErrorHandler(async (request: NextRequest, { params }: 
     }
     return apiError('Erreur lors de la suppression de l\'employé', 500);
   }
+  });
 });

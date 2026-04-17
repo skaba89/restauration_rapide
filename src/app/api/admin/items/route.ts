@@ -2,6 +2,7 @@
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { apiSuccess, apiError, getPaginationParams } from '@/lib/api-responses';
 import { NextRequest } from 'next/server';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 // GET /api/admin/items - List all menu items
 export async function GET(request: NextRequest) {
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/admin/items - Create a new menu item
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const {
@@ -156,4 +157,4 @@ export async function POST(request: NextRequest) {
     console.error('Error creating item:', error);
     return apiError('Erreur lors de la création du plat', 500);
   }
-}
+});

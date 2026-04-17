@@ -1,6 +1,7 @@
 // Settings API - Restaurant/Organization settings management
 import { db, isDatabaseAvailable } from '@/lib/db';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { withAuth, withAdminAuth } from '@/lib/auth-middleware';
 
 // Helper to get or create default organization
 async function getOrCreateDefaultOrganization() {
@@ -56,8 +57,8 @@ async function getOrCreateDefaultOrganization() {
   return organization;
 }
 
-// GET /api/settings - Get organization/restaurant settings
-export async function GET(request: Request) {
+// GET /api/settings - Get organization/restaurant settings (authenticated users)
+export const GET = withAuth(async (request: NextRequest, user) => {
   try {
     if (!isDatabaseAvailable() || !db) {
       return NextResponse.json({
@@ -160,10 +161,10 @@ export async function GET(request: Request) {
       error: 'Erreur lors du chargement des paramètres',
     }, { status: 500 });
   }
-}
+});
 
-// PATCH /api/settings - Update settings
-export async function PATCH(request: Request) {
+// PATCH /api/settings - Update settings (admin only)
+export const PATCH = withAdminAuth(async (request: NextRequest, user) => {
   try {
     if (!isDatabaseAvailable() || !db) {
       return NextResponse.json({
@@ -340,4 +341,4 @@ export async function PATCH(request: Request) {
       error: 'Erreur lors de la mise à jour',
     }, { status: 500 });
   }
-}
+});

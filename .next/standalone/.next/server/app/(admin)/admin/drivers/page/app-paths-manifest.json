@@ -1,0 +1,3 @@
+{
+  "/(admin)/admin/drivers/page": "app/(admin)/admin/drivers/page.js"
+}

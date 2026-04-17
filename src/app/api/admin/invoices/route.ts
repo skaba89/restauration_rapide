@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withErrorHandler } from '@/lib/api-responses';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 // Demo data for invoices
 const demoInvoices = [
@@ -269,7 +270,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/admin/invoices - Créer une facture
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   return withErrorHandler(async () => {
     const body = await request.json();
     const {
@@ -334,4 +335,4 @@ export async function POST(request: NextRequest) {
       message: 'Facture créée avec succès'
     }, { status: 201 });
   });
-}
+});

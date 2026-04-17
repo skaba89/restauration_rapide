@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resetUserPassword } from '@/lib/admin/service';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
-// POST /api/admin/users/reset-password - Reset user password
-export async function POST(request: NextRequest) {
+// POST /api/admin/users/reset-password - Reset user password (ADMIN only)
+export const POST = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     
@@ -13,9 +14,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.newPassword.length < 6) {
+    if (body.newPassword.length < 8) {
       return NextResponse.json(
-        { error: 'Le mot de passe doit contenir au moins 6 caractères' },
+        { error: 'Le mot de passe doit contenir au moins 8 caractères' },
         { status: 400 }
       );
     }
@@ -33,4 +34,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

@@ -1,6 +1,8 @@
 // Orders API - Order CRUD with status workflow, loyalty points, stock management
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/lib/api-responses';
+import { withAuth, withAdminAuth } from '@/lib/auth-middleware';
+import { NextRequest } from 'next/server';
 import { generateOrderNumber, calculateLoyaltyPoints } from '@/lib/utils-helpers';
 import { getDemoOrders, updateDemoOrderStatus, removeDemoOrder, assignDriverToOrder, getDemoOrderById } from '@/lib/demo-order-store';
 import { broadcastNewOrder, broadcastOrderStatusChange, broadcastOrderCancellation, broadcastDriverAssignment } from '@/lib/sync-engine';
@@ -8,9 +10,9 @@ import { broadcastNewOrder, broadcastOrderStatusChange, broadcastOrderCancellati
 // Demo orders are now managed via shared store (demo-order-store.ts)
 // Both kitchen and admin read/write from the same source of truth
 
-// GET /api/orders - List orders with pagination
-export async function GET(request: Request) {
-  return withErrorHandler(async () => {
+// GET /api/orders - List orders with pagination (authenticated users)
+export const GET = withAuth(async (request: NextRequest, user) => {
+  return withErrorHandler<any>(async () => {
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = getPaginationParams(searchParams);
     const restaurantId = searchParams.get('restaurantId');
@@ -125,11 +127,11 @@ export async function GET(request: Request) {
       totalPages: Math.ceil(total / limit),
     });
   });
-}
+});
 
-// POST /api/orders - Create order with stock decrement and loyalty points
-export async function POST(request: Request) {
-  return withErrorHandler(async () => {
+// POST /api/orders - Create order with stock decrement and loyalty points (authenticated users)
+export const POST = withAuth(async (request: NextRequest, user) => {
+  return withErrorHandler<any>(async () => {
     const body = await request.json();
     const {
       restaurantId,
@@ -401,11 +403,11 @@ export async function POST(request: Request) {
 
     return apiSuccess(order, 'Commande créée avec succès', 201);
   });
-}
+});
 
-// PATCH /api/orders - Update order status with workflow
-export async function PATCH(request: Request) {
-  return withErrorHandler(async () => {
+// PATCH /api/orders - Update order status with workflow (authenticated users)
+export const PATCH = withAuth(async (request: NextRequest, user) => {
+  return withErrorHandler<any>(async () => {
     const body = await request.json();
     const { id, status, internalNotes, cancellationReason, paymentStatus } = body;
 
@@ -582,11 +584,11 @@ export async function PATCH(request: Request) {
 
     return apiSuccess(updatedOrder, 'Commande mise à jour');
   });
-}
+});
 
-// DELETE /api/orders - Cancel order
-export async function DELETE(request: Request) {
-  return withErrorHandler(async () => {
+// DELETE /api/orders - Cancel order (admin only)
+export const DELETE = withAdminAuth(async (request: NextRequest, user) => {
+  return withErrorHandler<any>(async () => {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const reason = searchParams.get('reason');
@@ -656,4 +658,4 @@ export async function DELETE(request: Request) {
 
     return apiSuccess({ cancelled: true }, 'Commande annulée');
   });
-}
+});

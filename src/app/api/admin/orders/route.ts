@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getDemoOrders } from '@/lib/demo-order-store';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
-export async function GET() {
+export const GET = withAdminAuth(async (request: NextRequest) => {
   try {
     // Try to fetch from database
     const { db, isDatabaseAvailable } = await import('@/lib/db');
@@ -65,4 +66,4 @@ export async function GET() {
   }));
 
   return NextResponse.json({ data: demoOrders, total: demoOrders.length });
-}
+});

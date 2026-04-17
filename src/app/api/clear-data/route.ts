@@ -1,12 +1,22 @@
 // ============================================
 // Clear All Demo Data Endpoint
 // POST /api/clear-data - Deletes all data from database
+// SECURITY: Blocked in production, requires admin auth
 // ============================================
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
-export async function POST() {
+export const POST = withAdminAuth(async (request: NextRequest) => {
+  // Block in production
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({
+      success: false,
+      error: 'This endpoint is disabled in production',
+    }, { status: 403 });
+  }
+
   try {
     if (!db) {
       return NextResponse.json({
@@ -129,14 +139,14 @@ export async function POST() {
       details: error instanceof Error ? error.message : 'Unknown error',
     }, { status: 500 });
   }
-}
+});
 
-// GET - Return info about the endpoint
-export async function GET() {
+// GET - Return info about the endpoint (admin auth required)
+export const GET = withAdminAuth(async (request: NextRequest) => {
   return NextResponse.json({
     endpoint: '/api/clear-data',
     method: 'POST',
     description: 'Supprime toutes les données de démo de la base de données',
     warning: 'Cette action est irréversible!',
   });
-}
+});

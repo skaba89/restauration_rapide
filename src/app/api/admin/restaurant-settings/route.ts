@@ -1,6 +1,7 @@
 // Restaurant Settings API - Manage restaurant information
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
+import { withAdminAuth } from '@/lib/auth-middleware';
 
 // Helper to ensure reference data exists
 async function ensureReferenceData() {
@@ -156,7 +157,7 @@ export async function GET() {
 }
 
 // PATCH - Update restaurant settings
-export async function PATCH(request: Request) {
+export const PATCH = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
 
@@ -228,4 +229,4 @@ export async function PATCH(request: Request) {
       error: 'Erreur lors de la mise à jour',
     }, { status: 500 });
   }
-}
+});

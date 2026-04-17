@@ -4,6 +4,7 @@
 
 import { NextRequest } from 'next/server';
 import { apiSuccess, apiError, withErrorHandler, getPagination } from '@/lib/api-responses';
+import { withAdminAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/db';
 import { z } from 'zod';
 
@@ -58,8 +59,9 @@ const createEmployeeSchema = z.object({
   restaurantId: z.string().optional().nullable(),
 });
 
-// GET - List employees with filters
-export const GET = withErrorHandler(async (request: NextRequest) => {
+// GET - List employees with filters (admin only)
+export const GET = withAdminAuth(async (request: NextRequest, user) => {
+  return withErrorHandler<any>(async () => {
   const searchParams = request.nextUrl.searchParams;
   const demo = searchParams.get('demo') === 'true';
   const organizationId = searchParams.get('organizationId') || '';
@@ -173,10 +175,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     console.error('Error fetching employees:', error);
     return apiError('Erreur lors de la récupération du personnel', 500);
   }
+  });
 });
 
-// POST - Create new employee
-export const POST = withErrorHandler(async (request: NextRequest) => {
+// POST - Create new employee (admin only)
+export const POST = withAdminAuth(async (request: NextRequest, user) => {
+  return withErrorHandler<any>(async () => {
   const body = await request.json();
   const demo = body.demo === true;
   const organizationId = body.organizationId || '';
@@ -234,4 +238,5 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     }
     return apiError('Erreur lors de la création de l\'employé', 500);
   }
+  });
 });

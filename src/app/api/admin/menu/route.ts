@@ -1,10 +1,19 @@
 // Menu Items Management API - Uses Prisma Database (SimpleMenuItem)
 // Auto-creates the table if missing and seeds demo data
 // All modifications persist in PostgreSQL on Render
-import { NextResponse } from 'next/server';
+// SECURITY (P1): Cache-Control no-store on all responses
+import { NextResponse, NextRequest } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
 import { getDemoMenuItems, isDemoItemId, getDemoMenuItem, updateDemoMenuItem, addDemoMenuItem, removeDemoMenuItem } from '@/lib/demo-menu-store';
+import { withAdminAuth } from '@/lib/auth-middleware';
+
+// Cache-Control headers to prevent stale data
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+};
 
 // Helper: merge update data with proper type conversion
 function formatUpdateData(updateData: Record<string, unknown>) {
@@ -54,7 +63,7 @@ export async function GET() {
         data: getDemoMenuItems(),
         source: 'demo',
         message: 'Mode démonstration - Base de données non disponible',
-      });
+      }, { headers: NO_CACHE_HEADERS });
     }
 
     try {
@@ -66,7 +75,7 @@ export async function GET() {
           data: getDemoMenuItems(),
           source: 'demo',
           message: 'Mode démonstration - Table non disponible',
-        });
+        }, { headers: NO_CACHE_HEADERS });
       }
 
       const items = await db.simpleMenuItem.findMany({
@@ -82,14 +91,14 @@ export async function GET() {
           data: getDemoMenuItems(),
           source: 'demo',
           message: 'Mode démonstration - Aucun article en base',
-        });
+        }, { headers: NO_CACHE_HEADERS });
       }
 
       return NextResponse.json({
         success: true,
         data: items.map(formatDbItem),
         source: 'database',
-      });
+      }, { headers: NO_CACHE_HEADERS });
     } catch (dbError) {
       console.error('Database error:', dbError);
       return NextResponse.json({
@@ -97,7 +106,7 @@ export async function GET() {
         data: getDemoMenuItems(),
         source: 'demo',
         message: 'Mode démonstration - Erreur de base de données',
-      });
+      }, { headers: NO_CACHE_HEADERS });
     }
   } catch (error) {
     console.error('Error fetching menu:', error);
@@ -106,12 +115,12 @@ export async function GET() {
       data: getDemoMenuItems(),
       source: 'demo',
       message: 'Mode démonstration',
-    });
+    }, { headers: NO_CACHE_HEADERS });
   }
 }
 
 // POST - Create new menu item
-export async function POST(request: Request) {
+export const POST = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { name, description, category, price, costPrice, preparationTime, isAvailable, allergens, image, isPopular, isNew } = body;
@@ -174,10 +183,10 @@ export async function POST(request: Request) {
     console.error('Error creating menu item:', error);
     return NextResponse.json({ success: false, error: 'Erreur lors de la création' }, { status: 500 });
   }
-}
+});
 
 // PATCH - Update menu item
-export async function PATCH(request: Request) {
+export const PATCH = withAdminAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { id, ...updateData } = body;
@@ -233,10 +242,10 @@ export async function PATCH(request: Request) {
     console.error('Error updating menu item:', error);
     return NextResponse.json({ success: false, error: 'Erreur lors de la mise à jour' }, { status: 500 });
   }
-}
+});
 
 // DELETE - Delete menu item
-export async function DELETE(request: Request) {
+export const DELETE = withAdminAuth(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -270,4 +279,4 @@ export async function DELETE(request: Request) {
     console.error('Error deleting menu item:', error);
     return NextResponse.json({ success: false, error: 'Erreur lors de la suppression' }, { status: 500 });
   }
-}
+});

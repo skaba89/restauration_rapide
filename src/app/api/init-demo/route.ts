@@ -1,19 +1,40 @@
 // ============================================
 // Initialize Demo Users Endpoint
 // Creates/updates demo accounts for KFM DELICE
+//
+// SECURITY: This endpoint requires DEMO_MODE=true to be set in environment
+// variables. Demo credentials must be configured via environment variables:
+//   DEMO_ADMIN_PASSWORD - Password for admin accounts (fallback: random hash)
+//   DEMO_USER_PASSWORD  - Password for non-admin accounts (fallback: random hash)
+//
+// When DEMO_MODE is not 'true', this endpoint returns 404.
 // ============================================
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
-// Demo users configuration
+// Helper: generate a random unusable hash at runtime (never a hardcoded string)
+function generateRandomPasswordHash(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// Helper: get password for a given role from env vars, with random hash fallback
+function getPasswordForRole(role: string): string {
+  if (role === 'SUPER_ADMIN') {
+    return process.env.DEMO_ADMIN_PASSWORD || generateRandomPasswordHash();
+  }
+  // Non-admin roles (ORG_ADMIN, RESTAURANT_MANAGER, etc.)
+  return process.env.DEMO_USER_PASSWORD || generateRandomPasswordHash();
+}
+
+// Demo users configuration - passwords loaded from environment variables at runtime
 const DEMO_USERS = [
   {
     email: 'admin@kfm-delice.com',
-    password: 'AdminKFM2024!',
     phone: '+224 623 21 72 40',
     firstName: 'Super',
     lastName: 'Admin',
@@ -22,7 +43,6 @@ const DEMO_USERS = [
   },
   {
     email: 'demo@kfm-delice.com',
-    password: 'demo123',
     phone: '+224 622 000 000',
     firstName: 'Admin',
     lastName: 'Demo',
@@ -31,7 +51,6 @@ const DEMO_USERS = [
   },
   {
     email: 'contact@kfm-delice.com',
-    password: 'KfmDelice2024!',
     phone: '+224 623 21 72 41',
     firstName: 'KFM',
     lastName: 'DELICE',
@@ -40,7 +59,6 @@ const DEMO_USERS = [
   },
   {
     email: 'amadou@kfm-delice.com',
-    password: 'kfm2024!',
     phone: '+224 622 111 222',
     firstName: 'Amadou',
     lastName: 'Diallo',
@@ -49,21 +67,39 @@ const DEMO_USERS = [
   },
 ];
 
-// GET /api/init-demo - Get demo account info
+// Gate: return 404 if demo mode is not enabled
+function isDemoMode(): boolean {
+  return process.env.DEMO_MODE === 'true';
+}
+
+// GET /api/init-demo - Get demo account info (email + role only, NO passwords)
 export async function GET() {
+  if (!isDemoMode()) {
+    return NextResponse.json({
+      success: false,
+      error: 'Not found',
+    }, { status: 404 });
+  }
+
   return NextResponse.json({
     success: true,
     message: 'Demo initialization endpoint',
     accounts: DEMO_USERS.map(u => ({
       email: u.email,
       role: u.role,
-      password: u.password,
     })),
   });
 }
 
 // POST /api/init-demo - Initialize demo users in database
 export async function POST() {
+  if (!isDemoMode()) {
+    return NextResponse.json({
+      success: false,
+      error: 'Not found',
+    }, { status: 404 });
+  }
+
   try {
     // Check if database is available
     if (!db) {
@@ -73,12 +109,11 @@ export async function POST() {
         accounts: DEMO_USERS.map(u => ({
           email: u.email,
           role: u.role,
-          password: u.password,
         })),
       });
     }
 
-    const results = [];
+    const results: Array<{ email: string; action: string; role?: string; error?: string }> = [];
 
     for (const userData of DEMO_USERS) {
       try {
@@ -87,7 +122,9 @@ export async function POST() {
           where: { email: userData.email },
         });
 
-        const passwordHash = await bcrypt.hash(userData.password, BCRYPT_SALT_ROUNDS);
+        // Load password from environment variable or generate random hash
+        const password = getPasswordForRole(userData.role);
+        const passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
         if (existingUser) {
           // Update existing user

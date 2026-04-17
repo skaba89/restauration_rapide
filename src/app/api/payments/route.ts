@@ -2,6 +2,8 @@
 import { db } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/lib/api-responses';
 import { generateTransactionId, getMobileMoneyProvider } from '@/lib/utils-helpers';
+import { withAdminAuth, withAuth } from '@/lib/auth-middleware';
+import { NextRequest } from 'next/server';
 
 // Mobile Money Provider Configurations
 const MOBILE_MONEY_CONFIGS = {
@@ -32,8 +34,8 @@ const MOBILE_MONEY_CONFIGS = {
   },
 };
 
-// GET /api/payments - Get payments
-export async function GET(request: Request) {
+// GET /api/payments - Get payments (admin only)
+export const GET = withAdminAuth(async (request: NextRequest, user) => {
   return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = getPaginationParams(searchParams);
@@ -89,11 +91,11 @@ export async function GET(request: Request) {
       totalPages: Math.ceil(total / limit),
     });
   });
-}
+});
 
-// POST /api/payments - Process payment
-export async function POST(request: Request) {
-  return withErrorHandler(async () => {
+// POST /api/payments - Process payment (authenticated users)
+export const POST = withAuth(async (request: NextRequest, user) => {
+  return withErrorHandler<any>(async () => {
     const body = await request.json();
     const { orderId, method, phoneNumber, amount } = body;
 
@@ -280,10 +282,10 @@ export async function POST(request: Request) {
 
     return apiSuccess(payment, 'Paiement initié');
   });
-}
+});
 
-// PATCH /api/payments - Confirm/Update payment
-export async function PATCH(request: Request) {
+// PATCH /api/payments - Confirm/Update payment (admin only)
+export const PATCH = withAdminAuth(async (request: NextRequest, user) => {
   return withErrorHandler(async () => {
     const body = await request.json();
     const { paymentId, transactionId, status, providerReference, failureReason } = body;
@@ -350,7 +352,7 @@ export async function PATCH(request: Request) {
 
     return apiSuccess(updatedPayment, 'Paiement mis à jour');
   });
-}
+});
 
 // GET providers list
 export function GET_PROVIDERS() {

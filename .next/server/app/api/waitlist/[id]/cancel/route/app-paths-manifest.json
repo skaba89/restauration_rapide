@@ -1,0 +1,3 @@
+{
+  "/api/waitlist/[id]/cancel/route": "app/api/waitlist/[id]/cancel/route.js"
+}

@@ -9,11 +9,36 @@ import { createHmac, timingSafeEqual } from 'crypto';
  * Webhook signature verification configuration
  */
 export const WEBHOOK_SECRETS = {
-  ORANGE_MONEY: process.env.ORANGE_MONEY_WEBHOOK_SECRET || 'om_webhook_secret_dev',
-  MTN_MOMO: process.env.MTN_MOMO_SUBSCRIPTION_KEY || 'mtn_momo_secret_dev',
-  WAVE: process.env.WAVE_WEBHOOK_SECRET || 'wave_webhook_secret_dev',
-  MPESA: process.env.MPESA_PASSKEY || 'mpesa_passkey_dev',
+  ORANGE_MONEY: process.env.NODE_ENV === 'production'
+    ? (process.env.ORANGE_MONEY_WEBHOOK_SECRET || undefined)
+    : (process.env.ORANGE_MONEY_WEBHOOK_SECRET || 'om_webhook_secret_dev'),
+  MTN_MOMO: process.env.NODE_ENV === 'production'
+    ? (process.env.MTN_MOMO_SUBSCRIPTION_KEY || undefined)
+    : (process.env.MTN_MOMO_SUBSCRIPTION_KEY || 'mtn_momo_secret_dev'),
+  WAVE: process.env.NODE_ENV === 'production'
+    ? (process.env.WAVE_WEBHOOK_SECRET || undefined)
+    : (process.env.WAVE_WEBHOOK_SECRET || 'wave_webhook_secret_dev'),
+  MPESA: process.env.NODE_ENV === 'production'
+    ? (process.env.MPESA_PASSKEY || undefined)
+    : (process.env.MPESA_PASSKEY || 'mpesa_passkey_dev'),
 } as const;
+
+// SECURITY: In production, webhook secrets must be configured to prevent payment fraud
+if (process.env.NODE_ENV === 'production') {
+  const missingSecrets: string[] = [];
+  if (!process.env.ORANGE_MONEY_WEBHOOK_SECRET) missingSecrets.push('ORANGE_MONEY_WEBHOOK_SECRET');
+  if (!process.env.MTN_MOMO_SUBSCRIPTION_KEY) missingSecrets.push('MTN_MOMO_SUBSCRIPTION_KEY');
+  if (!process.env.WAVE_WEBHOOK_SECRET) missingSecrets.push('WAVE_WEBHOOK_SECRET');
+  if (!process.env.MPESA_PASSKEY) missingSecrets.push('MPESA_PASSKEY');
+
+  // Warn but don't crash - webhook secrets may not be needed if provider isn't used
+  if (missingSecrets.length > 0) {
+    console.warn(
+      `[SECURITY] WARNING: The following webhook secrets are not configured in production: ${missingSecrets.join(', ')}. ` +
+      'Payment verification for these providers will be DISABLED. Configure these secrets before processing live payments.'
+    );
+  }
+}
 
 /**
  * Verify Orange Money webhook signature

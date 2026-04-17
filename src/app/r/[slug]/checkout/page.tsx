@@ -80,8 +80,8 @@ const GUINEA_CITIES = [
 ];
 
 const MOBILE_MONEY_PROVIDERS = [
-  { id: 'orange', name: 'Orange Money', logo: '🟠', color: 'bg-orange-500' },
-  { id: 'mtn', name: 'MTN MoMo', logo: '🟡', color: 'bg-yellow-500' },
+  { id: 'orange', name: 'Orange Money', logo: '🟠', logoImg: '/images/partners/orange-money.png', color: 'bg-orange-500' },
+  { id: 'mtn', name: 'MTN MoMo', logo: '🟡', logoImg: '/images/partners/mtn-momo.png', color: 'bg-yellow-500' },
 ];
 
 export default function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -532,7 +532,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
                     className="flex items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent peer-data-[state=checked]:border-orange-500 cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{provider.logo}</span>
+                      {provider.logoImg ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={provider.logoImg} alt={provider.name} className="w-8 h-8 object-contain rounded" />
+                      ) : (
+                        <span className="text-2xl">{provider.logo}</span>
+                      )}
                       <span className="font-medium">{provider.name}</span>
                     </div>
                     <Check className="h-5 w-5 text-orange-500 opacity-0 peer-data-[state=checked]:opacity-100" />

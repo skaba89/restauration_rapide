@@ -55,17 +55,17 @@ const TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> =
   analytics: { label: 'Analytiques', icon: BarChart3, color: 'text-orange-500' },
 };
 
-const PROVIDER_DETAILS: Record<string, { name: string; logo: string; description: string }> = {
-  orange_money: { name: 'Orange Money', logo: '🟠', description: 'Paiement Mobile Money Orange' },
-  mtn_momo: { name: 'MTN MoMo', logo: '🟡', description: 'Paiement Mobile Money MTN' },
-  wave: { name: 'Wave', logo: '🔵', description: 'Paiement Mobile Money Wave' },
-  whatsapp_business: { name: 'WhatsApp Business', logo: '💬', description: 'API WhatsApp Business' },
-  orange_sms: { name: 'Orange SMS', logo: '📱', description: 'SMS via Orange' },
-  mtn_sms: { name: 'MTN SMS', logo: '📱', description: 'SMS via MTN' },
-  google_maps: { name: 'Google Maps', logo: '🗺️', description: 'API Google Maps' },
-  facebook: { name: 'Facebook', logo: '📘', description: 'Page Facebook' },
-  instagram: { name: 'Instagram', logo: '📸', description: 'Compte Instagram Business' },
-  google_analytics: { name: 'Google Analytics', logo: '📊', description: 'Suivi analytique' },
+const PROVIDER_DETAILS: Record<string, { name: string; logo: string; logoImg?: string; description: string }> = {
+  orange_money: { name: 'Orange Money', logo: '🟠', logoImg: '/images/partners/orange-money.png', description: 'Paiement Mobile Money Orange' },
+  mtn_momo: { name: 'MTN MoMo', logo: '🟡', logoImg: '/images/partners/mtn-momo.png', description: 'Paiement Mobile Money MTN' },
+  wave: { name: 'Wave', logo: '🔵', logoImg: '/images/partners/wave.png', description: 'Paiement Mobile Money Wave' },
+  whatsapp_business: { name: 'WhatsApp Business', logo: '💬', logoImg: '/images/partners/whatsapp.png', description: 'API WhatsApp Business' },
+  orange_sms: { name: 'Orange SMS', logo: '📱', logoImg: '/images/partners/orange-money.png', description: 'SMS via Orange' },
+  mtn_sms: { name: 'MTN SMS', logo: '📱', logoImg: '/images/partners/mtn-momo.png', description: 'SMS via MTN' },
+  google_maps: { name: 'Google Maps', logo: '🗺️', logoImg: '/images/partners/google-maps.png', description: 'API Google Maps' },
+  facebook: { name: 'Facebook', logo: '📘', logoImg: '/images/partners/facebook.png', description: 'Page Facebook' },
+  instagram: { name: 'Instagram', logo: '📸', logoImg: '/images/partners/instagram.png', description: 'Compte Instagram Business' },
+  google_analytics: { name: 'Google Analytics', logo: '📊', logoImg: '/images/partners/google-analytics.png', description: 'Suivi analytique' },
 };
 
 export function IntegrationsManager() {
@@ -263,7 +263,17 @@ export function IntegrationsManager() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl">{providerDetail.logo}</span>
+                        {providerDetail.logoImg ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={providerDetail.logoImg}
+                            alt={providerDetail.name}
+                            className="w-8 h-8 object-contain rounded"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="text-2xl">{providerDetail.logo}</span>
+                        )}
                         <div>
                           <CardTitle className="text-base">{providerDetail.name}</CardTitle>
                           <CardDescription className="text-xs">{typeConfig.label}</CardDescription>

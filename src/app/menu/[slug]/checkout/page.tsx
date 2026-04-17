@@ -458,10 +458,21 @@ export default function CheckoutPage() {
                       : 'border-gray-200'
                   }`}
                 >
-                  <span className="text-2xl">📱</span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/partners/orange-money.png" alt="Mobile Money" className="w-8 h-8 object-contain rounded" />
                   <div className="text-left">
-                    <p className="font-medium">Mobile Money</p>
-                    <p className="text-sm text-gray-500">Orange Money, MTN MoMo</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">Mobile Money</p>
+                    </div>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/images/partners/orange-money.png" alt="Orange Money" className="w-4 h-4 object-contain" />
+                      <span className="text-sm text-gray-500">Orange Money</span>
+                      <span className="text-gray-300 mx-1">|</span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/images/partners/mtn-momo.png" alt="MTN MoMo" className="w-4 h-4 object-contain" />
+                      <span className="text-sm text-gray-500">MTN MoMo</span>
+                    </div>
                   </div>
                 </button>
               )}

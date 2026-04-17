@@ -56,6 +56,7 @@ export function MobileMoneyPayment({
       id: 'orange_money' as const,
       name: 'Orange Money',
       icon: '🟠',
+      logoImg: '/images/partners/orange-money.png',
       color: 'bg-orange-500',
       description: 'Paiement via Orange Money Guinée',
     },
@@ -63,6 +64,7 @@ export function MobileMoneyPayment({
       id: 'mtn_momo' as const,
       name: 'MTN MoMo',
       icon: '🟡',
+      logoImg: '/images/partners/mtn-momo.png',
       color: 'bg-yellow-500',
       description: 'Paiement via MTN Mobile Money',
     },
@@ -216,7 +218,12 @@ export function MobileMoneyPayment({
                 <RadioGroupItem value={provider.id} id={provider.id} />
                 <Label htmlFor={provider.id} className="flex-1 cursor-pointer ml-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{provider.icon}</span>
+                    {provider.logoImg ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={provider.logoImg} alt={provider.name} className="w-8 h-8 object-contain rounded" />
+                    ) : (
+                      <span className="text-2xl">{provider.icon}</span>
+                    )}
                     <div>
                       <p className="font-semibold">{provider.name}</p>
                       <p className="text-sm text-gray-500">{provider.description}</p>

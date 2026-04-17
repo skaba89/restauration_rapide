@@ -128,12 +128,12 @@ const testimonials = [
   }
 ];
 
-// Mobile Money partners
+// Mobile Money partners with official logos
 const mobileMoneyPartners = [
-  { name: 'Orange Money', color: '#FF6600' },
-  { name: 'MTN MoMo', color: '#FFCC00' },
-  { name: 'Wave', color: '#1DC8F2' },
-  { name: 'M-Pesa', color: '#00A650' }
+  { name: 'Orange Money', color: '#FF6600', logo: '/images/partners/orange-money.png' },
+  { name: 'MTN MoMo', color: '#FFCC00', logo: '/images/partners/mtn-momo.png' },
+  { name: 'Wave', color: '#1DC8F2', logo: '/images/partners/wave.png' },
+  { name: 'M-Pesa', color: '#00A650', logo: '/images/partners/m-pesa.png' }
 ];
 
 export default function LandingPageClient() {
@@ -310,14 +310,17 @@ export default function LandingPageClient() {
       {/* Mobile Money Partners */}
       <section className="py-8 bg-gray-50 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
             <p className="text-sm text-gray-500 font-medium">Paiements intégrés:</p>
             {mobileMoneyPartners.map((partner) => (
-              <div key={partner.name} className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: partner.color }}
-                ></div>
+              <div key={partner.name} className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={partner.logo}
+                  alt={partner.name}
+                  className="h-8 w-8 object-contain rounded"
+                  loading="lazy"
+                />
                 <span className="font-semibold text-gray-700">{partner.name}</span>
               </div>
             ))}

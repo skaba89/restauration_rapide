@@ -14,49 +14,42 @@ export async function GET(request: Request) {
     const search = searchParams.get('search');
     const code = searchParams.get('code');
 
-    // For real database queries, check if Promotion model exists
-    try {
-      const where = {
-        organizationId,
-        ...(restaurantId && { restaurantId }),
-        ...(isActive !== null && { isActive: isActive === 'true' }),
-        ...(type && { type }),
-        ...(code && { code: { equals: code, mode: 'insensitive' as const } }),
-        ...(search && {
-          OR: [
-            { name: { contains: search } },
-            { description: { contains: search } },
-            { code: { contains: search } },
-          ],
-        }),
-      };
-
-      const [promotions, total] = await Promise.all([
-        db.promotion.findMany({
-          where,
-          skip,
-          take: limit,
-          orderBy: { createdAt: 'desc' },
-        }),
-        db.promotion.count({ where }),
-      ]);
-
-      return apiSuccess({
-        data: promotions,
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      });
-    } catch {
-      return apiSuccess({
-        data: [].slice(skip, skip + limit),
-        total: 0,
-        page,
-        limit,
-        totalPages: Math.ceil([].length / limit),
-      });
+    if (!db) {
+      return apiError('Base de données non disponible', 503);
     }
+
+    const where = {
+      organizationId,
+      ...(restaurantId && { restaurantId }),
+      ...(isActive !== null && { isActive: isActive === 'true' }),
+      ...(type && { type }),
+      ...(code && { code: { equals: code, mode: 'insensitive' as const } }),
+      ...(search && {
+        OR: [
+          { name: { contains: search } },
+          { description: { contains: search } },
+          { code: { contains: search } },
+        ],
+      }),
+    };
+
+    const [promotions, total] = await Promise.all([
+      db.promotion.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      db.promotion.count({ where }),
+    ]);
+
+    return apiSuccess({
+      data: promotions,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
   });
 }
 
@@ -83,39 +76,39 @@ export async function POST(request: Request) {
       return apiError('organisation, nom, type, valeur et dates de validité sont requis');
     }
 
-    try {
-      // Check if code already exists
-      if (code) {
-        const existing = await db.promotion.findFirst({
-          where: { organizationId, code },
-        });
-        if (existing) {
-          return apiError('Ce code promo existe déjà', 409);
-        }
-      }
-
-      const promotion = await db.promotion.create({
-        data: {
-          organizationId,
-          restaurantId,
-          name,
-          description,
-          type,
-          value,
-          code: code?.toUpperCase(),
-          minOrder,
-          maxUsage,
-          validFrom: new Date(validFrom),
-          validTo: new Date(validTo),
-          isActive: true,
-          usageCount: 0,
-        },
-      });
-
-      return apiSuccess(promotion, 'Promotion créée avec succès', 201);
-    } catch {
-      return apiSuccess(demoPromotion, 'Promotion créée (mode démo)', 201);
+    if (!db) {
+      return apiError('Base de données non disponible', 503);
     }
+
+    // Check if code already exists
+    if (code) {
+      const existing = await db.promotion.findFirst({
+        where: { organizationId, code },
+      });
+      if (existing) {
+        return apiError('Ce code promo existe déjà', 409);
+      }
+    }
+
+    const promotion = await db.promotion.create({
+      data: {
+        organizationId,
+        restaurantId,
+        name,
+        description,
+        type,
+        value,
+        code: code?.toUpperCase(),
+        minOrder,
+        maxUsage,
+        validFrom: new Date(validFrom),
+        validTo: new Date(validTo),
+        isActive: true,
+        usageCount: 0,
+      },
+    });
+
+    return apiSuccess(promotion, 'Promotion créée avec succès', 201);
   });
 }
 
@@ -141,32 +134,32 @@ export async function PATCH(request: Request) {
       return apiError('ID est requis');
     }
 
-    try {
-      const promotion = await db.promotion.findUnique({ where: { id } });
-      if (!promotion) {
-        return apiError('Promotion non trouvée', 404);
-      }
-
-      const updatedPromotion = await db.promotion.update({
-        where: { id },
-        data: {
-          name,
-          description,
-          type,
-          value,
-          code: code?.toUpperCase(),
-          minOrder,
-          maxUsage,
-          validFrom: validFrom ? new Date(validFrom) : undefined,
-          validTo: validTo ? new Date(validTo) : undefined,
-          isActive,
-        },
-      });
-
-      return apiSuccess(updatedPromotion, 'Promotion mise à jour');
-    } catch {
-      return apiSuccess({ id, ...body, updatedAt: new Date() }, 'Promotion mise à jour (mode démo)');
+    if (!db) {
+      return apiError('Base de données non disponible', 503);
     }
+
+    const promotion = await db.promotion.findUnique({ where: { id } });
+    if (!promotion) {
+      return apiError('Promotion non trouvée', 404);
+    }
+
+    const updatedPromotion = await db.promotion.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        type,
+        value,
+        code: code?.toUpperCase(),
+        minOrder,
+        maxUsage,
+        validFrom: validFrom ? new Date(validFrom) : undefined,
+        validTo: validTo ? new Date(validTo) : undefined,
+        isActive,
+      },
+    });
+
+    return apiSuccess(updatedPromotion, 'Promotion mise à jour');
   });
 }
 
@@ -180,16 +173,16 @@ export async function DELETE(request: Request) {
       return apiError('ID est requis');
     }
 
-    try {
-      const promotion = await db.promotion.findUnique({ where: { id } });
-      if (!promotion) {
-        return apiError('Promotion non trouvée', 404);
-      }
-
-      await db.promotion.delete({ where: { id } });
-      return apiSuccess({ deleted: true }, 'Promotion supprimée');
-    } catch {
-      return apiSuccess({ deleted: true }, 'Promotion supprimée (mode démo)');
+    if (!db) {
+      return apiError('Base de données non disponible', 503);
     }
+
+    const promotion = await db.promotion.findUnique({ where: { id } });
+    if (!promotion) {
+      return apiError('Promotion non trouvée', 404);
+    }
+
+    await db.promotion.delete({ where: { id } });
+    return apiSuccess({ deleted: true }, 'Promotion supprimée');
   });
 }

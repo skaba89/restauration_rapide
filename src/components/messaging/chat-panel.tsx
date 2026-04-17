@@ -64,40 +64,6 @@ const getSenderColor = (type: string) => {
   }
 };
 
-// Demo messages for initial display
-const getDemoMessages = (orderId: string): Message[] => [
-  {
-    id: 'msg-1',
-    orderId,
-    senderId: 'driver-1',
-    senderName: 'Amadou Touré',
-    senderType: 'driver',
-    content: 'Bonjour! J\'ai bien pris en charge votre commande.',
-    timestamp: new Date(Date.now() - 15 * 60 * 1000),
-    read: true,
-  },
-  {
-    id: 'msg-2',
-    orderId,
-    senderId: 'customer-1',
-    senderName: 'Vous',
-    senderType: 'customer',
-    content: 'Parfait, merci! Combien de temps environ?',
-    timestamp: new Date(Date.now() - 14 * 60 * 1000),
-    read: true,
-  },
-  {
-    id: 'msg-3',
-    orderId,
-    senderId: 'driver-1',
-    senderName: 'Amadou Touré',
-    senderType: 'driver',
-    content: 'Environ 15-20 minutes. Je suis en route!',
-    timestamp: new Date(Date.now() - 10 * 60 * 1000),
-    read: true,
-  },
-];
-
 export default function ChatPanel({
   orderId,
   currentUserId,
@@ -110,7 +76,7 @@ export default function ChatPanel({
   onMinimize,
   onClose,
 }: ChatPanelProps) {
-  const [messages, setMessages] = useState<Message[]>(getDemoMessages(orderId));
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);

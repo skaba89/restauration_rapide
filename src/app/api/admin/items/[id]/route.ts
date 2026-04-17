@@ -24,25 +24,8 @@ export async function PUT(
       isNew,
     } = body;
 
-    // Check for demo mode
     if (!isDatabaseAvailable() || !db) {
-      // Return mock updated item for demo mode
-      const mockItem = {
-        id,
-        name: name || 'Updated Item',
-        slug: name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'updated-item',
-        description: description || null,
-        price: parseFloat(price) || 0,
-        discountPrice: discountPrice ? parseFloat(discountPrice) : null,
-        prepTime: prepTime ? parseInt(prepTime) : null,
-        image: image || null,
-        isAvailable: isAvailable ?? true,
-        isFeatured: isFeatured ?? false,
-        isPopular: isPopular ?? false,
-        isNew: isNew ?? false,
-        updatedAt: new Date().toISOString(),
-      };
-      return apiSuccess(mockItem, 'Plat mis à jour (mode démo)');
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     const item = await db.menuItem.update({
@@ -77,15 +60,8 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    // Check for demo mode
     if (!isDatabaseAvailable() || !db) {
-      // Return mock updated item for demo mode
-      const mockItem = {
-        id,
-        ...body,
-        updatedAt: new Date().toISOString(),
-      };
-      return apiSuccess(mockItem, 'Plat mis à jour (mode démo)');
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     const item = await db.menuItem.update({
@@ -108,9 +84,8 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Check for demo mode
     if (!isDatabaseAvailable() || !db) {
-      return apiSuccess({ success: true, id }, 'Plat supprimé (mode démo)');
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     await db.menuItem.delete({

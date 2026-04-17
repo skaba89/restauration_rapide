@@ -13,6 +13,10 @@ export const GET = withAdminAuth(async (request: NextRequest) => {
     const organizationId = searchParams.get('organizationId');
     const reportType = searchParams.get('type') || 'overview';
 
+    if (!isDatabaseAvailable() || !db) {
+      return apiError('Base de données non disponible', 503);
+    }
+
     // Calculate date range based on period
     const now = new Date();
     let startDate: Date;
@@ -32,94 +36,89 @@ export const GET = withAdminAuth(async (request: NextRequest) => {
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     }
 
-    // Try database first
-    if (isDatabaseAvailable() && db) {
-      // Build where clause
-      const orderWhere: any = {
-        createdAt: { gte: startDate },
-      };
-      
-      if (restaurantId) {
-        orderWhere.restaurantId = restaurantId;
-      }
-      if (organizationId) {
-        orderWhere.restaurant = { organizationId };
-      }
-
-      // Get KPIs
-      const [totalOrders, revenueResult, uniqueCustomers] = await Promise.all([
-        db.order.count({ where: orderWhere }),
-        db.order.aggregate({
-          where: { ...orderWhere, status: 'COMPLETED' },
-          _sum: { total: true },
-          _avg: { total: true },
-        }),
-        db.order.findMany({
-          where: orderWhere,
-          select: { customerId: true },
-          distinct: ['customerId'],
-        }),
-      ]);
-
-      // Get previous period for growth calculation
-      const previousStartDate = new Date(startDate.getTime() - (now.getTime() - startDate.getTime()));
-      const previousOrders = await db.order.count({
-        where: {
-          ...orderWhere,
-          createdAt: { gte: previousStartDate, lt: startDate },
-        },
-      });
-
-      const previousRevenue = await db.order.aggregate({
-        where: {
-          ...orderWhere,
-          status: 'COMPLETED',
-          createdAt: { gte: previousStartDate, lt: startDate },
-        },
-        _sum: { total: true },
-      });
-
-      const currentRevenue = revenueResult._sum.total || 0;
-      const previousRevenueValue = previousRevenue._sum.total || 0;
-      const revenueGrowth = previousRevenueValue > 0 
-        ? ((currentRevenue - previousRevenueValue) / previousRevenueValue * 100).toFixed(1)
-        : 0;
-
-      const ordersGrowth = previousOrders > 0
-        ? ((totalOrders - previousOrders) / previousOrders * 100).toFixed(1)
-        : 0;
-
-      // Get monthly revenue data
-      const monthlyData = await getMonthlyRevenueData(orderWhere, period);
-
-      // Get top products
-      const topProducts = await getTopProducts(orderWhere);
-
-      // Get payment method distribution
-      const paymentDistribution = await getPaymentDistribution(orderWhere);
-
-      const reportData = {
-        kpis: {
-          totalRevenue: currentRevenue,
-          totalOrders,
-          totalCustomers: uniqueCustomers.filter(c => c.customerId).length,
-          avgOrderValue: revenueResult._avg.total || 0,
-          revenueGrowth: parseFloat(revenueGrowth as string),
-          ordersGrowth: parseFloat(ordersGrowth as string),
-          customerGrowth: 22.8, // Would need historical data
-        },
-        monthlyRevenue: monthlyData,
-        categoryPerformance: [],
-        restaurantPerformance: [],
-        topProducts,
-        paymentMethods: paymentDistribution,
-        hourlyDistribution: [],
-      };
-
-      return apiSuccess(reportData);
+    // Build where clause
+    const orderWhere: any = {
+      createdAt: { gte: startDate },
+    };
+    
+    if (restaurantId) {
+      orderWhere.restaurantId = restaurantId;
+    }
+    if (organizationId) {
+      orderWhere.restaurant = { organizationId };
     }
 
-    return apiSuccess([]);
+    // Get KPIs
+    const [totalOrders, revenueResult, uniqueCustomers] = await Promise.all([
+      db.order.count({ where: orderWhere }),
+      db.order.aggregate({
+        where: { ...orderWhere, status: 'COMPLETED' },
+        _sum: { total: true },
+        _avg: { total: true },
+      }),
+      db.order.findMany({
+        where: orderWhere,
+        select: { customerId: true },
+        distinct: ['customerId'],
+      }),
+    ]);
+
+    // Get previous period for growth calculation
+    const previousStartDate = new Date(startDate.getTime() - (now.getTime() - startDate.getTime()));
+    const previousOrders = await db.order.count({
+      where: {
+        ...orderWhere,
+        createdAt: { gte: previousStartDate, lt: startDate },
+      },
+    });
+
+    const previousRevenue = await db.order.aggregate({
+      where: {
+        ...orderWhere,
+        status: 'COMPLETED',
+        createdAt: { gte: previousStartDate, lt: startDate },
+      },
+      _sum: { total: true },
+    });
+
+    const currentRevenue = revenueResult._sum.total || 0;
+    const previousRevenueValue = previousRevenue._sum.total || 0;
+    const revenueGrowth = previousRevenueValue > 0 
+      ? ((currentRevenue - previousRevenueValue) / previousRevenueValue * 100).toFixed(1)
+      : 0;
+
+    const ordersGrowth = previousOrders > 0
+      ? ((totalOrders - previousOrders) / previousOrders * 100).toFixed(1)
+      : 0;
+
+    // Get monthly revenue data
+    const monthlyData = await getMonthlyRevenueData(orderWhere, period);
+
+    // Get top products
+    const topProducts = await getTopProducts(orderWhere);
+
+    // Get payment method distribution
+    const paymentDistribution = await getPaymentDistribution(orderWhere);
+
+    const reportData = {
+      kpis: {
+        totalRevenue: currentRevenue,
+        totalOrders,
+        totalCustomers: uniqueCustomers.filter(c => c.customerId).length,
+        avgOrderValue: revenueResult._avg.total || 0,
+        revenueGrowth: parseFloat(revenueGrowth as string),
+        ordersGrowth: parseFloat(ordersGrowth as string),
+        customerGrowth: 22.8, // Would need historical data
+      },
+      monthlyRevenue: monthlyData,
+      categoryPerformance: [],
+      restaurantPerformance: [],
+      topProducts,
+      paymentMethods: paymentDistribution,
+      hourlyDistribution: [],
+    };
+
+    return apiSuccess(reportData);
   } catch (error) {
     console.error('Error generating report:', error);
     return apiError('Erreur lors de la génération du rapport', 500);

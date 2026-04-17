@@ -7,10 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { 
   generateReceiptPDF, 
   generateTextReceipt,
-  getDemoReceiptData,
   ReceiptData 
 } from '@/lib/pdf/receipt';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 
 // ============================================
 // GET - Generate and download receipt PDF
@@ -27,9 +26,16 @@ export async function GET(
     // Get query parameters
     const language = (searchParams.get('lang') === 'en' ? 'en' : 'fr') as 'fr' | 'en';
     const format = searchParams.get('format') || 'pdf'; // 'pdf' or 'text'
-    
-    let receiptData: ReceiptData;
-    
+
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
+    const receiptData = await fetchReceiptData(orderId, language);
+
     // Check format requested
     if (format === 'text') {
       // Return plain text receipt for direct thermal printing
@@ -78,100 +84,90 @@ export async function GET(
 // ============================================
 
 async function fetchReceiptData(orderId: string, language: 'fr' | 'en'): Promise<ReceiptData> {
-  // Try to fetch from database
-  try {
-    const order = await db.order.findUnique({
-      where: { id: orderId },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: true,
+      customer: true,
+      payments: {
+        where: { status: { in: ['COMPLETED', 'PAID', 'PENDING'] } },
+        take: 1,
+      },
+      delivery: {
+        include: {
+          driver: true,
         },
-        customer: true,
-        payment: true,
-        delivery: {
-          include: {
-            driver: true,
-          },
-        },
-        restaurant: true,
-        table: true,
       },
-    });
-    
-    if (!order) {
-      // Fall back to demo data if order not found
-      console.log(`Order ${orderId} not found, using demo data`);
-      demoData.orderNumber = orderId;
-      return demoData;
-    }
-    
-    // Map order to receipt data
-    const restaurant = order.restaurant || {
-      name: 'Restaurant OS',
-      address: '',
-      phone: '',
-    };
-    
-    const receiptData: ReceiptData = {
-      restaurant: {
-        name: restaurant.name,
-        address: restaurant.address || undefined,
-        phone: restaurant.phone || undefined,
-        taxId: restaurant.taxId || undefined,
-      },
-      
-      orderNumber: order.orderNumber || orderId,
-      orderType: (order.orderType || 'DINE_IN') as 'DINE_IN' | 'DELIVERY' | 'TAKEAWAY',
-      tableNumber: order.table?.number?.toString(),
-      
-      customerName: order.customer?.name || undefined,
-      customerPhone: order.customer?.phone || undefined,
-      
-      items: order.items.map(item => ({
-        name: item.product?.name || item.name || 'Item',
-        quantity: item.quantity,
-        unitPrice: item.price,
-        total: item.price * item.quantity,
-        notes: item.notes || undefined,
-      })),
-      
-      subtotal: order.subtotal || order.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-      tax: order.tax || 0,
-      taxRate: 18,
-      discount: order.discount || undefined,
-      tip: order.tip || undefined,
-      deliveryFee: order.deliveryFee || undefined,
-      total: order.total,
-      currency: order.currency || 'XOF',
-      
-      payment: {
-        method: (order.payment?.method || 'CASH') as any,
-        amount: order.total,
-        reference: order.payment?.reference || undefined,
-        phoneNumber: order.payment?.phoneNumber || undefined,
-      },
-      
-      delivery: order.delivery ? {
-        address: order.delivery.address,
-        driverName: order.delivery.driver?.name || undefined,
-        driverPhone: order.delivery.driver?.phone || undefined,
-      } : undefined,
-      
-      date: order.createdAt,
-      notes: order.notes || undefined,
-      
-      language,
-    };
-    
-    return receiptData;
-    
-  } catch (dbError) {
-    console.error('Database error, falling back to demo data:', dbError);
-    demoData.orderNumber = orderId;
-    return demoData;
+      restaurant: true,
+      table: true,
+    },
+  });
+  
+  if (!order) {
+    throw new Error('Commande non trouvée');
   }
+  
+  // Map order to receipt data
+  const restaurant = order.restaurant || {
+    name: 'Restaurant OS',
+    address: '',
+    phone: '',
+  };
+  
+  const payment = order.payments?.[0];
+
+  const receiptData: ReceiptData = {
+    restaurant: {
+      name: restaurant.name,
+      address: restaurant.address || undefined,
+      phone: restaurant.phone || undefined,
+      taxId: restaurant.taxId || undefined,
+    },
+    
+    orderNumber: order.orderNumber || orderId,
+    orderType: (order.orderType || 'DINE_IN') as 'DINE_IN' | 'DELIVERY' | 'TAKEAWAY',
+    tableNumber: order.tableNumber || undefined,
+    
+    customerName: order.customerName || order.customer?.name || undefined,
+    customerPhone: order.customerPhone || order.customer?.phone || undefined,
+    
+    items: order.items.map(item => ({
+      name: item.itemName || 'Item',
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      total: item.unitPrice * item.quantity,
+      notes: item.notes || undefined,
+    })),
+    
+    subtotal: order.subtotal || order.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+    tax: order.tax || 0,
+    taxRate: 18,
+    discount: order.discount || undefined,
+    tip: order.tip || undefined,
+    deliveryFee: order.deliveryFee || undefined,
+    total: order.total,
+    currency: 'XOF',
+    
+    payment: {
+      method: (payment?.method || 'CASH') as any,
+      amount: order.total,
+      reference: payment?.reference || undefined,
+      phoneNumber: payment?.phoneNumber || undefined,
+    },
+    
+    delivery: order.delivery ? {
+      address: order.delivery.address,
+      driverName: (order.delivery as any).driver?.name || undefined,
+      driverPhone: (order.delivery as any).driver?.phone || undefined,
+    } : undefined,
+    
+    date: order.createdAt,
+    notes: order.notes || undefined,
+    
+    language,
+  };
+  
+  return receiptData;
 }
 
 // ============================================

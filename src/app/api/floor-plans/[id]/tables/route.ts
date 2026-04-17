@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 
 // POST - Add a table to a floor plan
 export async function POST(
@@ -7,6 +7,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
     const { id: floorPlanId } = await params;
     const body = await request.json();
     const { 
@@ -134,6 +141,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
     const { id: floorPlanId } = await params;
     const { searchParams } = new URL(request.url);
 
@@ -245,30 +259,3 @@ export async function PUT(
   }
 }
 
-// Helper function for demo tables
-function getDemoTablesForFloorPlan(floorPlanId: string) {
-  return [
-    // Salle Principale (Tables 1-5)
-    { id: 'demo-t1', number: 'T1', shape: 'round', capacity: 4, positionX: 80, positionY: 100, width: 80, height: 80, rotation: 0, status: 'occupied', currentPartySize: 3, serverName: 'Aïssata', section: 'Salle Principale' },
-    { id: 'demo-t2', number: 'T2', shape: 'round', capacity: 4, positionX: 200, positionY: 100, width: 80, height: 80, rotation: 0, status: 'reserved', section: 'Salle Principale', reservationTime: '19:30', reservationName: 'M. Koné' },
-    { id: 'demo-t3', number: 'T3', shape: 'round', capacity: 4, positionX: 320, positionY: 100, width: 80, height: 80, rotation: 0, status: 'occupied', currentPartySize: 4, serverName: 'Moussa', section: 'Salle Principale' },
-    { id: 'demo-t4', number: 'T4', shape: 'square', capacity: 4, positionX: 80, positionY: 220, width: 70, height: 70, rotation: 0, status: 'cleaning', section: 'Salle Principale' },
-    { id: 'demo-t5', number: 'T5', shape: 'round', capacity: 4, positionX: 200, positionY: 220, width: 80, height: 80, rotation: 0, status: 'reserved', section: 'Salle Principale', reservationTime: '20:00', reservationName: 'Diallo' },
-    
-    // Terrasse (Tables 6-10)
-    { id: 'demo-t6', number: 'T6', shape: 'square', capacity: 4, positionX: 520, positionY: 100, width: 70, height: 70, rotation: 0, status: 'occupied', currentPartySize: 2, serverName: 'Fatou', section: 'Terrasse' },
-    { id: 'demo-t7', number: 'T7', shape: 'square', capacity: 4, positionX: 620, positionY: 100, width: 70, height: 70, rotation: 0, status: 'occupied', currentPartySize: 3, serverName: 'Kouamé', section: 'Terrasse' },
-    { id: 'demo-t8', number: 'T8', shape: 'square', capacity: 4, positionX: 720, positionY: 100, width: 70, height: 70, rotation: 0, status: 'available', section: 'Terrasse' },
-    { id: 'demo-t9', number: 'T9', shape: 'square', capacity: 4, positionX: 520, positionY: 200, width: 70, height: 70, rotation: 0, status: 'available', section: 'Terrasse' },
-    { id: 'demo-t10', number: 'T10', shape: 'square', capacity: 4, positionX: 620, positionY: 200, width: 70, height: 70, rotation: 0, status: 'available', section: 'Terrasse' },
-    
-    // VIP (Tables 11-12)
-    { id: 'demo-t11', number: 'VIP1', shape: 'rectangle', capacity: 6, positionX: 80, positionY: 400, width: 120, height: 80, rotation: 0, status: 'available', section: 'VIP', isVip: true },
-    { id: 'demo-t12', number: 'VIP2', shape: 'rectangle', capacity: 6, positionX: 240, positionY: 400, width: 120, height: 80, rotation: 0, status: 'available', section: 'VIP', isVip: true },
-    
-    // Coins intimes (Tables 13-15)
-    { id: 'demo-t13', number: 'C1', shape: 'round', capacity: 2, positionX: 450, positionY: 400, width: 60, height: 60, rotation: 0, status: 'available', section: 'Coins Intimes' },
-    { id: 'demo-t14', number: 'C2', shape: 'round', capacity: 2, positionX: 530, positionY: 400, width: 60, height: 60, rotation: 0, status: 'available', section: 'Coins Intimes' },
-    { id: 'demo-t15', number: 'C3', shape: 'round', capacity: 2, positionX: 610, positionY: 400, width: 60, height: 60, rotation: 0, status: 'available', section: 'Coins Intimes' },
-  ];
-}

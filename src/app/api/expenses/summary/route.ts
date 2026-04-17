@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 
-// Calculate summary from demo expenses
+// Calculate summary from expenses
 function calculateSummary(expenses: Array<{ amount: number; date: Date; category: string; status: string; paymentMethod: string }>) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -137,39 +137,16 @@ function getWeekNumber(date: Date): number {
   return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 }
 
-// Generate demo expenses for summary
-function getDemoExpenses() {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  return [
-    { id: 'exp-001', category: 'supplies', description: 'Achat de riz local (50 kg)', amount: 425000, date: new Date(currentYear, currentMonth, 2), status: 'paid', paymentMethod: 'Orange Money' },
-    { id: 'exp-002', category: 'supplies', description: 'Poisson frais du jour', amount: 380000, date: new Date(currentYear, currentMonth, 3), status: 'paid', paymentMethod: 'Espèces' },
-    { id: 'exp-003', category: 'supplies', description: 'Légumes et légumes-feuilles', amount: 185000, date: new Date(currentYear, currentMonth, 4), status: 'paid', paymentMethod: 'MTN Momo' },
-    { id: 'exp-004', category: 'supplies', description: 'Huile de palme et condiments', amount: 275000, date: new Date(currentYear, currentMonth, 5), status: 'paid', paymentMethod: 'Espèces' },
-    { id: 'exp-005', category: 'supplies', description: 'Viande de bœuf (20 kg)', amount: 520000, date: new Date(currentYear, currentMonth, 8), status: 'pending', paymentMethod: 'Virement' },
-    { id: 'exp-006', category: 'utilities', description: 'Facture électricité Mars', amount: 680000, date: new Date(currentYear, currentMonth, 5), status: 'paid', paymentMethod: 'EDG Guinée' },
-    { id: 'exp-007', category: 'utilities', description: 'Facture eau Mars', amount: 125000, date: new Date(currentYear, currentMonth, 5), status: 'paid', paymentMethod: 'SEG' },
-    { id: 'exp-008', category: 'utilities', description: 'Internet et téléphone', amount: 350000, date: new Date(currentYear, currentMonth, 1), status: 'paid', paymentMethod: 'Orange Money' },
-    { id: 'exp-009', category: 'rent', description: 'Loyer mensuel Avril', amount: 8500000, date: new Date(currentYear, currentMonth, 1), status: 'paid', paymentMethod: 'Virement bancaire' },
-    { id: 'exp-010', category: 'salaries', description: 'Salaires personnel - Cuisiniers', amount: 4500000, date: new Date(currentYear, currentMonth, 28), status: 'pending', paymentMethod: 'Virement bancaire' },
-    { id: 'exp-011', category: 'salaries', description: 'Salaires personnel - Serveurs', amount: 2800000, date: new Date(currentYear, currentMonth, 28), status: 'pending', paymentMethod: 'Virement bancaire' },
-    { id: 'exp-012', category: 'salaries', description: 'Salaire livreur', amount: 1200000, date: new Date(currentYear, currentMonth, 28), status: 'pending', paymentMethod: 'Orange Money' },
-    { id: 'exp-013', category: 'maintenance', description: 'Réparation cuisinière gaz', amount: 325000, date: new Date(currentYear, currentMonth, 10), status: 'paid', paymentMethod: 'Espèces' },
-    { id: 'exp-014', category: 'maintenance', description: 'Entretien climatisation', amount: 180000, date: new Date(currentYear, currentMonth, 12), status: 'paid', paymentMethod: 'MTN Momo' },
-    { id: 'exp-015', category: 'maintenance', description: 'Réparation frigo commercial', amount: 450000, date: new Date(currentYear, currentMonth, 15), status: 'approved', paymentMethod: 'Virement' },
-    { id: 'exp-016', category: 'marketing', description: 'Publicité Facebook/Instagram', amount: 250000, date: new Date(currentYear, currentMonth, 1), status: 'paid', paymentMethod: 'Carte bancaire' },
-    { id: 'exp-017', category: 'marketing', description: 'Impression flyers promotionnels', amount: 85000, date: new Date(currentYear, currentMonth, 5), status: 'paid', paymentMethod: 'Espèces' },
-    { id: 'exp-018', category: 'marketing', description: 'Sponsorisation événement local', amount: 500000, date: new Date(currentYear, currentMonth, 20), status: 'pending', paymentMethod: 'Virement' },
-    { id: 'exp-019', category: 'other', description: 'Frais bancaires mensuels', amount: 45000, date: new Date(currentYear, currentMonth, 1), status: 'paid', paymentMethod: 'Prélèvement automatique' },
-    { id: 'exp-020', category: 'other', description: 'Assurance responsabilité civile', amount: 320000, date: new Date(currentYear, currentMonth, 15), status: 'paid', paymentMethod: 'Virement' },
-  ];
-}
-
 // GET - Get expense summary
 export async function GET(request: NextRequest) {
   try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
     const restaurantId = searchParams.get('restaurantId');

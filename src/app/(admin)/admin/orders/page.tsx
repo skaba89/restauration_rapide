@@ -94,6 +94,7 @@ const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR', 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -110,74 +111,7 @@ export default function AdminOrdersPage() {
         }
       } catch (error) {
         console.error('Error fetching orders:', error);
-        // Demo data
-        setOrders([
-          {
-            id: '1',
-            orderNumber: 'ORD-001',
-            customerName: 'Amadou Diallo',
-            customerPhone: '+224 622 00 00 01',
-            restaurant: { name: 'KFM DELICE' },
-            orderType: 'DELIVERY',
-            status: 'PREPARING',
-            paymentStatus: 'PAID',
-            total: 45000,
-            createdAt: new Date().toISOString(),
-            items: [{ name: 'Riz Gras', quantity: 2, price: 15000 }, { name: 'Jus de Bissap', quantity: 3, price: 5000 }],
-          },
-          {
-            id: '2',
-            orderNumber: 'ORD-002',
-            customerName: 'Fatou Ndiaye',
-            customerPhone: '+224 622 00 00 02',
-            restaurant: { name: 'KFM DELICE' },
-            orderType: 'DINE_IN',
-            status: 'PENDING',
-            paymentStatus: 'PENDING',
-            total: 25000,
-            createdAt: new Date(Date.now() - 3600000).toISOString(),
-            items: [{ name: 'Attiéké Poisson', quantity: 1, price: 15000 }, { name: 'Poulet Braisé', quantity: 1, price: 10000 }],
-          },
-          {
-            id: '3',
-            orderNumber: 'ORD-003',
-            customerName: 'Kofi Mensah',
-            customerPhone: '+224 622 00 00 03',
-            restaurant: { name: 'KFM DELICE' },
-            orderType: 'TAKEAWAY',
-            status: 'COMPLETED',
-            paymentStatus: 'PAID',
-            total: 35000,
-            createdAt: new Date(Date.now() - 7200000).toISOString(),
-            items: [{ name: 'Jollof Rice', quantity: 2, price: 17500 }],
-          },
-          {
-            id: '4',
-            orderNumber: 'ORD-004',
-            customerName: 'Aisha Bamba',
-            customerPhone: '+224 622 00 00 04',
-            restaurant: { name: 'KFM DELICE' },
-            orderType: 'DELIVERY',
-            status: 'OUT_FOR_DELIVERY',
-            paymentStatus: 'PAID',
-            total: 55000,
-            createdAt: new Date(Date.now() - 1800000).toISOString(),
-            items: [{ name: 'Foutou Banane', quantity: 2, price: 20000 }, { name: 'Brochette Bœuf', quantity: 3, price: 5000 }],
-          },
-          {
-            id: '5',
-            orderNumber: 'ORD-005',
-            customerName: 'Moussa Koné',
-            customerPhone: '+224 622 00 00 05',
-            restaurant: { name: 'KFM DELICE' },
-            orderType: 'DELIVERY',
-            status: 'CANCELLED',
-            paymentStatus: 'REFUNDED',
-            total: 20000,
-            createdAt: new Date(Date.now() - 10800000).toISOString(),
-            items: [{ name: 'Riz Gras', quantity: 1, price: 15000 }, { name: 'Coca-Cola', quantity: 2, price: 2500 }],
-          },
-        ]);
+        setFetchError('Impossible de charger les commandes. Aucune donnée disponible.');
       } finally {
         setLoading(false);
       }
@@ -207,7 +141,7 @@ export default function AdminOrdersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Gestion des Commandes</h1>
-          <p className="text-muted-foreground">Vue d'ensemble de toutes les commandes</p>
+          <p className="text-muted-foreground">Vue d&apos;ensemble de toutes les commandes</p>
         </div>
         <Button>
           <ShoppingCart className="h-4 w-4 mr-2" />
@@ -327,6 +261,15 @@ export default function AdminOrdersPage() {
               {Array(5).fill(0).map((_, i) => (
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
+            </div>
+          ) : fetchError ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <AlertCircle className="h-8 w-8 mx-auto mb-3 opacity-50" />
+              <p>{fetchError}</p>
+            </div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>Aucune commande trouvée</p>
             </div>
           ) : (
             <div className="rounded-md border overflow-x-auto">

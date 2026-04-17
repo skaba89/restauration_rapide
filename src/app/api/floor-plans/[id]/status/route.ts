@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 
 // GET - Get real-time table status for a floor plan
 export async function GET(
@@ -7,6 +7,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
     const { id: floorPlanId } = await params;
     const { searchParams } = new URL(request.url);
 
@@ -169,23 +176,3 @@ export async function POST(
   }
 }
 
-// Helper function for demo status
-function getDemoTableStatus() {
-  return [
-    { id: 'demo-t1', number: 'T1', status: 'occupied', currentPartySize: 3, serverName: 'Aïssata', updatedAt: new Date() },
-    { id: 'demo-t2', number: 'T2', status: 'reserved', reservation: { time: '19:30', guestName: 'M. Koné', partySize: 4 }, updatedAt: new Date() },
-    { id: 'demo-t3', number: 'T3', status: 'occupied', currentPartySize: 4, serverName: 'Moussa', updatedAt: new Date() },
-    { id: 'demo-t4', number: 'T4', status: 'cleaning', updatedAt: new Date() },
-    { id: 'demo-t5', number: 'T5', status: 'reserved', reservation: { time: '20:00', guestName: 'Diallo', partySize: 2 }, updatedAt: new Date() },
-    { id: 'demo-t6', number: 'T6', status: 'occupied', currentPartySize: 2, serverName: 'Fatou', updatedAt: new Date() },
-    { id: 'demo-t7', number: 'T7', status: 'occupied', currentPartySize: 3, serverName: 'Kouamé', updatedAt: new Date() },
-    { id: 'demo-t8', number: 'T8', status: 'available', updatedAt: new Date() },
-    { id: 'demo-t9', number: 'T9', status: 'available', updatedAt: new Date() },
-    { id: 'demo-t10', number: 'T10', status: 'available', updatedAt: new Date() },
-    { id: 'demo-t11', number: 'VIP1', status: 'available', updatedAt: new Date() },
-    { id: 'demo-t12', number: 'VIP2', status: 'available', updatedAt: new Date() },
-    { id: 'demo-t13', number: 'C1', status: 'available', updatedAt: new Date() },
-    { id: 'demo-t14', number: 'C2', status: 'available', updatedAt: new Date() },
-    { id: 'demo-t15', number: 'C3', status: 'available', updatedAt: new Date() },
-  ];
-}

@@ -41,38 +41,12 @@ export async function POST(request: NextRequest) {
       return apiError('Au moins un article est requis', 400);
     }
 
-    // Check if we're in demo mode (no database)
-    if (demoMode) {
-      demoOrderCounter++;
-      const orderNumber = `ORD-2024-${String(demoOrderCounter).padStart(4, '0')}`;
-      
-      demoOrders.unshift(demoOrder);
-
-      // Emit WebSocket event for real-time update
-      emitOrderCreated({
-        orderId: demoOrder.id,
-        orderNumber: demoOrder.orderNumber,
-        organizationId: 'kfm-org-1',
-        restaurantId: demoOrder.restaurantId,
-        orderType: demoOrder.orderType,
-        customerName: demoOrder.customerName,
-        total: demoOrder.total,
-        itemCount: items.length,
-        deliveryAddress: demoOrder.deliveryAddress,
-      });
-
-      return apiSuccess({
-        id: demoOrder.id,
-        orderNumber: demoOrder.orderNumber,
-        status: demoOrder.status,
-        total: demoOrder.total,
-        createdAt: demoOrder.createdAt,
-      }, 'Commande créée avec succès', 201);
+    if (!db) {
+      return apiError('Base de données non disponible', 503);
     }
 
-    // Production mode - use database
     // Check if restaurant exists and is active
-    const restaurant = await db!.restaurant.findUnique({
+    const restaurant = await db.restaurant.findUnique({
       where: { id: restaurantId, isActive: true },
     });
 
@@ -81,13 +55,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the default currency (GNF for Guinea)
-    let currency = await db!.currency.findFirst({
+    let currency = await db.currency.findFirst({
       where: { code: 'GNF' },
     });
 
     if (!currency) {
       // Create default currency if not exists
-      currency = await db!.currency.create({
+      currency = await db.currency.create({
         data: {
           code: 'GNF',
           symbol: 'GNF',
@@ -99,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the order
-    const order = await db!.order.create({
+    const order = await db.order.create({
       data: {
         orderNumber: generateOrderNumber(),
         restaurantId,
@@ -140,7 +114,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create status history
-    await db!.orderStatusHistory.create({
+    await db.orderStatusHistory.create({
       data: {
         orderId: order.id,
         status: 'PENDING',
@@ -149,7 +123,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create payment record
-    await db!.payment.create({
+    await db.payment.create({
       data: {
         orderId: order.id,
         amount: total,
@@ -183,12 +157,15 @@ export async function POST(request: NextRequest) {
   });
 }
 
-// GET /api/public/orders - Get demo orders
+// GET /api/public/orders - List public orders (empty for now)
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-
-  return apiSuccess({
-    orders: [],
-    total: 0,
+  return withErrorHandler(async () => {
+    if (!db) {
+      return apiError('Base de données non disponible', 503);
+    }
+    return apiSuccess({
+      orders: [],
+      total: 0,
+    });
   });
 }

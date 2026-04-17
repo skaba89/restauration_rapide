@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const isActive = searchParams.get('isActive');
 
     if (!isDatabaseAvailable() || !db) {
-      return apiSuccess({ data: [], total: 0, page, limit });
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     const where: any = {};
@@ -64,30 +64,16 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
       return apiError('Le nom et le menu sont requis', 400);
     }
 
+    // Check database availability
+    if (!isDatabaseAvailable() || !db) {
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
+    }
+
     // Generate slug from name
     const slug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
-
-    // Check if database is available
-    if (!isDatabaseAvailable() || !db) {
-      // Return mock created category for demo mode
-      const mockCategory = {
-        id: `cat-${Date.now()}`,
-        name,
-        slug: `${slug}-${Date.now()}`,
-        description: description || null,
-        icon: icon || '🍽️',
-        image: image || null,
-        isActive: isActive ?? true,
-        sortOrder: 1,
-        menuId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      return apiSuccess(mockCategory, 'Catégorie créée (mode démo)', 201);
-    }
 
     // Get the max sortOrder for this menu
     const maxSort = await db.menuCategory.aggregate({

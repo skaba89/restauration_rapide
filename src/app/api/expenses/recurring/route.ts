@@ -1,99 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { getOrganizationCurrencyCode } from '@/lib/org-settings';
-
-function getDemoRecurringExpenses() {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  return [
-    {
-      id: 'rec-001',
-      name: 'Loyer mensuel',
-      description: 'Loyer du local commercial',
-      amount: 8500000,
-      currency: 'GNF',
-      frequency: 'monthly',
-      nextDueDate: new Date(currentYear, currentMonth + 1, 1),
-      lastProcessed: new Date(currentYear, currentMonth, 1),
-      category: 'rent',
-      supplierName: 'SCI KALOUM',
-      paymentMethod: 'Virement bancaire',
-      notes: 'Loyer du 1er au 30 du mois',
-      isActive: true,
-      autoCreate: true,
-    },
-    {
-      id: 'rec-002',
-      name: 'Abonnement Internet',
-      description: 'Orange Fibre Pro',
-      amount: 350000,
-      currency: 'GNF',
-      frequency: 'monthly',
-      nextDueDate: new Date(currentYear, currentMonth + 1, 5),
-      lastProcessed: new Date(currentYear, currentMonth, 5),
-      category: 'utilities',
-      supplierName: 'Orange Guinée',
-      paymentMethod: 'Orange Money',
-      notes: 'Prélèvement automatique',
-      isActive: true,
-      autoCreate: true,
-    },
-    {
-      id: 'rec-003',
-      name: 'Assurance responsabilité civile',
-      description: 'Assurance annuelle restaurant',
-      amount: 3840000,
-      currency: 'GNF',
-      frequency: 'yearly',
-      nextDueDate: new Date(currentYear + 1, 0, 15),
-      lastProcessed: new Date(currentYear, 0, 15),
-      category: 'other',
-      supplierName: 'NSIA Assurances',
-      paymentMethod: 'Virement bancaire',
-      notes: 'Renouvellement annuel',
-      isActive: true,
-      autoCreate: false,
-    },
-    {
-      id: 'rec-004',
-      name: 'Service de sécurité',
-      description: 'Agent de sécurité nocturne',
-      amount: 600000,
-      currency: 'GNF',
-      frequency: 'monthly',
-      nextDueDate: new Date(currentYear, currentMonth + 1, 28),
-      lastProcessed: new Date(currentYear, currentMonth, 28),
-      category: 'salaries',
-      supplierName: 'Security Plus',
-      paymentMethod: 'Espèces',
-      notes: 'Paiement fin de mois',
-      isActive: true,
-      autoCreate: true,
-    },
-    {
-      id: 'rec-005',
-      name: 'Publicité Facebook',
-      description: 'Budget mensuel publicité sociale',
-      amount: 250000,
-      currency: 'GNF',
-      frequency: 'monthly',
-      nextDueDate: new Date(currentYear, currentMonth + 1, 1),
-      lastProcessed: new Date(currentYear, currentMonth, 1),
-      category: 'marketing',
-      supplierName: 'Meta Ads',
-      paymentMethod: 'Carte bancaire',
-      notes: 'Prélèvement automatique carte',
-      isActive: true,
-      autoCreate: true,
-    },
-  ];
-}
 
 // GET - List recurring expenses
 export async function GET(request: NextRequest) {
   try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
     const isActive = searchParams.get('isActive');

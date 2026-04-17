@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
 
     if (!isDatabaseAvailable() || !db) {
-      return apiSuccess({ data: [], total: 0, page, limit });
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     const where: any = {};
@@ -98,35 +98,16 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
       return apiError('Le nom, le prix et la catégorie sont requis', 400);
     }
 
+    // Check database availability
+    if (!isDatabaseAvailable() || !db) {
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
+    }
+
     // Generate slug from name
     const slug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
-
-    // Check if database is available
-    if (!isDatabaseAvailable() || !db) {
-      // Return mock created item for demo mode
-      const mockItem = {
-        id: `item-${Date.now()}`,
-        name,
-        slug: `${slug}-${Date.now()}`,
-        description: description || null,
-        price: parseFloat(price),
-        discountPrice: discountPrice ? parseFloat(discountPrice) : null,
-        prepTime: prepTime ? parseInt(prepTime) : null,
-        image: image || null,
-        isAvailable: isAvailable ?? true,
-        isFeatured: isFeatured ?? false,
-        isPopular: isPopular ?? false,
-        isNew: isNew ?? false,
-        sortOrder: 1,
-        categoryId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      return apiSuccess(mockItem, 'Plat créé (mode démo)', 201);
-    }
 
     // Get the max sortOrder for this category
     const maxSort = await db.menuItem.aggregate({

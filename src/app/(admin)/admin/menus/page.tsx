@@ -239,10 +239,7 @@ export default function AdminMenusPage() {
     } catch (error) {
       console.error('Error fetching menus:', error);
       toast.error('Erreur lors du chargement des menus');
-      
-      setRestaurants(demoData);
-      setSelectedRestaurantId(demoData[0].id);
-      setSelectedMenuId(demoData[0].menus[0].id);
+      setRestaurants([]);
     } finally {
       setLoading(false);
     }

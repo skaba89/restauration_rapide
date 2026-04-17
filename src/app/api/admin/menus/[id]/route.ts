@@ -13,19 +13,8 @@ export async function PUT(
     const body = await request.json();
     const { name, description, menuType, isActive } = body;
 
-    // Check for demo mode
     if (!isDatabaseAvailable() || !db) {
-      // Return mock updated menu for demo mode
-      const mockMenu = {
-        id,
-        name: name || 'Updated Menu',
-        slug: name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'updated-menu',
-        description: description || null,
-        menuType: menuType || 'main',
-        isActive: isActive ?? true,
-        updatedAt: new Date().toISOString(),
-      };
-      return apiSuccess(mockMenu, 'Menu mis à jour (mode démo)');
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     const menu = await db.menu.update({
@@ -53,9 +42,8 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Check for demo mode
     if (!isDatabaseAvailable() || !db) {
-      return apiSuccess({ success: true, id }, 'Menu supprimé (mode démo)');
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     // Delete all items in categories first

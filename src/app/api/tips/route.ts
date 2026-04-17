@@ -1,54 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-
-// Types
-interface TipResponse {
-  id: string;
-  orderId: string;
-  orderNumber: string;
-  amount: number;
-  method: string;
-  distributionStatus: string;
-  distributions: TipDistributionResponse[];
-  createdAt: Date;
-  staffId?: string;
-  staffName?: string;
-}
-
-interface TipDistributionResponse {
-  id: string;
-  tipId: string;
-  staffId: string;
-  staffName: string;
-  amount: number;
-  percentage: number;
-  hoursWorked?: number;
-  distributedAt?: Date;
-  status: string;
-}
-
-interface DistributionRule {
-  id: string;
-  method: 'hours' | 'role' | 'equal' | 'custom';
-  rolePercentages?: {
-    waiter: number;
-    kitchen: number;
-    delivery: number;
-    other: number;
-  };
-  isActive: boolean;
-}
-
-interface StaffTipEarnings {
-  staffId: string;
-  staffName: string;
-  role: string;
-  hoursWorked: number;
-  tipsEarned: number;
-  pendingTips: number;
-  paidTips: number;
-  tipsPerHour: number;
-}
+import { db, isDatabaseAvailable } from '@/lib/db';
 
 // GET - List tips with filters
 export async function GET(request: NextRequest) {
@@ -62,6 +13,12 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get('limit') || '50');
 
   try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
 
     // Use database
     switch (type) {
@@ -289,151 +246,16 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function getDemoResponse(
-  type: string,
-  staffId: string | null,
-  status: string | null,
-  startDate: string | null,
-  endDate: string | null,
-  limit: number
-) {
-  switch (type) {
-    case 'tips': {
-      let filteredTips = [];
-
-      if (status && status !== 'all') {
-        filteredTips = filteredTips.filter(t => t.distributionStatus === status);
-      }
-      if (staffId) {
-        filteredTips = filteredTips.filter(t =>
-          t.staffId === staffId || t.distributions.some(d => d.staffId === staffId)
-        );
-      }
-      if (startDate) {
-        const start = new Date(startDate);
-        filteredTips = filteredTips.filter(t => t.createdAt >= start);
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        filteredTips = filteredTips.filter(t => t.createdAt <= end);
-      }
-
-      const totalTips = filteredTips.reduce((sum, t) => sum + t.amount, 0);
-      const pendingTips = filteredTips.filter(t => t.distributionStatus === 'pending').reduce((sum, t) => sum + t.amount, 0);
-      const distributedTips = filteredTips.filter(t => t.distributionStatus === 'distributed').reduce((sum, t) => sum + t.amount, 0);
-
-      return NextResponse.json({
-        success: true,
-        data: filteredTips.slice(0, limit),
-        stats: {
-          total: totalTips,
-          pending: pendingTips,
-          distributed: distributedTips,
-          count: filteredTips.length,
-          pendingCount: filteredTips.filter(t => t.distributionStatus === 'pending').length,
-          distributedCount: filteredTips.filter(t => t.distributionStatus === 'distributed').length
-        }
-      });
-    }
-
-    case 'distributions': {
-      const allDistributions = [].flatMap((t: any) => t.distributions);
-      return NextResponse.json({
-        success: true,
-        data: allDistributions
-      });
-    }
-
-    case 'policy': {
-      return NextResponse.json({
-        success: true,
-        data: {
-          type: 'pool',
-          serverPercentage: 60,
-          kitchenPercentage: 25,
-          busserPercentage: 10,
-          otherPercentage: 5,
-          payoutSchedule: 'weekly',
-          payoutDay: 5,
-          includeInPayroll: true,
-          autoDistribute: false,
-          minimumTipAmount: 1000,
-          cashTipsOnly: false
-        }
-      });
-    }
-
-    case 'earnings': {
-      let earnings = [];
-
-      const pendingDistributions = []
-
-      const pendingByStaff = pendingDistributions.reduce((acc, d) => {
-        acc[d.staffId] = (acc[d.staffId] || 0) + d.amount;
-        return acc;
-      }, {} as Record<string, number>);
-
-      earnings = earnings.map(e => ({
-        ...e,
-        pendingTips: pendingByStaff[e.staffId] || 0
-      }));
-
-      if (staffId) {
-        earnings = earnings.filter(e => e.staffId === staffId);
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: earnings,
-        totalPending: Object.values(pendingByStaff).reduce((sum, v) => sum + v, 0)
-      });
-    }
-
-    case 'stats': {
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-      const thisMonthTips = [];
-      const lastMonthTips = [];
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          thisMonth: {
-            total: thisMonthTips.reduce((sum, t) => sum + t.amount, 0),
-            count: thisMonthTips.length,
-            average: thisMonthTips.length > 0
-              ? Math.round(thisMonthTips.reduce((sum, t) => sum + t.amount, 0) / thisMonthTips.length)
-              : 0
-          },
-          lastMonth: {
-            total: lastMonthTips.reduce((sum, t) => sum + t.amount, 0),
-            count: lastMonthTips.length,
-            average: lastMonthTips.length > 0
-              ? Math.round(lastMonthTips.reduce((sum, t) => sum + t.amount, 0) / lastMonthTips.length)
-              : 0
-          },
-          byMethod: {
-            cash: [].reduce((sum, t) => sum + t.amount, 0),
-            mobile_money: [].reduce((sum, t) => sum + t.amount, 0),
-            card: [].reduce((sum, t) => sum + t.amount, 0)
-          },
-          pendingDistribution: [].reduce((sum, t) => sum + t.amount, 0)
-        }
-      });
-    }
-
-    default:
-      return NextResponse.json({
-        success: false,
-        error: 'Type non valide. Utilisez: tips, distributions, policy, earnings, stats'
-      }, { status: 400 });
-  }
-}
-
 // POST - Record new tip or distribute tips
 export async function POST(request: NextRequest) {
   try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const { action, organizationId, restaurantId, orderId, amount, method, staffId, notes, distributionMethod } = body;
 
@@ -483,23 +305,10 @@ export async function POST(request: NextRequest) {
 
     if (action === 'distribute') {
       if (!organizationId) {
-        const pendingTips = [];
-
-        if (pendingTips.length === 0) {
-          return NextResponse.json({
-            success: false,
-            error: 'Aucun pourboire en attente de distribution'
-          }, { status: 400 });
-        }
-
         return NextResponse.json({
-          success: true,
-          data: {
-            distributedCount: pendingTips.length,
-            totalDistributed: pendingTips.reduce((sum, t) => sum + t.amount, 0)
-          },
-          message: `${pendingTips.length} pourboires distribués avec succès`
-        });
+          success: false,
+          error: 'ID organisation requis'
+        }, { status: 400 });
       }
 
       // Get pending tips
@@ -521,6 +330,13 @@ export async function POST(request: NextRequest) {
       const staff = await db.staffProfile.findMany({
         where: { organizationId, isActive: true }
       });
+
+      if (staff.length === 0) {
+        return NextResponse.json({
+          success: false,
+          error: 'Aucun personnel disponible pour la distribution'
+        }, { status: 400 });
+      }
 
       // Get tip policy
       const policy = await db.tipPolicy.findUnique({
@@ -592,6 +408,13 @@ export async function POST(request: NextRequest) {
 // PUT - Update tip distribution or settings
 export async function PUT(request: NextRequest) {
   try {
+    if (!isDatabaseAvailable() || !db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const { action, tipId, distributionId, organizationId, staffId, amount, policyUpdates } = body;
 

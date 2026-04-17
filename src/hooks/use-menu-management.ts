@@ -122,11 +122,11 @@ export function useMenuManagement(restaurantSlug?: string) {
       const menuRes = await fetch(`/api/menu?${params.toString()}`);
       const menuData = await menuRes.json();
       
-      // Use real data if available, otherwise use demo data
+      // Use real data if available
       const dataToUse = (menuData.success && menuData.data && 
         (Array.isArray(menuData.data) ? menuData.data.length > 0 : menuData.data.categories?.length > 0))
         ? menuData
-        : demoData;
+        : null;
       
       if (dataToUse.success && dataToUse.data) {
         const menuInfo = Array.isArray(dataToUse.data) ? dataToUse.data[0] : dataToUse.data;

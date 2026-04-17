@@ -756,61 +756,6 @@ export class ReceiptGenerator {
 }
 
 // ============================================
-// Demo Data Generator
-// ============================================
-
-export function getDemoReceiptData(language: 'fr' | 'en' = 'fr'): ReceiptData {
-  const now = new Date();
-  
-  return {
-    restaurant: {
-      name: 'Le Savoir Africain',
-      address: '123 Ave. République, Abidjan',
-      phone: '+225 07 12 34 56 78',
-      taxId: 'CI-ABJ-2024-12345',
-    },
-    
-    orderNumber: `ORD-2024-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-    orderType: 'DELIVERY',
-    
-    customerName: 'Kouamé Jean-Baptiste',
-    customerPhone: '+225 05 98 76 54 32',
-    
-    items: [
-      { name: 'Attieké Poisson', quantity: 2, unitPrice: 4500, total: 9000 },
-      { name: 'Kedjenou Poulet', quantity: 1, unitPrice: 5500, total: 5500, notes: 'Sans piment' },
-      { name: 'Jus Bissap', quantity: 3, unitPrice: 800, total: 2400 },
-      { name: 'Alloco', quantity: 2, unitPrice: 1000, total: 2000 },
-    ],
-    
-    subtotal: 18900,
-    tax: 3402,
-    taxRate: 18,
-    discount: 1000,
-    deliveryFee: 1500,
-    total: 22802,
-    currency: 'XOF',
-    
-    payment: {
-      method: 'ORANGE_MONEY',
-      amount: 22802,
-      reference: 'OM' + Date.now(),
-      phoneNumber: '+225 07 12 34 56 78',
-    },
-    
-    delivery: {
-      address: '45 Rue des Jardins, Cocody',
-      driverName: 'Amadou Touré',
-      driverPhone: '+225 05 11 22 33 44',
-    },
-    
-    date: now,
-    notes: 'Sonner à l\'interphone',
-    language,
-  };
-}
-
-// ============================================
 // Export convenience function
 // ============================================
 

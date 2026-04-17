@@ -13,20 +13,8 @@ export async function PUT(
     const body = await request.json();
     const { name, description, icon, image, isActive } = body;
 
-    // Check for demo mode
     if (!isDatabaseAvailable() || !db) {
-      // Return mock updated category for demo mode
-      const mockCategory = {
-        id,
-        name: name || 'Updated Category',
-        slug: name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'updated-category',
-        description: description || null,
-        icon: icon || '🍽️',
-        image: image || null,
-        isActive: isActive ?? true,
-        updatedAt: new Date().toISOString(),
-      };
-      return apiSuccess(mockCategory, 'Catégorie mise à jour (mode démo)');
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     const category = await db.menuCategory.update({
@@ -55,9 +43,8 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Check for demo mode
     if (!isDatabaseAvailable() || !db) {
-      return apiSuccess({ success: true, id }, 'Catégorie supprimée (mode démo)');
+      return apiError('Base de données indisponible. Veuillez réessayer plus tard.', 503);
     }
 
     // Delete all items in the category first

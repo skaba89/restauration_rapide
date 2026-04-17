@@ -26,7 +26,7 @@ export function OrderTracking({ orderId }: { orderId: string }) {
 
     let cancelled = false;
 
-    fetch(`/api/orders?id=${orderId}&demo=true`)
+    fetch(`/api/orders?id=${orderId}`)
       .then(res => res.json())
       .then(data => {
         if (cancelled) return;
@@ -50,22 +50,12 @@ export function OrderTracking({ orderId }: { orderId: string }) {
           });
           setNotFound(false);
         } else {
-          if (demoOrder) {
-            setOrder(demoOrder);
-            setNotFound(false);
-          } else {
-            setNotFound(true);
-          }
+          setNotFound(true);
         }
       })
       .catch(() => {
         if (cancelled) return;
-        if (demoOrder) {
-          setOrder(demoOrder);
-          setNotFound(false);
-        } else {
-          setNotFound(true);
-        }
+        setNotFound(true);
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);

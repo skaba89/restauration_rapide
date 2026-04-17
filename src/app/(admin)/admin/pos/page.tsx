@@ -136,17 +136,17 @@ export default function AdminPOSPage() {
             if (allCats.length > 0) {
               setCategories(allCats);
             } else {
-              setCategories(getDemoCategories());
+              setError('Menu non disponible. Veuillez vérifier que le restaurant a un menu configuré.');
             }
           } else {
-            setCategories(getDemoCategories());
+            setError('Menu non disponible. Veuillez vérifier que le restaurant a un menu configuré.');
           }
         } else {
-          setCategories(getDemoCategories());
+          setError('Menu non disponible. Veuillez vérifier que le restaurant a un menu configuré.');
         }
       } catch (err) {
         console.error('Error fetching menu:', err);
-        setCategories(getDemoCategories());
+        setError('Menu non disponible. Veuillez vérifier que le restaurant a un menu configuré.');
       } finally {
         setIsLoading(false);
       }
@@ -154,62 +154,6 @@ export default function AdminPOSPage() {
 
     fetchMenu();
   }, []);
-
-  const getDemoCategories = (): MenuCategory[] => [
-    {
-      id: 'plats',
-      name: 'Plats',
-      slug: 'plats',
-      items: [
-        { id: '1', name: 'Attiéké Poisson', slug: 'attieke-poisson', price: 3500, isAvailable: true, isPopular: true, isFeatured: false },
-        { id: '2', name: 'Alloco Poisson', slug: 'alloco-poisson', price: 2500, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '3', name: 'Riz Gras', slug: 'riz-gras', price: 3000, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '4', name: 'Foutou Banane', slug: 'foutou-banane', price: 4000, isAvailable: true, isPopular: true, isFeatured: false },
-        { id: '5', name: 'Jollof Rice', slug: 'jollof-rice', price: 3500, isAvailable: true, isPopular: true, isFeatured: false },
-      ],
-    },
-    {
-      id: 'grillades',
-      name: 'Grillades',
-      slug: 'grillades',
-      items: [
-        { id: '6', name: 'Poisson Braisé', slug: 'poisson-braise', price: 5000, isAvailable: true, isPopular: true, isFeatured: false },
-        { id: '7', name: 'Brochette Bœuf', slug: 'brochette-boeuf', price: 2500, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '8', name: 'Poulet Braisé', slug: 'poulet-braise', price: 4000, isAvailable: true, isPopular: true, isFeatured: false },
-      ],
-    },
-    {
-      id: 'accompagnements',
-      name: 'Accompagnements',
-      slug: 'accompagnements',
-      items: [
-        { id: '9', name: 'Attiéké', slug: 'attieke', price: 1000, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '10', name: 'Alloco', slug: 'alloco', price: 1000, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '11', name: 'Riz Blanc', slug: 'riz-blanc', price: 800, isAvailable: true, isPopular: false, isFeatured: false },
-      ],
-    },
-    {
-      id: 'boissons',
-      name: 'Boissons',
-      slug: 'boissons',
-      items: [
-        { id: '12', name: 'Bissap', slug: 'bissap', price: 500, isAvailable: true, isPopular: true, isFeatured: false },
-        { id: '13', name: 'Gingembre', slug: 'gingembre', price: 500, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '14', name: 'Coca-Cola', slug: 'coca-cola', price: 600, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '15', name: 'Jus Mangue', slug: 'jus-mangue', price: 1000, isAvailable: true, isPopular: true, isFeatured: false },
-      ],
-    },
-    {
-      id: 'desserts',
-      name: 'Desserts',
-      slug: 'desserts',
-      items: [
-        { id: '16', name: 'Banane Flamboyante', slug: 'banane-flamboyante', price: 2000, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '17', name: 'Fruits de Saison', slug: 'fruits-de-saison', price: 1500, isAvailable: true, isPopular: false, isFeatured: false },
-        { id: '18', name: 'Glace Vanille', slug: 'glace-vanille', price: 1200, isAvailable: true, isPopular: false, isFeatured: false },
-      ],
-    },
-  ];
 
   // Get all items from all categories
   const allItems = useMemo(() => {
@@ -351,6 +295,12 @@ export default function AdminPOSPage() {
         </div>
 
         <ScrollArea className="flex-1">
+          {error ? (
+            <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-8">
+              <UtensilsCrossed className="h-12 w-12 mb-4 opacity-50" />
+              <p className="text-center text-sm">{error}</p>
+            </div>
+          ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {filteredItems.map((item) => (
               <Card key={item.id} className="cursor-pointer hover:shadow-md transition-shadow active:scale-95" onClick={() => addToCart(item)}>
@@ -367,6 +317,7 @@ export default function AdminPOSPage() {
               </Card>
             ))}
           </div>
+          )}
         </ScrollArea>
       </div>
 

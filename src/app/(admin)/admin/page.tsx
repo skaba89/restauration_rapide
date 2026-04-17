@@ -18,6 +18,7 @@ import {
   Activity,
   ArrowUpRight,
   ArrowDownRight,
+  AlertCircle,
 } from 'lucide-react';
 
 // Types
@@ -36,29 +37,6 @@ interface AdminStats {
   activeSubscriptions: number;
 }
 
-interface Signup {
-  name: string;
-  org: string;
-  plan: string;
-  date: string;
-  status: string;
-}
-const TOP_COUNTRIES = [
-  { name: 'Côte d\'Ivoire', flag: '🇨🇮', count: 156, percentage: 41 },
-  { name: 'Sénégal', flag: '🇸🇳', count: 98, percentage: 26 },
-  { name: 'Ghana', flag: '🇬🇭', count: 67, percentage: 18 },
-  { name: 'Cameroun', flag: '🇨🇲', count: 38, percentage: 10 },
-  { name: 'Kenya', flag: '🇰🇪', count: 21, percentage: 5 },
-];
-
-// Plan revenue data
-const PLAN_REVENUE = [
-  { plan: 'Free', count: 89, revenue: 0, color: 'bg-gray-400' },
-  { plan: 'Starter', count: 156, revenue: 4524000, color: 'bg-blue-500' },
-  { plan: 'Pro', count: 98, revenue: 7782000, color: 'bg-orange-500' },
-  { plan: 'Business', count: 34, revenue: 6766000, color: 'bg-purple-500' },
-];
-
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,21 +53,7 @@ export default function AdminDashboard() {
         setStats(data);
       } catch (err) {
         console.error('Error fetching admin stats:', err);
-        setError('Failed to load stats');
-        setStats({
-          totalOrganizations: 127,
-          activeOrganizations: 118,
-          totalRestaurants: 384,
-          activeRestaurants: 356,
-          totalUsers: 2847,
-          activeUsers: 2654,
-          totalRevenue: 245000000,
-          monthlyRevenue: 12450000,
-          totalOrders: 45678,
-          monthlyOrders: 3456,
-          newSignupsThisMonth: 156,
-          activeSubscriptions: 89,
-        });
+        setError('Impossible de charger les statistiques. Aucune donnée disponible.');
       } finally {
         setLoading(false);
       }
@@ -157,6 +121,18 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Error state */}
+      {error && !loading && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <AlertCircle className="h-5 w-5" />
+              <p>{error}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Stats cards */}
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -168,7 +144,7 @@ export default function AdminDashboard() {
             </Card>
           ))}
         </div>
-      ) : (
+      ) : stats ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {statsCards.map((stat) => (
             <Card key={stat.name}>
@@ -194,88 +170,101 @@ export default function AdminDashboard() {
             </Card>
           ))}
         </div>
-      )}
+      ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Revenue by plan */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Revenus par plan</CardTitle>
-            <CardDescription>Distribution des abonnements</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {PLAN_REVENUE.map((plan) => (
-                <div key={plan.plan} className="flex items-center">
-                  <div className={`w-3 h-3 rounded-full ${plan.color} mr-3`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">{plan.plan}</span>
-                      <span className="text-sm text-gray-500">
-                        {plan.count} orgs
-                      </span>
+      {stats ? (
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Revenue by plan */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Revenus par plan</CardTitle>
+              <CardDescription>Distribution des abonnements</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { plan: 'Free', count: 89, revenue: 0, color: 'bg-gray-400' },
+                  { plan: 'Starter', count: 156, revenue: 4524000, color: 'bg-blue-500' },
+                  { plan: 'Pro', count: 98, revenue: 7782000, color: 'bg-orange-500' },
+                  { plan: 'Business', count: 34, revenue: 6766000, color: 'bg-purple-500' },
+                ].map((plan) => (
+                  <div key={plan.plan} className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full ${plan.color} mr-3`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium">{plan.plan}</span>
+                        <span className="text-sm text-gray-500">
+                          {plan.count} orgs
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div
+                          className={`${plan.color} h-2 rounded-full transition-all`}
+                          style={{
+                            width: `${(plan.revenue / 19000000) * 100}%`,
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className={`${plan.color} h-2 rounded-full transition-all`}
-                        style={{
-                          width: `${(plan.revenue / 19000000) * 100}%`,
-                        }}
-                      />
+                    <div className="ml-4 text-right">
+                      <p className="text-sm font-semibold">
+                        {plan.revenue > 0 ? `${(plan.revenue / 1000000).toFixed(1)}M` : '0'}
+                      </p>
+                      <p className="text-xs text-gray-500">FCFA/mois</p>
                     </div>
                   </div>
-                  <div className="ml-4 text-right">
-                    <p className="text-sm font-semibold">
-                      {plan.revenue > 0 ? `${(plan.revenue / 1000000).toFixed(1)}M` : '0'}
-                    </p>
-                    <p className="text-xs text-gray-500">FCFA/mois</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Total mensuel</span>
-                <span className="text-lg font-bold text-orange-600">19.1M FCFA</span>
+                ))}
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Top countries */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Pays</CardTitle>
-            <CardDescription>Répartition géographique</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {TOP_COUNTRIES.map((country) => (
-                <div key={country.name} className="flex items-center">
-                  <span className="text-lg mr-2">{country.flag}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium truncate">
-                        {country.name}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {country.percentage}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5">
-                      <div
-                        className="bg-orange-500 h-1.5 rounded-full"
-                        style={{ width: `${country.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="ml-3 text-sm font-medium">{country.count}</span>
+              <div className="mt-6 pt-4 border-t">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Total mensuel</span>
+                  <span className="text-lg font-bold text-orange-600">19.1M FCFA</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top countries */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Pays</CardTitle>
+              <CardDescription>Répartition géographique</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { name: 'Côte d\'Ivoire', flag: '🇨🇮', count: 156, percentage: 41 },
+                  { name: 'Sénégal', flag: '🇸🇳', count: 98, percentage: 26 },
+                  { name: 'Ghana', flag: '🇬🇭', count: 67, percentage: 18 },
+                  { name: 'Cameroun', flag: '🇨🇲', count: 38, percentage: 10 },
+                  { name: 'Kenya', flag: '🇰🇪', count: 21, percentage: 5 },
+                ].map((country) => (
+                  <div key={country.name} className="flex items-center">
+                    <span className="text-lg mr-2">{country.flag}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium truncate">
+                          {country.name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {country.percentage}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div
+                          className="bg-orange-500 h-1.5 rounded-full"
+                          style={{ width: `${country.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="ml-3 text-sm font-medium">{country.count}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
 
       {/* Recent signups */}
       <Card>
@@ -291,69 +280,38 @@ export default function AdminDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
-                    Restaurant
-                  </th>
-                  <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
-                    Organisation
-                  </th>
-                  <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
-                    Plan
-                  </th>
-                  <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
-                    Date
-                  </th>
-                  <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
-                    Statut
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[].map((signup: any) => (
-                  <tr key={signup.name} className="border-b last:border-0">
-                    <td className="py-3 px-2">
-                      <span className="font-medium">{signup.name}</span>
-                    </td>
-                    <td className="py-3 px-2 text-sm text-gray-500">
-                      {signup.org}
-                    </td>
-                    <td className="py-3 px-2">
-                      <Badge
-                        variant={
-                          signup.plan === 'Business'
-                            ? 'default'
-                            : signup.plan === 'Pro'
-                            ? 'secondary'
-                            : 'outline'
-                        }
-                      >
-                        {signup.plan}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-2 text-sm text-gray-500">
-                      {new Date(signup.date).toLocaleDateString('fr-FR')}
-                    </td>
-                    <td className="py-3 px-2">
-                      <Badge
-                        variant={signup.status === 'active' ? 'default' : 'secondary'}
-                        className={
-                          signup.status === 'active'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }
-                      >
-                        {signup.status === 'active' ? 'Actif' : 'En attente'}
-                      </Badge>
-                    </td>
+          {stats ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
+                      Restaurant
+                    </th>
+                    <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
+                      Organisation
+                    </th>
+                    <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
+                      Plan
+                    </th>
+                    <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
+                      Date
+                    </th>
+                    <th className="text-left py-3 px-2 text-sm font-medium text-gray-500">
+                      Statut
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {/* Signup rows will be populated from API data */}
+                </tbody>
+              </table>
+            </div>
+          ) : !loading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Aucune donnée disponible
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </div>

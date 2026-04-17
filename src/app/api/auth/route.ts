@@ -5,7 +5,8 @@ import { randomBytes } from 'crypto';
 import { authRateLimiter } from '@/lib/rate-limiter';
 import { registerDemoSessionGetter } from '@/lib/auth-middleware';
 
-const IS_DEMO_MODE = process.env.DEMO_MODE === 'true';
+// Auto-enable demo mode when DATABASE_URL is not set (common on Render free tier without DB add-on)
+const IS_DEMO_MODE = process.env.DEMO_MODE === 'true' || !process.env.DATABASE_URL;
 
 // Demo users - In production, these would come from the database
 // Each demo user has its own hardcoded password (matching the login page UI)

@@ -42,6 +42,23 @@ try {
   console.log('\n📦 Generating Prisma client...');
   execSync(`npx prisma generate --schema=${targetSchemaPath}`, { stdio: 'inherit' });
 
+  // Push database schema (create/update tables) in production
+  if (isProduction && process.env.DATABASE_URL) {
+    console.log('\n🗄️ Syncing database schema (prisma db push)...');
+    try {
+      execSync(`npx prisma db push --schema=${targetSchemaPath} --accept-data-loss`, { 
+        stdio: 'inherit',
+        timeout: 120000, // 2 min timeout for DB sync
+      });
+      console.log('✅ Database schema synced successfully');
+    } catch (dbError) {
+      console.error('⚠️ Database schema sync failed:', dbError.message);
+      console.error('Tables may not exist. The app will retry at startup.');
+    }
+  } else {
+    console.log('\n⏭️ Skipping database schema sync (not production or no DATABASE_URL)');
+  }
+
   // Build Next.js
   console.log('\n🏗️ Building Next.js application...');
   execSync('next build', { stdio: 'inherit' });

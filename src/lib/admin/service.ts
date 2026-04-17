@@ -109,22 +109,20 @@ export interface GeographicData {
 // ============================================
 
 export async function fetchAdminStats(): Promise<AdminStats> {
-  // Check if database is available
   if (!isDatabaseAvailable() || !db) {
-    // Return demo stats if database is not available
     return {
-      totalOrganizations: 127,
-      activeOrganizations: 118,
-      totalRestaurants: 384,
-      activeRestaurants: 356,
-      totalUsers: 2847,
-      activeUsers: 2654,
-      totalRevenue: 245000000,
-      monthlyRevenue: 12450000,
-      totalOrders: 45678,
-      monthlyOrders: 3456,
-      newSignupsThisMonth: 156,
-      activeSubscriptions: 89,
+      totalOrganizations: 0,
+      activeOrganizations: 0,
+      totalRestaurants: 0,
+      activeRestaurants: 0,
+      totalUsers: 0,
+      activeUsers: 0,
+      totalRevenue: 0,
+      monthlyRevenue: 0,
+      totalOrders: 0,
+      monthlyOrders: 0,
+      newSignupsThisMonth: 0,
+      activeSubscriptions: 0,
     };
   }
 
@@ -662,6 +660,64 @@ export async function fetchRestaurantStats(restaurantId: string) {
   };
 }
 
+export async function createRestaurant(data: {
+  organizationId: string;
+  brandId?: string | null;
+  name: string;
+  slug: string;
+  description?: string | null;
+  coverImage?: string | null;
+  logo?: string | null;
+  email?: string | null;
+  phone: string;
+  website?: string | null;
+  address: string;
+  address2?: string | null;
+  city: string;
+  district?: string | null;
+  landmark?: string | null;
+  postalCode?: string | null;
+  countryId: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  restaurantType?: string;
+  cuisines?: string | null;
+  priceRange?: number;
+  indoorCapacity?: number | null;
+  outdoorCapacity?: number | null;
+  acceptsReservations?: boolean;
+  acceptsDelivery?: boolean;
+  acceptsTakeaway?: boolean;
+  acceptsDineIn?: boolean;
+  deliveryFee?: number;
+  minOrderAmount?: number;
+  deliveryTime?: number;
+  isActive?: boolean;
+}) {
+  if (!isDatabaseAvailable() || !db) {
+    throw new Error('Database not available');
+  }
+
+  // Create restaurant with default settings
+  return db.restaurant.create({
+    data: {
+      ...data,
+      settings: {
+        create: {},
+      },
+    },
+    include: {
+      organization: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+  });
+}
+
 // ============================================
 // Subscriptions
 // ============================================
@@ -1100,13 +1156,13 @@ export async function fetchReportKPIs(params?: {
 }): Promise<ReportKPIs> {
   if (!isDatabaseAvailable() || !db) {
     return {
-      totalRevenue: 108600000,
-      totalOrders: 11570,
-      totalCustomers: 3730,
-      avgOrderValue: 9400,
-      revenueGrowth: 18.5,
-      ordersGrowth: 15.2,
-      customerGrowth: 22.8,
+      totalRevenue: 0,
+      totalOrders: 0,
+      totalCustomers: 0,
+      avgOrderValue: 0,
+      revenueGrowth: 0,
+      ordersGrowth: 0,
+      customerGrowth: 0,
     };
   }
 

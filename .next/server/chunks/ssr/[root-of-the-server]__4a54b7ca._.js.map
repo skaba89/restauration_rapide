@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../src/app/%28driver%29/driver/page.tsx"],"sourcesContent":["import { DriverLayout } from '@/components/layout/driver-layout';\n\nexport default function DriverHomePage() {\n  return null; // Redirect to orders\n}\n"],"names":[],"mappings":"ocAEe,SAAS,IACtB,OAAO,IACT,EADe,qBAAqB"}

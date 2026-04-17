@@ -251,4 +251,4 @@ export const DELETE = withAdminAuth(async (request: NextRequest, user) => {
 
     return apiSuccess({ deleted: true }, 'Utilisateur supprimé');
   });
-}
+});

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { authRateLimiter } from '@/lib/rate-limiter';
 import { registerDemoSessionGetter } from '@/lib/auth-middleware';
+import { createDemoToken, validateDemoToken, getDemoTokenExpiry } from '@/lib/demo-tokens';
 
 // Auto-enable demo mode when DATABASE_URL is not set (common on Render free tier without DB add-on)
 const IS_DEMO_MODE = process.env.DEMO_MODE === 'true' || !process.env.DATABASE_URL;
@@ -162,7 +163,25 @@ export async function GET(request: Request) {
       return json(false, { error: 'Non autorisé - Token requis' }, 401);
     }
 
-    // Check in-memory sessions
+    // 1. Check self-contained demo token (works across serverless instances)
+    const demoPayload = validateDemoToken(token);
+    if (demoPayload) {
+      // Look up full user data from demo users
+      const demoUserEntry = Object.values(DEMO_USERS).find(u => u.user.id === demoPayload.userId);
+      if (demoUserEntry) {
+        return json(true, {
+          data: {
+            user: demoUserEntry.user,
+            session: {
+              id: token,
+              expiresAt: new Date(demoPayload.exp).toISOString(),
+            },
+          }
+        });
+      }
+    }
+
+    // 2. Check in-memory sessions (same instance)
     const session = sessions.get(token);
     if (session && session.expiresAt > new Date()) {
       return json(true, {
@@ -215,9 +234,11 @@ export async function POST(request: Request) {
       if (IS_DEMO_MODE) {
         const demoUser = DEMO_USERS[identifier];
         if (demoUser && demoUser.password && demoUser.password === passwordStr) {
-          const token = generateToken();
-          const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+          // Create self-contained demo token (works across serverless instances)
+          const token = createDemoToken(demoUser.user);
+          const expiresAt = getDemoTokenExpiry(token) || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
+          // Also store in memory for same-instance fast path
           sessions.set(token, { user: demoUser.user, expiresAt });
 
           return json(true, {
@@ -393,10 +414,12 @@ export async function POST(request: Request) {
           return json(false, { error: 'Code OTP invalide' }, 400);
         }
 
-        const token = generateToken();
+        // Create self-contained demo token
+        const token = createDemoToken(demoUserEntry.user);
         const demoUser = demoUserEntry.user;
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        
+        const expiresAt = getDemoTokenExpiry(token) || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        // Also store in memory for same-instance fast path
         sessions.set(token, { user: demoUser, expiresAt });
 
         return json(true, {
@@ -450,11 +473,27 @@ export async function POST(request: Request) {
         return json(false, { error: 'Refresh token est requis' }, 400);
       }
 
-      // Demo mode refresh
+      // Demo mode refresh - generate a new self-contained demo token
       if (refreshToken.startsWith('refresh-')) {
+        // Extract userId from the old token if it's a demo token
+        // For refresh, we need the original token passed in body
+        const { originalToken } = body;
+        let newToken: string;
+        if (originalToken) {
+          const payload = validateDemoToken(originalToken);
+          if (payload) {
+            // Refresh with the same user identity
+            const mockUser = { id: payload.userId, email: payload.email, role: payload.role };
+            newToken = createDemoToken(mockUser);
+          } else {
+            newToken = generateToken();
+          }
+        } else {
+          newToken = generateToken();
+        }
         return json(true, {
           data: {
-            token: generateToken(),
+            token: newToken,
             refreshToken: `refresh-${Date.now()}`,
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           },

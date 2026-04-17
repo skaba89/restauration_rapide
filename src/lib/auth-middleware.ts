@@ -1,13 +1,50 @@
 // ============================================
 // Restaurant OS - Authentication Middleware
 // Protect API routes with session validation
-// Supports both DB sessions and in-memory demo sessions
+// Supports: self-contained demo tokens, in-memory demo sessions, DB sessions
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth-helpers';
 import { apiError } from '@/lib/api-responses';
 import { hasPermission } from '@/lib/auth-helpers';
+import { validateDemoToken } from '@/lib/demo-tokens';
+
+// ── Demo users lookup (shared with auth/route.ts) ──
+// Full user data is embedded in the demo token, but we need
+// organizations/phone/name which require a lookup by userId.
+const DEMO_USER_LOOKUP: Record<string, any> = {
+  'admin-user-1': {
+    id: 'admin-user-1', email: 'admin@kfm-delice.com', phone: '+224 623 21 72 40',
+    role: 'SUPER_ADMIN', firstName: 'Super', lastName: 'Admin', avatar: null, isActive: true,
+    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'ADMIN' }],
+  },
+  'demo-user-1': {
+    id: 'demo-user-1', email: 'demo@kfm-delice.com', phone: '+224 622 000 000',
+    role: 'ORG_ADMIN', firstName: 'Admin', lastName: 'Demo', avatar: null, isActive: true,
+    organizations: [{ id: 'demo-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'ADMIN' }],
+  },
+  'kfm-user-1': {
+    id: 'kfm-user-1', email: 'contact@kfm-delice.com', phone: '+224 623 21 72 41',
+    role: 'ORG_ADMIN', firstName: 'KFM', lastName: 'DELICE', avatar: null, isActive: true,
+    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'ADMIN' }],
+  },
+  'amadou-user-1': {
+    id: 'amadou-user-1', email: 'amadou@kfm-delice.com', phone: '+224 622 111 222',
+    role: 'RESTAURANT_MANAGER', firstName: 'Amadou', lastName: 'Diallo', avatar: null, isActive: true,
+    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'MANAGER' }],
+  },
+  'kitchen-user-1': {
+    id: 'kitchen-user-1', email: 'kitchen@kfm-delice.com', phone: '+224 622 222 333',
+    role: 'KITCHEN', firstName: 'Chef', lastName: 'Abdoulaye', avatar: null, isActive: true,
+    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'STAFF' }],
+  },
+  'driver-user-1': {
+    id: 'driver-user-1', email: 'driver@kfm-delice.com', phone: '+224 622 333 444',
+    role: 'DRIVER', firstName: 'Moussa', lastName: 'Touré', avatar: null, isActive: true,
+    organizations: [{ id: 'kfm-org-1', name: 'KFM DELICE', slug: 'kfm-delice', role: 'STAFF' }],
+  },
+};
 
 // ── Demo session bridge ──
 // In demo mode, tokens are stored in an in-memory Map inside route.ts.
@@ -88,7 +125,9 @@ export function extractBearerToken(request: NextRequest): string | null {
 
 /**
  * Validate authentication from request
- * Checks demo in-memory sessions FIRST, then DB sessions
+ * 1. Self-contained demo tokens (works across serverless instances)
+ * 2. In-memory demo sessions (same instance, fast path)
+ * 3. Database sessions (persistent, production)
  */
 export async function authenticateRequest(
   request: NextRequest
@@ -102,7 +141,31 @@ export async function authenticateRequest(
     };
   }
   
-  // 1. Check demo in-memory sessions (fast, no DB needed)
+  // 1. Check self-contained demo token (works across serverless instances)
+  const demoPayload = validateDemoToken(token);
+  if (demoPayload) {
+    const fullUser = DEMO_USER_LOOKUP[demoPayload.userId];
+    if (fullUser) {
+      return {
+        success: true,
+        user: {
+          id: fullUser.id,
+          email: fullUser.email,
+          phone: fullUser.phone,
+          role: fullUser.role,
+          firstName: fullUser.firstName,
+          lastName: fullUser.lastName,
+          avatar: fullUser.avatar,
+          language: 'fr',
+          isActive: fullUser.isActive !== false,
+          organizations: fullUser.organizations || [],
+        },
+        sessionId: token,
+      };
+    }
+  }
+
+  // 2. Check in-memory demo sessions (same instance, fast path)
   const demoSession = getDemoSession(token);
   if (demoSession) {
     const user = demoSession.user;
@@ -124,7 +187,7 @@ export async function authenticateRequest(
     };
   }
 
-  // 2. Check database sessions
+  // 3. Check database sessions (persistent, production)
   try {
     const session = await validateSession(token);
     
@@ -281,8 +344,6 @@ export async function canAccessRestaurant(
   if (user.role === 'SUPER_ADMIN') return true;
   
   // Check if user's organization owns the restaurant
-  // This would need to be implemented with a database query
-  // For now, we'll use a simplified check
   return user.organizations.length > 0;
 }
 
@@ -294,7 +355,6 @@ export function getRateLimitKey(request: NextRequest, user: AuthenticatedUser | 
     return `user:${user.id}`;
   }
   
-  // Fall back to IP-based rate limiting
   const ip = request.headers.get('x-forwarded-for') ||
              request.headers.get('x-real-ip') ||
              'unknown';

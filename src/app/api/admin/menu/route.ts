@@ -2,8 +2,9 @@
 // Auto-creates the table if missing and seeds demo data
 // All modifications persist in PostgreSQL on Render
 // SECURITY (P1): Cache-Control no-store on all responses
+// SYNC FIX: Uses ensureDbConnection() for reliable DB access
 import { NextResponse, NextRequest } from 'next/server';
-import { db, isDatabaseAvailable } from '@/lib/db';
+import { db, ensureDbConnection, markDatabaseUnavailable } from '@/lib/db';
 import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
 import { getDemoMenuItems, isDemoItemId, getDemoMenuItem, updateDemoMenuItem, addDemoMenuItem, removeDemoMenuItem } from '@/lib/demo-menu-store';
 import { withAdminAuth } from '@/lib/auth-middleware';
@@ -57,64 +58,81 @@ function formatDbItem(item: any) {
 // GET - Fetch all menu items for admin
 export async function GET() {
   try {
-    if (!isDatabaseAvailable() || !db) {
-      return NextResponse.json({
-        success: true,
-        data: getDemoMenuItems(),
-        source: 'demo',
-        message: 'Mode démonstration - Base de données non disponible',
-      }, { headers: NO_CACHE_HEADERS });
-    }
+    // Use async connection check with timeout (same as public menu API)
+    const dbReady = await ensureDbConnection(3000);
 
-    try {
-      // Ensure the table exists before querying
-      const tableReady = await ensureSimpleMenuItemTable();
-      if (!tableReady) {
+    if (dbReady && db) {
+      try {
+        const tableReady = await ensureSimpleMenuItemTable();
+        if (!tableReady) {
+          const demoItems = getDemoMenuItems();
+          return NextResponse.json({
+            success: true,
+            data: demoItems,
+            source: 'demo',
+            message: 'Mode démonstration - Table non disponible',
+            totalAvailable: demoItems.filter(i => i.isAvailable).length,
+            totalItems: demoItems.length,
+            timestamp: new Date().toISOString(),
+          }, { headers: NO_CACHE_HEADERS });
+        }
+
+        const items = await db.simpleMenuItem.findMany({
+          orderBy: [
+            { category: 'asc' },
+            { name: 'asc' },
+          ],
+        });
+
+        if (items.length === 0) {
+          const demoItems = getDemoMenuItems();
+          return NextResponse.json({
+            success: true,
+            data: demoItems,
+            source: 'demo',
+            message: 'Mode démonstration - Aucun article en base',
+            totalAvailable: demoItems.filter(i => i.isAvailable).length,
+            totalItems: demoItems.length,
+            timestamp: new Date().toISOString(),
+          }, { headers: NO_CACHE_HEADERS });
+        }
+
+        const formattedItems = items.map(formatDbItem);
         return NextResponse.json({
           success: true,
-          data: getDemoMenuItems(),
-          source: 'demo',
-          message: 'Mode démonstration - Table non disponible',
+          data: formattedItems,
+          source: 'database',
+          totalAvailable: formattedItems.filter(i => i.isAvailable).length,
+          totalItems: formattedItems.length,
+          timestamp: new Date().toISOString(),
         }, { headers: NO_CACHE_HEADERS });
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        markDatabaseUnavailable();
       }
-
-      const items = await db.simpleMenuItem.findMany({
-        orderBy: [
-          { category: 'asc' },
-          { name: 'asc' },
-        ],
-      });
-
-      if (items.length === 0) {
-        return NextResponse.json({
-          success: true,
-          data: getDemoMenuItems(),
-          source: 'demo',
-          message: 'Mode démonstration - Aucun article en base',
-        }, { headers: NO_CACHE_HEADERS });
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: items.map(formatDbItem),
-        source: 'database',
-      }, { headers: NO_CACHE_HEADERS });
-    } catch (dbError) {
-      console.error('Database error:', dbError);
-      return NextResponse.json({
-        success: true,
-        data: getDemoMenuItems(),
-        source: 'demo',
-        message: 'Mode démonstration - Erreur de base de données',
-      }, { headers: NO_CACHE_HEADERS });
     }
-  } catch (error) {
-    console.error('Error fetching menu:', error);
+
+    // Demo fallback
+    const demoItems = getDemoMenuItems();
     return NextResponse.json({
       success: true,
-      data: getDemoMenuItems(),
+      data: demoItems,
       source: 'demo',
       message: 'Mode démonstration',
+      totalAvailable: demoItems.filter(i => i.isAvailable).length,
+      totalItems: demoItems.length,
+      timestamp: new Date().toISOString(),
+    }, { headers: NO_CACHE_HEADERS });
+  } catch (error) {
+    console.error('Error fetching menu:', error);
+    const demoItems = getDemoMenuItems();
+    return NextResponse.json({
+      success: true,
+      data: demoItems,
+      source: 'demo',
+      message: 'Mode démonstration',
+      totalAvailable: demoItems.filter(i => i.isAvailable).length,
+      totalItems: demoItems.length,
     }, { headers: NO_CACHE_HEADERS });
   }
 }
@@ -132,53 +150,39 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
       );
     }
 
-    if (!isDatabaseAvailable() || !db) {
-      const newItem = addDemoMenuItem({
-        name, description: description || '', category: category || 'Plats',
-        price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
-        isAvailable: isAvailable !== false, preparationTime: parseInt(preparationTime) || 15,
-        isPopular: isPopular || false, isNew: isNew || false,
-        allergens: allergens || [], image: image || null, orderCount: 0,
-      });
-      return NextResponse.json({ success: true, data: newItem, message: 'Article créé (mode démo)', demo: true });
-    }
+    const dbReady = await ensureDbConnection(3000);
 
-    try {
-      const tableReady = await ensureSimpleMenuItemTable();
-      if (!tableReady) {
-        const newItem = addDemoMenuItem({
-          name, description: description || '', category: category || 'Plats',
-          price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
-          isAvailable: isAvailable !== false, preparationTime: parseInt(preparationTime) || 15,
-          isPopular: isPopular || false, isNew: isNew || false,
-          allergens: allergens || [], image: image || null, orderCount: 0,
-        });
-        return NextResponse.json({ success: true, data: newItem, message: 'Article créé (mode démo)', demo: true });
+    if (dbReady && db) {
+      try {
+        const tableReady = await ensureSimpleMenuItemTable();
+        if (tableReady) {
+          const newItem = await db.simpleMenuItem.create({
+            data: {
+              name, description: description || '', category: category || 'Plats',
+              price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
+              isAvailable: isAvailable !== false, preparationTime: parseInt(preparationTime) || 15,
+              isPopular: isPopular || false, isNew: isNew || false,
+              allergens: allergens && allergens.length > 0 ? JSON.stringify(allergens) : null,
+              image: image || null,
+            },
+          });
+          return NextResponse.json({ success: true, data: formatDbItem(newItem), message: 'Article créé avec succès' });
+        }
+      } catch (dbError) {
+        console.error('Database error creating menu item:', dbError);
+        markDatabaseUnavailable();
       }
-
-      const newItem = await db.simpleMenuItem.create({
-        data: {
-          name, description: description || '', category: category || 'Plats',
-          price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
-          isAvailable: isAvailable !== false, preparationTime: parseInt(preparationTime) || 15,
-          isPopular: isPopular || false, isNew: isNew || false,
-          allergens: allergens && allergens.length > 0 ? JSON.stringify(allergens) : null,
-          image: image || null,
-        },
-      });
-
-      return NextResponse.json({ success: true, data: formatDbItem(newItem), message: 'Article créé avec succès' });
-    } catch (dbError) {
-      console.error('Database error creating menu item:', dbError);
-      const newItem = addDemoMenuItem({
-        name, description: description || '', category: category || 'Plats',
-        price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
-        isAvailable: isAvailable !== false, preparationTime: parseInt(preparationTime) || 15,
-        isPopular: isPopular || false, isNew: isNew || false,
-        allergens: allergens || [], image: image || null, orderCount: 0,
-      });
-      return NextResponse.json({ success: true, data: newItem, message: 'Article créé (mode démo)', demo: true });
     }
+
+    // Demo fallback
+    const newItem = addDemoMenuItem({
+      name, description: description || '', category: category || 'Plats',
+      price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
+      isAvailable: isAvailable !== false, preparationTime: parseInt(preparationTime) || 15,
+      isPopular: isPopular || false, isNew: isNew || false,
+      allergens: allergens || [], image: image || null, orderCount: 0,
+    });
+    return NextResponse.json({ success: true, data: newItem, message: 'Article créé (mode démo)', demo: true });
   } catch (error) {
     console.error('Error creating menu item:', error);
     return NextResponse.json({ success: false, error: 'Erreur lors de la création' }, { status: 500 });
@@ -195,8 +199,8 @@ export const PATCH = withAdminAuth(async (request: NextRequest) => {
       return NextResponse.json({ success: false, error: 'ID est requis' }, { status: 400 });
     }
 
-    // Try database first if available
-    if (isDatabaseAvailable() && db) {
+    const dbReady = await ensureDbConnection(3000);
+    if (dbReady && db) {
       try {
         const tableReady = await ensureSimpleMenuItemTable();
         if (tableReady) {
@@ -210,7 +214,7 @@ export const PATCH = withAdminAuth(async (request: NextRequest) => {
       } catch (dbError: unknown) {
         const err = dbError as { code?: string; message?: string };
         console.error('Database error updating menu item:', err.message || err);
-        // Fall through to demo update
+        markDatabaseUnavailable();
       }
     }
 
@@ -254,8 +258,8 @@ export const DELETE = withAdminAuth(async (request: NextRequest) => {
       return NextResponse.json({ success: false, error: 'ID est requis' }, { status: 400 });
     }
 
-    // Try database first if available
-    if (isDatabaseAvailable() && db) {
+    const dbReady = await ensureDbConnection(3000);
+    if (dbReady && db) {
       try {
         const tableReady = await ensureSimpleMenuItemTable();
         if (tableReady) {
@@ -265,6 +269,7 @@ export const DELETE = withAdminAuth(async (request: NextRequest) => {
       } catch (dbError: unknown) {
         const err = dbError as { code?: string; message?: string };
         console.error('Database error deleting menu item:', err.message || err);
+        markDatabaseUnavailable();
       }
     }
 

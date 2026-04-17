@@ -133,6 +133,9 @@ interface Restaurant {
   bannerImages?: string[];
 }
 
+// Auto-refresh interval: sync with admin and POS (same 30s interval)
+const SYNC_INTERVAL_MS = 30_000;
+
 // Items per page for traditional pagination (increased for grid layout)
 const ITEMS_PER_PAGE = 12;
 
@@ -169,6 +172,8 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [itemNotes, setItemNotes] = useState('');
+  const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
+  const syncPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Banner images computed with useMemo - before any conditional returns
   const bannerImages = useMemo(() => {
@@ -203,7 +208,12 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
         setRestaurant(dataRestaurant.data);
         
         // Fetch menu from the unified public menu API (same source as POS)
-        const resMenu = await fetch(`/api/public/menu?restaurantSlug=${slug}`);
+        // Add cache-busting to prevent stale data
+        const cacheBuster = `_t=${Date.now()}`;
+        const resMenu = await fetch(`/api/public/menu?restaurantSlug=${slug}&${cacheBuster}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
         if (resMenu.ok) {
           const json = await resMenu.json();
           if (json.success && json.data && json.data.menus && json.data.menus.length > 0) {
@@ -237,12 +247,57 @@ export default function PublicMenuClient({ slug }: { slug: string }) {
         setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
       } finally {
         setLoading(false);
+        setLastSyncAt(new Date());
       }
     };
 
     if (slug) {
       fetchData();
     }
+  }, [slug]);
+
+  // Auto-refresh polling to stay in sync with admin and POS
+  useEffect(() => {
+    if (!slug) return;
+
+    syncPollRef.current = setInterval(() => {
+      // Silent menu re-fetch (same pattern as POS page)
+      fetch(`/api/public/menu?restaurantSlug=${slug}&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      })
+        .then(res => {
+          if (!res.ok) return;
+          return res.json();
+        })
+        .then(json => {
+          if (!json?.success || !json?.data?.menus?.length) return;
+          const unifiedMenus = json.data.menus;
+          setRestaurant((prev: any) => prev ? {
+            ...prev,
+            currency: json.data.restaurant?.currency || prev.currency,
+            menus: unifiedMenus.map((menu: any) => ({
+              id: menu.id || 'default-menu',
+              name: menu.name || 'Menu Principal',
+              slug: menu.slug || 'menu-principal',
+              description: menu.description || '',
+              categories: (menu.categories || []).map((cat: any) => ({
+                ...cat,
+                items: (cat.items || []).map((item: any) => ({
+                  ...item,
+                  imageUrl: item.imageUrl || item.image,
+                })),
+              })),
+            })),
+          } : null);
+          setLastSyncAt(new Date());
+        })
+        .catch(() => { /* silent - keep existing data */ });
+    }, SYNC_INTERVAL_MS);
+
+    return () => {
+      if (syncPollRef.current) clearInterval(syncPollRef.current);
+    };
   }, [slug]);
 
   // Get current menu

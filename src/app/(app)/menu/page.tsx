@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -89,6 +89,9 @@ function getCategoryIcon(name: string) {
 
 const ALLERGENS = ['Gluten', 'Poisson', 'Arachides', 'Lait', 'Œufs', 'Soja', 'Fruits de mer'];
 
+// Polling interval: sync with POS and public pages every 30 seconds
+const POLL_INTERVAL_MS = 30_000;
+
 export default function MenuPage() {
   const { toast } = useToast();
   const { formatCurrency } = useCurrencySafe();
@@ -102,8 +105,10 @@ export default function MenuPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // New item form state
   const [newItem, setNewItem] = useState({
@@ -120,31 +125,50 @@ export default function MenuPage() {
     image: null as string | null,
   });
 
-  // Fetch menu items from API
-  const fetchMenuItems = async () => {
+  // Fetch menu items from API (with cache-busting like POS and public pages)
+  const fetchMenuItems = useCallback(async (showLoader = false) => {
     try {
-      setIsLoading(true);
-      const response = await fetch('/api/admin/menu');
+      if (showLoader) setIsLoading(true);
+      // Cache-busting: same approach as POS page
+      const cacheBuster = `_t=${Date.now()}`;
+      const response = await fetch(`/api/admin/menu?${cacheBuster}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
       const result = await response.json();
       
       if (result.success && result.data) {
         setMenuItems(result.data);
-        setIsDemo(result.isDemo || false);
+        setIsDemo(result.source === 'demo');
+        setLastSyncAt(new Date());
       }
     } catch (error) {
       console.error('Error fetching menu:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger le menu',
-        variant: 'destructive',
-      });
+      if (!menuItems.length) {
+        toast({
+          title: 'Erreur',
+          description: 'Impossible de charger le menu',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [menuItems.length, toast]);
 
+  // Initial fetch + polling (synced with POS 30s interval)
   useEffect(() => {
-    fetchMenuItems();
+    fetchMenuItems(true);
+
+    // Set up auto-refresh polling to stay in sync with POS and public pages
+    pollRef.current = setInterval(() => {
+      fetchMenuItems(false); // Silent refresh
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Dynamic categories: combine defaults with categories from loaded items
@@ -179,9 +203,8 @@ export default function MenuPage() {
       const result = await response.json();
       
       if (result.success) {
-        setMenuItems(prev => prev.map(i => 
-          i.id === itemId ? { ...i, isAvailable: !i.isAvailable } : i
-        ));
+        // Re-fetch from server to ensure sync with POS and public pages
+        await fetchMenuItems(false);
         toast({
           title: 'Disponibilité mise à jour',
           description: 'Le statut de l\'article a été modifié',
@@ -262,27 +285,13 @@ export default function MenuPage() {
       const result = await response.json();
       
       if (result.success) {
-        setMenuItems(prev => [...prev, result.data]);
-        
-        // Reset form
-        setNewItem({
-          name: '',
-          category: 'Plats',
-          price: '',
-          costPrice: '',
-          description: '',
-          prepTime: '15',
-          isPopular: false,
-          isNew: false,
-          isAvailable: true,
-          allergens: [],
-          image: null,
-        });
+        // Re-fetch from server to ensure sync with POS and public pages
+        await fetchMenuItems(false);
         setIsAddDialogOpen(false);
 
         toast({
           title: 'Article ajouté',
-          description: `${result.data.name} a été ajouté au menu`,
+          description: `${result.data?.name || newItem.name} a été ajouté au menu`,
         });
       } else {
         throw new Error(result.error);
@@ -311,9 +320,8 @@ export default function MenuPage() {
       const result = await response.json();
       
       if (result.success) {
-        setMenuItems(prev => prev.map(item => 
-          item.id === editingItem.id ? result.data : item
-        ));
+        // Re-fetch from server to ensure sync with POS and public pages
+        await fetchMenuItems(false);
         setIsEditDialogOpen(false);
         setEditingItem(null);
 
@@ -350,7 +358,8 @@ export default function MenuPage() {
       const result = await response.json();
       
       if (result.success) {
-        setMenuItems(prev => prev.filter(i => i.id !== itemId));
+        // Re-fetch from server to ensure sync with POS and public pages
+        await fetchMenuItems(false);
 
         toast({
           title: 'Article supprimé',
@@ -385,7 +394,8 @@ export default function MenuPage() {
       const result = await response.json();
       
       if (result.success) {
-        setMenuItems(prev => [...prev, result.data]);
+        // Re-fetch from server to ensure sync
+        await fetchMenuItems(false);
 
         toast({
           title: 'Article dupliqué',
@@ -431,12 +441,23 @@ export default function MenuPage() {
         <div>
           <h1 className="text-2xl font-bold">Menu</h1>
           <p className="text-muted-foreground">Gérez vos plats et accompagnements</p>
-          {isDemo && (
-            <div className="flex items-center gap-2 mt-2 text-amber-600 text-sm">
-              <AlertCircle className="h-4 w-4" />
-              Mode démo - les données ne sont pas sauvegardées
-            </div>
-          )}
+          <div className="flex items-center gap-3 mt-1">
+            {isDemo && (
+              <div className="flex items-center gap-1.5 text-amber-600 text-sm">
+                <AlertCircle className="h-4 w-4" />
+                Mode démo
+              </div>
+            )}
+            <span className="text-sm text-muted-foreground">
+              {menuItems.filter(i => i.isAvailable).length} disponible{menuItems.filter(i => i.isAvailable).length > 1 ? 's' : ''} / {menuItems.length} article{menuItems.length > 1 ? 's' : ''}
+            </span>
+            {lastSyncAt && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Sync à {lastSyncAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}>

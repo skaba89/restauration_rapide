@@ -1,280 +1,340 @@
+// ============================================
+// Restaurant OS - First Launch Setup Page
+// Creates the first admin user + organization + restaurant
+// Only shown when NO users exist in the database
+// ============================================
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  ChefHat,
+  Mail,
+  Phone,
+  Lock,
+  Eye,
+  EyeOff,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  Store,
+  User,
+  MapPin,
+} from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { setAuthToken } from '@/lib/api-client';
 
 export default function SetupPage() {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [health, setHealth] = useState<any>(null);
-  const [status, setStatus] = useState<any>(null);
+  const [setupDone, setSetupDone] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Check health on mount
-  useEffect(() => {
-    checkHealth();
-  }, []);
+  // Admin user fields
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const checkHealth = async () => {
-    try {
-      const res = await fetch('/api/health');
-      const data = await res.json();
-      setHealth(data);
-    } catch (err: any) {
-      setHealth({ 
-        success: false, 
-        status: 'error', 
-        message: 'Impossible de contacter le serveur' 
-      });
+  // Restaurant fields
+  const [restaurantName, setRestaurantName] = useState('');
+  const [restaurantSlug, setRestaurantSlug] = useState('');
+  const [restaurantPhone, setRestaurantPhone] = useState('');
+  const [restaurantCity, setRestaurantCity] = useState('');
+  const [restaurantAddress, setRestaurantAddress] = useState('');
+
+  // Auto-generate slug from restaurant name
+  const handleRestaurantNameChange = (name: string) => {
+    setRestaurantName(name);
+    if (!restaurantSlug || restaurantSlug === slugify(restaurantName)) {
+      setRestaurantSlug(slugify(name));
     }
   };
 
-  const checkStatus = async () => {
-    try {
-      const res = await fetch('/api/seed');
-      const data = await res.json();
-      setStatus(data);
-    } catch (err: any) {
-      console.error('Error checking status:', err);
-    }
-  };
+  function slugify(text: string): string {
+    return text.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
 
-  const seedDatabase = async () => {
-    setLoading(true);
+  const handleSubmit = async () => {
     setError(null);
-    setResult(null);
 
+    // Validation
+    if (!firstName || !lastName || !email || !password) {
+      setError('Nom, prénom, email et mot de passe sont requis.');
+      return;
+    }
+
+    if (!restaurantName) {
+      setError('Le nom du restaurant est requis.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Le mot de passe doit contenir au moins 8 caractères.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas.');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const res = await fetch('/api/seed', {
+      const response = await fetch('/api/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email: email.toLowerCase().trim(),
+          phone: phone || undefined,
+          password,
+          restaurantName,
+          restaurantSlug: restaurantSlug || undefined,
+          restaurantPhone: restaurantPhone || undefined,
+          restaurantCity: restaurantCity || undefined,
+          restaurantAddress: restaurantAddress || undefined,
+        }),
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (!res.ok) {
-        setError(data.error || data.message || 'Une erreur est survenue');
-      } else {
-        setResult(data);
-        // Refresh health after seeding
-        setTimeout(checkHealth, 1000);
+      if (!response.ok || !data.success) {
+        setError(data.error || 'Erreur lors de la configuration.');
+        return;
       }
+
+      // Auto-login
+      if (data.data?.token) {
+        setAuthToken(data.data.token);
+      }
+
+      setSetupDone(true);
+
+      // Redirect after 2 seconds
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
     } catch (err: any) {
-      setError(err.message || 'Erreur de connexion');
+      setError('Erreur de connexion au serveur. Vérifiez que la base de données est configurée.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  // Check setup status on mount
+  const [checking, setChecking] = useState(true);
+  const [alreadySetup, setAlreadySetup] = useState(false);
+
+  useState(() => {
+    fetch('/api/setup')
+      .then(r => r.json())
+      .then(data => {
+        if (data.needsSetup === false) {
+          setAlreadySetup(true);
+          setTimeout(() => router.push('/login'), 1500);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setChecking(false));
+  });
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      </div>
+    );
+  }
+
+  if (alreadySetup) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold mb-2">Application déjà configurée</h2>
+            <p className="text-gray-500">Redirection vers la page de connexion...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (setupDone) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Configuration terminée !</h2>
+            <p className="text-gray-500 mb-4">Votre restaurant est prêt. Redirection vers le dashboard...</p>
+            <Loader2 className="w-6 h-6 animate-spin text-orange-500 mx-auto" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 flex items-center justify-center p-4">
-      <div className="max-w-lg w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">KFM DELICE</h1>
-            <p className="text-gray-500 mt-1">Configuration initiale</p>
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 flex items-center justify-center p-4">
+      <div className="w-full max-w-lg space-y-6">
+        {/* Logo & Title */}
+        <div className="text-center">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-lg">
+            <ChefHat className="w-10 h-10 text-white" />
           </div>
-
-          {/* Health Status */}
-          <div className={`mb-6 p-4 rounded-lg ${health?.success ? 'bg-green-50 border border-green-200' : health ? 'bg-red-50 border border-red-200' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className="flex items-center gap-2 mb-2">
-              {health ? (
-                health.success ? (
-                  <span className="text-green-600 text-lg">✅</span>
-                ) : (
-                  <span className="text-red-600 text-lg">❌</span>
-                )
-              ) : (
-                <span className="text-gray-400 text-lg">⏳</span>
-              )}
-              <span className={`font-medium ${health?.success ? 'text-green-800' : health ? 'text-red-800' : 'text-gray-600'}`}>
-                {health?.success ? 'Base de données connectée' : health ? 'Erreur de connexion' : 'Vérification...'}
-              </span>
-            </div>
-            
-            {health?.database && (
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>Temps de réponse: {health.database.responseTime}</p>
-                {health.database.stats && (
-                  <p>Données: {health.database.stats.restaurants} restaurants, {health.database.stats.items} articles</p>
-                )}
-              </div>
-            )}
-            
-            {health?.message && (
-              <p className={`text-sm mt-2 ${health.success ? 'text-green-700' : 'text-red-700'}`}>
-                {health.message}
-              </p>
-            )}
-
-            {!health?.success && health?.help && (
-              <div className="mt-3 p-3 bg-white rounded border text-xs text-gray-600">
-                <p className="font-medium mb-1">Aide:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  {health.help.map((h: string, i: number) => (
-                    <li key={i}>{h}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* Status Check */}
-          <button
-            onClick={checkStatus}
-            className="w-full mb-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Vérifier l'état de la base
-          </button>
-
-          {status && (
-            <div className={`mb-4 p-4 rounded-lg ${status.needsSetup ? 'bg-yellow-50 border border-yellow-200' : 'bg-green-50 border border-green-200'}`}>
-              <p className={`text-sm ${status.needsSetup ? 'text-yellow-800' : 'text-green-800'}`}>
-                {status.needsSetup ? '⚠️ ' : '✅ '}
-                {status.message}
-              </p>
-              {status.stats && (
-                <div className="mt-2 text-xs text-gray-600">
-                  Menus: {status.stats.menus} | Catégories: {status.stats.categories} | Articles: {status.stats.items}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Seed Button - Only show if database is connected */}
-          {health?.success && (
-            <button
-              onClick={seedDatabase}
-              disabled={loading}
-              className="w-full py-3 px-4 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Initialisation en cours...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  Initialiser la base de données
-                </>
-              )}
-            </button>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-800 font-medium mb-2">❌ Erreur</p>
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-
-          {/* Success Result */}
-          {result && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-800 font-medium mb-2">✅ {result.message}</p>
-
-              {result.stats && (
-                <div className="text-sm text-gray-600 mb-3">
-                  <p>Catégories créées: {result.stats.categoriesCreated}</p>
-                  <p>Articles créés: {result.stats.itemsCreated}</p>
-                  <p>Admin créé: {result.stats.adminCreated ? 'Oui' : 'Non (déjà existant)'}</p>
-                  <p>Chauffeur créé: {result.stats.driverCreated ? 'Oui' : 'Non (déjà existant)'}</p>
-                </div>
-              )}
-
-              {result.credentials && (
-                <div className="mt-3 p-3 bg-white rounded border">
-                  <p className="text-xs font-medium text-gray-500 mb-2">Identifiants Admin :</p>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Email:</span>
-                      <code className="text-sm bg-gray-100 px-2 py-0.5 rounded">{result.credentials.email}</code>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Mot de passe:</span>
-                      <code className="text-sm bg-gray-100 px-2 py-0.5 rounded">{result.credentials.password}</code>
-                    </div>
-                  </div>
-                  
-                  {result.driverCredentials && (
-                    <>
-                      <p className="text-xs font-medium text-gray-500 mt-3 mb-2">Identifiants Chauffeur :</p>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Email:</span>
-                          <code className="text-sm bg-gray-100 px-2 py-0.5 rounded">{result.driverCredentials.email}</code>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Mot de passe:</span>
-                          <code className="text-sm bg-gray-100 px-2 py-0.5 rounded">{result.driverCredentials.password}</code>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              <a
-                href="/login"
-                className="mt-4 w-full py-2 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition flex items-center justify-center gap-2 no-underline"
-              >
-                Se connecter
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </a>
-            </div>
-          )}
-
-          {/* Help for database issues */}
-          {!health?.success && health && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800 font-medium mb-2">🔧 Configuration de la base de données</p>
-              <ol className="text-xs text-blue-700 space-y-2 list-decimal list-inside">
-                <li>Allez sur <strong>Render Dashboard</strong></li>
-                <li>Selectionnez votre service web</li>
-                <li>Allez dans <strong>Environment</strong></li>
-                <li>Ajoutez/verifiez <code className="bg-blue-100 px-1 rounded">DATABASE_URL</code></li>
-                <li>Verifiez que l&apos;URL Neon PostgreSQL est correcte</li>
-                <li>Cliquez <strong>Save Changes</strong> pour redéployer</li>
-              </ol>
-            </div>
-          )}
-
-          {/* Refresh button */}
-          <button
-            onClick={checkHealth}
-            className="w-full mt-4 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Rafraîchir
-          </button>
-
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              Restaurant OS - Configuration automatique
-            </p>
-          </div>
+          <h1 className="text-3xl font-bold text-white mb-1">Configuration initiale</h1>
+          <p className="text-white/80 text-sm">Créez votre compte administrateur et votre premier restaurant</p>
         </div>
+
+        <Card className="border-0 shadow-2xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <User className="w-5 h-5 text-orange-500" />
+              Compte Administrateur
+            </CardTitle>
+            <CardDescription>Vos informations de connexion principale</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Error */}
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Prénom *</Label>
+                <Input id="firstName" placeholder="Amadou" value={firstName} onChange={e => setFirstName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Nom *</Label>
+                <Input id="lastName" placeholder="Diallo" value={lastName} onChange={e => setLastName(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="email" type="email" placeholder="votre@email.com" className="pl-10" value={email} onChange={e => setEmail(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Téléphone</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="phone" type="tel" placeholder="+224 6xx xx xx xx" className="pl-10" value={phone} onChange={e => setPhone(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe * (min. 8 caractères)</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Min. 8 caractères" className="pl-10 pr-10" value={password} onChange={e => setPassword(e.target.value)} />
+                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmer le mot de passe *</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="confirmPassword" type="password" placeholder="Confirmer" className="pl-10" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">Restaurant</span></div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantName">Nom du restaurant *</Label>
+              <div className="relative">
+                <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="restaurantName" placeholder="KFM Delice" className="pl-10" value={restaurantName} onChange={e => handleRestaurantNameChange(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantSlug">Slug (URL)</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="restaurantSlug" placeholder="kfm-delice" className="pl-10" value={restaurantSlug} onChange={e => setRestaurantSlug(e.target.value)} />
+              </div>
+              <p className="text-xs text-muted-foreground">Lien public : /menu/{restaurantSlug || 'votre-slug'}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="restaurantPhone">Tél. restaurant</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="restaurantPhone" type="tel" placeholder="+224 6xx" className="pl-10" value={restaurantPhone} onChange={e => setRestaurantPhone(e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="restaurantCity">Ville</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="restaurantCity" placeholder="Conakry" className="pl-10" value={restaurantCity} onChange={e => setRestaurantCity(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantAddress">Adresse</Label>
+              <Input id="restaurantAddress" placeholder="Almamya, Rue KE-050" value={restaurantAddress} onChange={e => setRestaurantAddress(e.target.value)} />
+            </div>
+
+            {/* Submit */}
+            <Button
+              className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 mt-4"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Configuration en cours...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Créer mon restaurant
+                </>
+              )}
+            </Button>
+
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              La configuration ne peut être faite qu&apos;une seule fois. Assurez-vous d&apos;avoir une base de données PostgreSQL configurée (DATABASE_URL).
+            </p>
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-white/70 text-xs">
+          &copy; 2025 Restaurant OS - Made with ❤️ in Africa
+        </p>
       </div>
     </div>
   );

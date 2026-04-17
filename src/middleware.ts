@@ -18,6 +18,7 @@ const PUBLIC_API_ROUTES = [
   '/api/stripe/',
   '/api/notifications/',
   '/api/realtime',
+  '/api/setup',      // First-launch setup (creates admin user)
 ];
 
 // Routes that require SUPER_ADMIN role (most sensitive)
@@ -25,7 +26,6 @@ const SUPER_ADMIN_ROUTES = [
   '/api/admin/reset-password',
   '/api/clear-data',
   '/api/debug',
-  '/api/setup',
 ];
 
 // Routes that have been disabled for security (P1 remediation)
@@ -136,7 +136,7 @@ export default function middleware(request: NextRequest) {
   }
 
   // Skip for app routes
-  const appRoutes = ['/login', '/dashboard', '/pos', '/orders', '/menu', '/reservations',
+  const appRoutes = ['/login', '/setup', '/dashboard', '/pos', '/orders', '/menu', '/reservations',
                      '/customers', '/deliveries', '/drivers', '/analytics', '/settings',
                      '/kitchen', '/driver', '/staff', '/admin', '/profile', '/customer', '/r'];
 

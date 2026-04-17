@@ -153,10 +153,7 @@ export default function LoginPage() {
       setAuthToken(result.token);
       router.push('/dashboard');
     } catch (error: any) {
-      // Fallback to fake token if API fails
-      console.log('Demo API login failed, using fallback');
-      setAuthToken(`demo-token-${Date.now()}`);
-      router.push('/dashboard');
+      console.error('Demo login failed:', error);
     }
   };
   
@@ -170,8 +167,7 @@ export default function LoginPage() {
       setAuthToken(result.token);
       router.push('/customer');
     } catch (error: any) {
-      setAuthToken(`demo-token-customer-${Date.now()}`);
-      router.push('/customer');
+      console.error('Demo customer login failed:', error);
     }
   };
 
@@ -185,8 +181,7 @@ export default function LoginPage() {
       setAuthToken(result.token);
       router.push('/driver/orders');
     } catch (error: any) {
-      setAuthToken(`demo-token-driver-${Date.now()}`);
-      router.push('/driver/orders');
+      console.error('Demo driver login failed:', error);
     }
   };
 
@@ -200,8 +195,7 @@ export default function LoginPage() {
       setAuthToken(result.token);
       router.push('/kitchen');
     } catch (error: any) {
-      setAuthToken(`demo-token-kitchen-${Date.now()}`);
-      router.push('/kitchen');
+      console.error('Demo kitchen login failed:', error);
     }
   };
 

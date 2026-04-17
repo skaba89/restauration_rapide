@@ -1,12 +1,40 @@
 // ============================================
 // Restaurant OS - Authentication Middleware
 // Protect API routes with session validation
+// Supports both DB sessions and in-memory demo sessions
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth-helpers';
 import { apiError } from '@/lib/api-responses';
 import { hasPermission } from '@/lib/auth-helpers';
+
+// ── Demo session bridge ──
+// In demo mode, tokens are stored in an in-memory Map inside route.ts.
+// This module-level reference allows auth-middleware to validate them.
+// The Map is populated lazily via a shared module pattern.
+let _getDemoSession: ((token: string) => { user: any; expiresAt: Date } | undefined) | null = null;
+
+// Called from auth/route.ts to register the demo session getter
+export function registerDemoSessionGetter(
+  getter: (token: string) => { user: any; expiresAt: Date } | undefined
+) {
+  _getDemoSession = getter;
+}
+
+// Try to validate against demo in-memory sessions
+function getDemoSession(token: string): { user: any; expiresAt: Date } | undefined {
+  if (!_getDemoSession) return undefined;
+  try {
+    const session = _getDemoSession(token);
+    if (session && session.expiresAt > new Date()) {
+      return session;
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Authenticated user interface
@@ -60,6 +88,7 @@ export function extractBearerToken(request: NextRequest): string | null {
 
 /**
  * Validate authentication from request
+ * Checks demo in-memory sessions FIRST, then DB sessions
  */
 export async function authenticateRequest(
   request: NextRequest
@@ -73,52 +102,83 @@ export async function authenticateRequest(
     };
   }
   
-  const session = await validateSession(token);
-  
-  if (!session) {
+  // 1. Check demo in-memory sessions (fast, no DB needed)
+  const demoSession = getDemoSession(token);
+  if (demoSession) {
+    const user = demoSession.user;
     return {
-      success: false,
-      error: apiError('Session invalide ou expirée', 401),
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        language: 'fr',
+        isActive: user.isActive !== false,
+        organizations: user.organizations || [],
+      },
+      sessionId: token,
     };
   }
-  
-  const user = session.user;
-  
-  if (!user.isActive) {
+
+  // 2. Check database sessions
+  try {
+    const session = await validateSession(token);
+    
+    if (!session) {
+      return {
+        success: false,
+        error: apiError('Session invalide ou expirée', 401),
+      };
+    }
+    
+    const user = session.user;
+    
+    if (!user.isActive) {
+      return {
+        success: false,
+        error: apiError('Compte désactivé', 403),
+      };
+    }
+    
+    if (user.isLocked) {
+      return {
+        success: false,
+        error: apiError('Compte verrouillé', 403),
+      };
+    }
+    
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        language: user.language,
+        isActive: user.isActive,
+        organizations: user.organizationUsers.map(ou => ({
+          id: ou.organization.id,
+          name: ou.organization.name,
+          slug: ou.organization.slug,
+          role: ou.role,
+        })),
+      },
+      sessionId: session.id,
+    };
+  } catch (dbError) {
+    // DB unavailable - if we're here, demo session also didn't match
     return {
       success: false,
-      error: apiError('Compte désactivé', 403),
+      error: apiError('Session invalide ou service indisponible', 401),
     };
   }
-  
-  if (user.isLocked) {
-    return {
-      success: false,
-      error: apiError('Compte verrouillé', 403),
-    };
-  }
-  
-  return {
-    success: true,
-    user: {
-      id: user.id,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
-      language: user.language,
-      isActive: user.isActive,
-      organizations: user.organizationUsers.map(ou => ({
-        id: ou.organization.id,
-        name: ou.organization.name,
-        slug: ou.organization.slug,
-        role: ou.role,
-      })),
-    },
-    sessionId: session.id,
-  };
 }
 
 /**

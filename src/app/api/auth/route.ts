@@ -3,15 +3,19 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { authRateLimiter } from '@/lib/rate-limiter';
+import { registerDemoSessionGetter } from '@/lib/auth-middleware';
 
 const IS_DEMO_MODE = process.env.DEMO_MODE === 'true';
 
 // Demo users - In production, these would come from the database
-// In demo mode, a shared password hash is loaded from DEMO_PASSWORD_HASH env var
+// Each demo user has its own hardcoded password (matching the login page UI)
+// DEMO_PASSWORD_HASH env var is used as a FALLBACK if set
+const DEMO_SHARED_PASSWORD = process.env.DEMO_PASSWORD_HASH || null;
+
 const DEMO_USERS: Record<string, { password: string; user: any }> = {
   // Super Admin account
   'admin@kfm-delice.com': {
-    password: process.env.DEMO_PASSWORD_HASH || '',
+    password: DEMO_SHARED_PASSWORD || 'AdminKFM2024!',
     user: {
       id: 'admin-user-1',
       email: 'admin@kfm-delice.com',
@@ -31,7 +35,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Demo account
   'demo@kfm-delice.com': {
-    password: process.env.DEMO_PASSWORD_HASH || '',
+    password: DEMO_SHARED_PASSWORD || 'demo123',
     user: {
       id: 'demo-user-1',
       email: 'demo@kfm-delice.com',
@@ -51,7 +55,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Contact account
   'contact@kfm-delice.com': {
-    password: process.env.DEMO_PASSWORD_HASH || '',
+    password: DEMO_SHARED_PASSWORD || 'demo123',
     user: {
       id: 'kfm-user-1',
       email: 'contact@kfm-delice.com',
@@ -71,7 +75,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Restaurant Manager account
   'amadou@kfm-delice.com': {
-    password: process.env.DEMO_PASSWORD_HASH || '',
+    password: DEMO_SHARED_PASSWORD || 'kfm2024!',
     user: {
       id: 'amadou-user-1',
       email: 'amadou@kfm-delice.com',
@@ -91,7 +95,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Kitchen/Cook account
   'kitchen@kfm-delice.com': {
-    password: process.env.DEMO_PASSWORD_HASH || '',
+    password: DEMO_SHARED_PASSWORD || 'kitchen123',
     user: {
       id: 'kitchen-user-1',
       email: 'kitchen@kfm-delice.com',
@@ -111,7 +115,7 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
   },
   // Driver account
   'driver@kfm-delice.com': {
-    password: process.env.DEMO_PASSWORD_HASH || '',
+    password: DEMO_SHARED_PASSWORD || 'driver123',
     user: {
       id: 'driver-user-1',
       email: 'driver@kfm-delice.com',
@@ -133,6 +137,9 @@ const DEMO_USERS: Record<string, { password: string; user: any }> = {
 
 // In-memory sessions for demo mode
 const sessions = new Map<string, { user: any; expiresAt: Date }>();
+
+// Register session getter so auth-middleware can validate demo tokens
+registerDemoSessionGetter((token) => sessions.get(token));
 
 // Generate a cryptographically secure unique token (256-bit entropy)
 function generateToken(): string {

@@ -56,6 +56,22 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   ];
 
   try {
+    if (!db) {
+      return NextResponse.json({
+        success: true,
+        data: demoAccounts.map(acc => ({
+          ...acc,
+          organizationId,
+          parentCode: null,
+          category: null,
+          description: null,
+          allowManual: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+      });
+    }
+
     let accounts = await db.accountingAccount.findMany({
       where: {
         organizationId,
@@ -114,6 +130,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   try {
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
     const account = await db.accountingAccount.create({
       data: {
         organizationId,

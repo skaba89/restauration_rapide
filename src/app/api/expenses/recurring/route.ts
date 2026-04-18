@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
 
     let recurringExpenses;
     try {
+      if (!db) throw new Error('Database not available');
       recurringExpenses = await db.recurringExpense.findMany({
         where,
         orderBy: { nextDueDate: 'asc' },
@@ -89,6 +90,13 @@ export async function POST(request: NextRequest) {
 
     // Get organization currency if not specified
     const currencyCode = currency || await getOrganizationCurrencyCode(organizationId);
+
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
 
     const recurringExpense = await db.recurringExpense.create({
       data: {

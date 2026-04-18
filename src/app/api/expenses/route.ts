@@ -284,9 +284,29 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
+    // Check database availability
+    if (!db) {
+      // No database - return demo data for UI compatibility
+      const demoExpenses = generateDemoExpenses();
+      const paged = demoExpenses.slice(offset, offset + limit);
+      const stats = calculateStats(demoExpenses);
+      return NextResponse.json({
+        success: true,
+        data: paged,
+        stats,
+        categories: CATEGORY_CONFIG,
+        pagination: {
+          total: demoExpenses.length,
+          limit,
+          offset,
+          hasMore: offset + limit < demoExpenses.length,
+        },
+      });
+    }
+
     // Real database query
-    const where: Record<string, unknown> = { organizationId };
-    
+    const where: Record<string, unknown> = {};
+    if (organizationId) where.organizationId = organizationId;
     if (restaurantId) where.restaurantId = restaurantId;
     if (category) where.category = category;
     if (status) where.status = status;
@@ -409,6 +429,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Real database insert
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
     // Get organization currency
     const currencyCode = await getOrganizationCurrencyCode(organizationId);
     
@@ -486,6 +512,13 @@ export async function PUT(request: NextRequest) {
       });
     }
 
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
+    }
+
     const expense = await db.expense.update({
       where: { id },
       data: {
@@ -527,6 +560,13 @@ export async function DELETE(request: NextRequest) {
         success: true,
         message: 'Dépense supprimée avec succès',
       });
+    }
+
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: 'Base de données non disponible' },
+        { status: 503 }
+      );
     }
 
     await db.expense.delete({

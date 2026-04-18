@@ -267,12 +267,39 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // No data available in database
+    // No data available in database - return 200 with empty menu (POS can handle this)
     return NextResponse.json({
-      success: false,
-      error: 'Menu non disponible',
-      source: 'database',
-    }, { status: 404, headers: NO_CACHE_HEADERS });
+      success: true,
+      data: {
+        restaurant: {
+          id: restaurantId || restaurantSlug || 'default',
+          name: 'Restaurant',
+          slug: restaurantSlug || 'default',
+          description: '',
+          logo: null,
+          coverImage: null,
+          phone: '',
+          address: '',
+          city: '',
+          district: null,
+          isOpen: true,
+          isBusy: false,
+          acceptsDelivery: true,
+          acceptsTakeaway: true,
+          acceptsDineIn: true,
+          deliveryFee: 0,
+          minOrderAmount: 0,
+          deliveryTime: 30,
+          rating: 0,
+          reviewCount: 0,
+          currency: { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+        },
+        categories: [],
+        menus: [],
+      },
+      timestamp: new Date().toISOString(),
+      source: 'empty-database',
+    }, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error('[PUBLIC MENU 500]', {
       message: error instanceof Error ? error.message : String(error),

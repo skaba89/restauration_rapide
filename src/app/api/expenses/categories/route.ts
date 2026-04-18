@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
 
     let categories;
     try {
+      if (!db) throw new Error('Database not available');
       categories = await db.expenseCategory.findMany({
         where: { organizationId, isActive: true },
         orderBy: { sortOrder: 'asc' },

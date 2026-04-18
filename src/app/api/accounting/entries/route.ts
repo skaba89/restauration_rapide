@@ -13,6 +13,14 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const offset = parseInt(searchParams.get('offset') || '0');
 
   try {
+    if (!db) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        pagination: { total: 0, limit, offset },
+      });
+    }
+
     const where: any = { organizationId };
     
     if (status) {
@@ -89,6 +97,13 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     return NextResponse.json(
       { success: false, error: 'L\'écriture n\'est pas équilibrée. Total débit et crédit doivent être égaux.' },
       { status: 400 }
+    );
+  }
+
+  if (!db) {
+    return NextResponse.json(
+      { success: false, error: 'Base de données non disponible' },
+      { status: 503 }
     );
   }
 

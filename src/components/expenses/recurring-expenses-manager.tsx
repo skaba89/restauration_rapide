@@ -148,7 +148,7 @@ export function RecurringExpensesManager({ onRecurringChange }: RecurringExpense
   const fetchRecurringExpenses = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/expenses/recurring?demo=true');
+      const response = await fetch('/api/expenses/recurring');
       const data = await response.json();
       
       if (data.success) {
@@ -246,7 +246,7 @@ export function RecurringExpensesManager({ onRecurringChange }: RecurringExpense
   // Delete recurring expense
   const handleDeleteExpense = async (id: string) => {
     try {
-      const response = await fetch(`/api/expenses/recurring?id=${id}&demo=true`, {
+      const response = await fetch(`/api/expenses/recurring?id=${id}`, {
         method: 'DELETE',
       });
 

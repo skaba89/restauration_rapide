@@ -78,7 +78,7 @@ export function ReviewMonitor() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch('/api/social?type=reviews&demo=true');
+      const response = await fetch('/api/social?type=reviews');
       const result = await response.json();
       if (result.success) {
         setReviews(result.data);

@@ -77,7 +77,7 @@ export function CleaningSchedule() {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('/api/compliance?type=cleaning&demo=true');
+      const response = await fetch('/api/compliance?type=cleaning');
       const result = await response.json();
       if (result.success) {
         setTasks(result.data);

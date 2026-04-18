@@ -161,7 +161,7 @@ export function StockMovementModal({
     setLoading(true);
 
     try {
-      const response = await fetch('/api/inventory?demo=true', {
+      const response = await fetch('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

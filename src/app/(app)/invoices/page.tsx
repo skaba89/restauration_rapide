@@ -305,7 +305,7 @@ export default function InvoicesPage() {
   const handleDownload = (invoice: Invoice) => {
     toast.info(`Téléchargement de ${invoice.invoiceNumber}...`);
     // Open the PDF in a new tab
-    window.open(`/api/invoices/${invoice.id}?demo=true`, '_blank');
+    window.open(`/api/invoices/${invoice.id}`, '_blank');
   };
 
   if (loading) {

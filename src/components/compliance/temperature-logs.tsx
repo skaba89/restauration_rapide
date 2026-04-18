@@ -84,7 +84,7 @@ export function TemperatureLogs() {
 
   const fetchLogs = async () => {
     try {
-      const response = await fetch('/api/compliance?type=temperatures&demo=true');
+      const response = await fetch('/api/compliance?type=temperatures');
       const result = await response.json();
       if (result.success) {
         setLogs(result.data);

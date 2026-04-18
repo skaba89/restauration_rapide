@@ -87,7 +87,7 @@ export default function CustomerOrdersPage() {
   // Fetch orders from shared API (same data as admin and kitchen)
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders?demo=true&limit=50');
+      const response = await fetch('/api/orders?limit=50');
       const result = await response.json();
       if (result.success && result.data?.data && Array.isArray(result.data.data)) {
         const apiOrders: Order[] = result.data.data.map((o: any) => ({

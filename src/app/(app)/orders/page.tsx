@@ -156,7 +156,7 @@ export default function OrdersPage() {
   // Fetch orders from shared API (same source as kitchen display)
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders?demo=true&limit=50');
+      const response = await fetch('/api/orders?limit=50');
       const result = await response.json();
       if (result.success && result.data?.data && Array.isArray(result.data.data)) {
         const apiOrders = result.data.data.map((o: any) => ({

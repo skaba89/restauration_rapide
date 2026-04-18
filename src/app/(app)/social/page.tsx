@@ -85,7 +85,7 @@ export default function SocialPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/social?type=stats&demo=true');
+      const response = await fetch('/api/social?type=stats');
       const result = await response.json();
       if (result.success) {
         setStats(result.data);

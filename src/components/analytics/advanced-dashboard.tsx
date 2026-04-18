@@ -120,7 +120,7 @@ export function AdvancedDashboard() {
     const fetchAnalytics = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/dashboard?demo=true&period=${period}`);
+        const response = await fetch(`/api/dashboard?period=${period}`);
         const data = await response.json();
         
         if (data.success) {

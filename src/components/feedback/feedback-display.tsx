@@ -56,7 +56,7 @@ export function FeedbackDisplay() {
 
   const fetchFeedback = async () => {
     try {
-      const response = await fetch('/api/feedback?demo=true');
+      const response = await fetch('/api/feedback');
       const result = await response.json();
       if (result.success) {
         setFeedback(result.data);

@@ -149,7 +149,7 @@ export default function SuppliersPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const suppliersRes = await fetch('/api/inventory/suppliers?demo=true');
+      const suppliersRes = await fetch('/api/inventory/suppliers');
       const suppliersData = await suppliersRes.json();
 
       if (suppliersData.success) {
@@ -222,7 +222,7 @@ export default function SuppliersPage() {
 
     setActionLoading(true);
     try {
-      const response = await fetch('/api/inventory/suppliers?demo=true', {
+      const response = await fetch('/api/inventory/suppliers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -254,7 +254,7 @@ export default function SuppliersPage() {
 
     setActionLoading(true);
     try {
-      const response = await fetch('/api/inventory/suppliers?demo=true', {
+      const response = await fetch('/api/inventory/suppliers', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -291,7 +291,7 @@ export default function SuppliersPage() {
     setActionLoading(true);
     try {
       const response = await fetch(
-        `/api/inventory/suppliers?demo=true&id=${selectedSupplier.id}`,
+        `/api/inventory/suppliers?id=${selectedSupplier.id}`,
         { method: 'DELETE' }
       );
 
@@ -318,7 +318,7 @@ export default function SuppliersPage() {
   // Handle toggle status
   const handleToggleStatus = async (supplier: Supplier) => {
     try {
-      const response = await fetch('/api/inventory/suppliers?demo=true', {
+      const response = await fetch('/api/inventory/suppliers', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

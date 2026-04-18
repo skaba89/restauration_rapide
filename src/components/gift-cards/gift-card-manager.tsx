@@ -108,7 +108,7 @@ export function GiftCardManager() {
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/gift-cards?demo=true&status=${statusFilter === 'all' ? '' : statusFilter}&search=${searchTerm}`
+        `/api/gift-cards?status=${statusFilter === 'all' ? '' : statusFilter}&search=${searchTerm}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -132,7 +132,7 @@ export function GiftCardManager() {
     if (!balanceCheckCode) return;
     
     try {
-      const response = await fetch(`/api/gift-cards?demo=true&code=${balanceCheckCode}`);
+      const response = await fetch(`/api/gift-cards?code=${balanceCheckCode}`);
       const data = await response.json();
       
       if (data.success) {

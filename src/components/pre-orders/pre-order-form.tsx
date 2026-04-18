@@ -181,7 +181,7 @@ export function PreOrderForm({ preOrder, onClose, onSuccess }: PreOrderFormProps
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/pre-orders?demo=true', {
+      const response = await fetch('/api/pre-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

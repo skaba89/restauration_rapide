@@ -95,7 +95,7 @@ export function BranchDetail({ branchId, onEdit }: BranchDetailProps) {
       }
 
       try {
-        const response = await fetch('/api/branches?demo=true');
+        const response = await fetch('/api/branches');
         const data = await response.json();
         if (data.success) {
           const foundBranch = data.branches.find((b: BranchDetail) => b.id === branchId);

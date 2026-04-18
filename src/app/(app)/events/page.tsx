@@ -80,7 +80,7 @@ function QuotesTab() {
   const fetchQuotes = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/events/quotes?demo=true');
+      const response = await fetch('/api/events/quotes');
       const data = await response.json();
       if (data.success) {
         setQuotes(data.quotes);

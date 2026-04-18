@@ -101,7 +101,7 @@ export function OpeningHoursManager({ branchId, initialHours, onUpdate }: Openin
     setIsSaving(true);
     
     try {
-      const response = await fetch(`/api/branches/${branchId}?demo=true`, {
+      const response = await fetch(`/api/branches/${branchId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hours }),

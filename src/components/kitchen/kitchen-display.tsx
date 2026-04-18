@@ -153,7 +153,7 @@ export function KitchenDisplay() {
   // Fetch orders from API
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders?demo=true&status=PENDING,CONFIRMED,PREPARING,READY&limit=200');
+      const response = await fetch('/api/orders?status=PENDING,CONFIRMED,PREPARING,READY&limit=200');
       const data = await response.json();
 
       if (data.success && data.data && Array.isArray(data.data.data)) {

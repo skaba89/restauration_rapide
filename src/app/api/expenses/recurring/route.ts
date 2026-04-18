@@ -16,21 +16,26 @@ export async function GET(request: NextRequest) {
     const organizationId = searchParams.get('organizationId');
     const isActive = searchParams.get('isActive');
 
-    // Real database query
     const where: Record<string, unknown> = { organizationId };
     if (isActive !== null && isActive !== undefined) {
       where.isActive = isActive === 'true';
     }
 
-    const recurringExpenses = await db.recurringExpense.findMany({
-      where,
-      orderBy: { nextDueDate: 'asc' },
-      include: {
-        categoryRelation: {
-          select: { name: true, color: true, icon: true },
+    let recurringExpenses;
+    try {
+      recurringExpenses = await db.recurringExpense.findMany({
+        where,
+        orderBy: { nextDueDate: 'asc' },
+        include: {
+          categoryRelation: {
+            select: { name: true, color: true, icon: true },
+          },
         },
-      },
-    });
+      });
+    } catch {
+      // Model/table may not exist yet - return empty array
+      recurringExpenses = [];
+    }
 
     return NextResponse.json({
       success: true,

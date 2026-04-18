@@ -31,7 +31,7 @@ export function FeedbackStats({ refreshKey }: FeedbackStatsProps) {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/feedback?demo=true&stats=true');
+      const response = await fetch('/api/feedback?stats=true');
       const result = await response.json();
       if (result.success) {
         setStats(result.data);

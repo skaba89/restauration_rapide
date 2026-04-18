@@ -144,7 +144,7 @@ export function ComplianceChecklist() {
 
   const fetchChecklists = async () => {
     try {
-      const response = await fetch('/api/compliance?type=checklists&demo=true');
+      const response = await fetch('/api/compliance?type=checklists');
       const result = await response.json();
       if (result.success) {
         setChecklists(result.data);

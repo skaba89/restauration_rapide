@@ -71,7 +71,7 @@ export function PromotionsManager() {
   const fetchPromotions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/promotions?demo=true');
+      const response = await fetch('/api/promotions');
       const data = await response.json();
       
       if (data.success) {

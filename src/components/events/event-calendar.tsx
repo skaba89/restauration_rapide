@@ -113,7 +113,7 @@ export function EventCalendar() {
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/events?demo=true');
+      const response = await fetch('/api/events');
       const data = await response.json();
       if (data.success) {
         setEvents(data.events.map((e: Event) => ({ ...e, date: new Date(e.date) })));

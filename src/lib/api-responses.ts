@@ -39,17 +39,21 @@ export function apiPaginated<T>(
   });
 }
 
-// Error handling wrapper
+// Error handling wrapper - returns a proper route handler function
 export function withErrorHandler<T>(
-  handler: () => Promise<NextResponse<T>>
-): Promise<NextResponse<T>> {
-  return handler().catch((error) => {
-    console.error('API Error:', error);
-    return apiError(
-      error instanceof Error ? error.message : 'Une erreur est survenue',
-      500
-    ) as NextResponse<T>;
-  });
+  handler: (request: NextRequest) => Promise<NextResponse<T>>
+): (request: NextRequest) => Promise<NextResponse<T>> {
+  return async (request: NextRequest) => {
+    try {
+      return await handler(request);
+    } catch (error) {
+      console.error('API Error:', error);
+      return apiError(
+        error instanceof Error ? error.message : 'Une erreur est survenue',
+        500
+      ) as NextResponse<T>;
+    }
+  };
 }
 
 // Pagination helper

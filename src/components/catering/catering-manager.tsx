@@ -187,7 +187,7 @@ export function CateringManager() {
   const fetchPackages = useCallback(async () => {
     setIsLoadingPackages(true);
     try {
-      const response = await fetch('/api/catering/packages?demo=true');
+      const response = await fetch('/api/catering/packages');
       const data = await response.json();
       if (data.success) {
         setPackages(data.packages);

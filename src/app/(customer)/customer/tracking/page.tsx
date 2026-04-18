@@ -71,7 +71,7 @@ function TrackingContent() {
       return;
     }
     try {
-      const response = await fetch(`/api/orders?demo=true`);
+      const response = await fetch(`/api/orders`);
       const result = await response.json();
       if (result.success && result.data?.data) {
         const found = result.data.data.find((o: any) => o.id === orderId);

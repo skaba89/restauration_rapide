@@ -241,10 +241,10 @@ export function InventoryManager() {
     setLoading(true);
     try {
       const [itemsRes, movementsRes, ordersRes, statsRes] = await Promise.all([
-        fetch('/api/inventory?demo=true'),
-        fetch('/api/inventory?demo=true&action=movements'),
-        fetch('/api/inventory?demo=true&action=purchase-orders'),
-        fetch('/api/inventory?demo=true&action=stats'),
+        fetch('/api/inventory'),
+        fetch('/api/inventory?action=movements'),
+        fetch('/api/inventory?action=purchase-orders'),
+        fetch('/api/inventory?action=stats'),
       ]);
 
       const itemsData = await itemsRes.json();
@@ -349,7 +349,7 @@ export function InventoryManager() {
 
     setActionLoading(true);
     try {
-      const response = await fetch('/api/inventory?demo=true', {
+      const response = await fetch('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -391,7 +391,7 @@ export function InventoryManager() {
 
     setActionLoading(true);
     try {
-      const response = await fetch('/api/inventory?demo=true', {
+      const response = await fetch('/api/inventory', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -434,7 +434,7 @@ export function InventoryManager() {
     setActionLoading(true);
     try {
       const response = await fetch(
-        `/api/inventory?demo=true&id=${selectedItem.id}`,
+        `/api/inventory?id=${selectedItem.id}`,
         { method: 'DELETE' }
       );
 

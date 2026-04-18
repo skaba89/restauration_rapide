@@ -93,7 +93,7 @@ export function SocialAnalytics() {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch('/api/social?type=analytics&demo=true');
+      const response = await fetch('/api/social?type=analytics');
       const result = await response.json();
       if (result.success) {
         setAnalytics(result.data);

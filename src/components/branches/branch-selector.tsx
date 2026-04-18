@@ -85,7 +85,7 @@ export function BranchSelector({
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const response = await fetch('/api/branches?demo=true&includeStats=true');
+        const response = await fetch('/api/branches?includeStats=true');
         const data = await response.json();
         if (data.success) {
           setBranches(data.branches);

@@ -89,7 +89,7 @@ export function SocialCalendar() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch('/api/social?type=posts&demo=true');
+      const response = await fetch('/api/social?type=posts');
       const result = await response.json();
       if (result.success) {
         setPosts(result.data);

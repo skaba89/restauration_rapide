@@ -39,7 +39,7 @@ export default function RecommendationsPage() {
   const fetchStats = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/recommendations?stats=true&demo=true');
+      const response = await fetch('/api/recommendations?stats=true');
       const result = await response.json();
       if (result.success) {
         setStats(result.data.stats);

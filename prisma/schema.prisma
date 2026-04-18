@@ -1760,6 +1760,151 @@ enum PaymentMethod {
 }
 
 // ============================================
+// EXPENSES - Expense tracking & management
+// ============================================
+
+model ExpenseCategory {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  type           String   @default("other")
+  budget         Float?
+  color          String   @default("#6B7280")
+  icon           String   @default("Tag")
+  description    String?
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  expenses         Expense[]
+  recurringExpenses RecurringExpense[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model Expense {
+  id             String           @id @default(cuid())
+  organizationId String
+  restaurantId   String?
+  categoryId     String?
+  title          String?
+  category       String           @default("other")
+  description    String
+  amount         Float
+  currency       String           @default("XOF")
+  date           DateTime
+  paymentMethod  String?
+  supplierName   String?
+  supplierId     String?
+  notes          String?
+  receipt        String?
+  status         String           @default("pending")
+  createdById    String?
+  approvedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  categoryRelation ExpenseCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([organizationId, date])
+  @@index([organizationId, category])
+  @@index([organizationId, status])
+}
+
+model RecurringExpense {
+  id             String           @id @default(cuid())
+  organizationId String
+  restaurantId   String?
+  name           String
+  description    String?
+  amount         Float
+  currency       String           @default("XOF")
+  frequency      String           @default("monthly")
+  nextDueDate    DateTime
+  categoryId     String?
+  category       String           @default("other")
+  supplierName   String?
+  paymentMethod  String?
+  notes          String?
+  autoCreate     Boolean          @default(true)
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  categoryRelation ExpenseCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([organizationId, isActive])
+  @@index([organizationId, nextDueDate])
+}
+
+// ============================================
+// ACCOUNTING - Chart of accounts & journal entries
+// ============================================
+
+model AccountingAccount {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  type           String
+  parentCode     String?
+  category       String?
+  mapping        String?
+  description    String?
+  isSystem       Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  allowManual    Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  journalLines   JournalLine[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId, type])
+  @@index([organizationId, isActive])
+}
+
+model JournalEntry {
+  id             String   @id @default(cuid())
+  organizationId String
+  entryNumber    String
+  date           DateTime
+  reference      String?
+  description    String
+  source         String?
+  sourceId       String?
+  status         String   @default("DRAFT")
+  totalDebit     Float    @default(0)
+  totalCredit    Float    @default(0)
+  isBalanced     Boolean  @default(true)
+  postedAt       DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  lines          JournalLine[]
+
+  @@unique([organizationId, entryNumber])
+  @@index([organizationId, date])
+  @@index([organizationId, status])
+}
+
+model JournalLine {
+  id          String   @id @default(cuid())
+  entryId     String
+  accountId   String
+  lineNumber  Int      @default(1)
+  description String?
+  debit       Float    @default(0)
+  credit      Float    @default(0)
+  reference   String?
+  costCenter  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  account     AccountingAccount @relation(fields: [accountId], references: [id])
+  entry       JournalEntry      @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+  @@index([accountId])
+}
+
+// ============================================
 // RATE LIMITING - Persistent storage for rate limits
 // ============================================
 model RateLimit {

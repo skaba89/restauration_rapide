@@ -106,7 +106,7 @@ export const PUT = withErrorHandler(async (
     
     return NextResponse.json({
       success: true,
-      data: { ...demoRecipe, ...body },
+      data: body,
       message: 'Recette mise à jour (mode démo)',
     });
   }

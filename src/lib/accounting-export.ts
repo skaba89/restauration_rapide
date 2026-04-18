@@ -171,7 +171,7 @@ export const CATEGORY_MAPPINGS = {
   'tips': { accountCode: '658', accountName: 'Pourboires' },
 };
 
-export const demoProfitLoss: ProfitLossData = {
+export const defaultProfitLoss: ProfitLossData = {
   period: { 
     start: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 1),
     end: new Date(new Date().getFullYear(), new Date().getMonth(), 0)
@@ -236,7 +236,7 @@ export const demoProfitLoss: ProfitLossData = {
   }
 };
 
-export const demoTaxSummary: TaxSummary = {
+export const defaultTaxSummary: TaxSummary = {
   period: {
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
@@ -249,7 +249,7 @@ export const demoTaxSummary: TaxSummary = {
   tvaRate: 18
 };
 
-export const demoExports: AccountingExport[] = [
+export const defaultExports: AccountingExport[] = [
   {
     id: 'exp-001',
     type: 'csv',

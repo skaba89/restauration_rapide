@@ -645,7 +645,7 @@ ${'='.repeat(printer.paperWidth === 80 ? 48 : 32)}
 // ============================================
 // ============================================
 
-export const demoPrinters: Printer[] = [
+export const defaultPrinters: Printer[] = [
   {
     id: '1',
     name: 'Cuisine',

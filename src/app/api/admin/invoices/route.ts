@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    let filteredInvoices = [...demoInvoices];
+    let filteredInvoices: any[] = [];
 
     // Filter by status
     if (status && status !== 'all') {
@@ -98,7 +98,7 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
     const total = amount + tax;
 
     // Generate invoice number
-    const invoiceNumber = `FAC-2025-${String(demoInvoices.length + 1).padStart(3, '0')}`;
+    const invoiceNumber = `FAC-2025-${String(Date.now()).slice(-6)}`;
 
     const newInvoice = {
       id: `inv-${Date.now()}`,

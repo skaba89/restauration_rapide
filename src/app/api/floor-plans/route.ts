@@ -47,10 +47,7 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: 'Erreur lors de la récupération des plans de salle',
-        floorPlans: demoFloorPlansStore.map(fp => ({
-          ...fp,
-          layout: fp.layout ? JSON.parse(fp.layout) : null,
-        })),
+        floorPlans: [],
       },
       { status: 500 }
     );

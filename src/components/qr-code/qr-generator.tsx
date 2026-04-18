@@ -58,13 +58,13 @@ export function QRCodeGenerator() {
         setRestaurant(data.data);
         
         // Generate demo tables
-        const demoTables: Table[] = Array.from({ length: 20 }, (_, i) => ({
+        const defaultTables: Table[] = Array.from({ length: 20 }, (_, i) => ({
           id: `table-${i + 1}`,
           number: `${i + 1}`,
           capacity: i < 10 ? 4 : 6,
           status: i % 3 === 0 ? 'OCCUPIED' : 'AVAILABLE',
         }));
-        setTables(demoTables);
+        setTables(defaultTables);
       }
     } catch (error) {
       console.error('Error fetching restaurant:', error);

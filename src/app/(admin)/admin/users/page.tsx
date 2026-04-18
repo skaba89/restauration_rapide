@@ -212,8 +212,8 @@ export default function UsersManagementPage() {
       setTotalUsers(data.total || 0);
     } catch (error) {
       console.error('Error fetching users:', error);
-      setUsers(demoUsers);
-      setTotalUsers(demoUsers.length);
+      setUsers([]);
+      setTotalUsers(0);
     } finally {
       setLoading(false);
     }

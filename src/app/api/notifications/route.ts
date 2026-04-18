@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const unreadOnly = searchParams.get('unread') === 'true';
 
   try {
-    let notifications = demoNotifications;
+    let notifications: Notification[] = [];
 
     if (unreadOnly) {
       notifications = notifications.filter((n) => !n.read);

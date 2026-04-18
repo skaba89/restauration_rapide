@@ -172,7 +172,7 @@ class LoyaltyService {
    */
   private initializeDemoData(): void {
     // Demo customers
-    const demoCustomers: CustomerLoyalty[] = [
+    const defaultCustomers: CustomerLoyalty[] = [
       { customerId: '1', customerName: 'Kouamé Jean', customerPhone: '+225 07 00 00 01', tier: 'gold', currentPoints: 3250, totalPointsEarned: 8750, totalPointsRedeemed: 5500, totalSpent: 585000, ordersCount: 47, memberSince: new Date('2023-01-15'), lastActivity: new Date('2024-03-25'), nextTierPoints: 1750, progressToNextTier: 65 },
       { customerId: '2', customerName: 'Aya Marie', customerPhone: '+225 07 00 00 02', tier: 'silver', currentPoints: 890, totalPointsEarned: 2340, totalPointsRedeemed: 1450, totalSpent: 156000, ordersCount: 28, memberSince: new Date('2023-03-01'), lastActivity: new Date('2024-03-24'), nextTierPoints: 1110, progressToNextTier: 44 },
       { customerId: '3', customerName: 'Koné Ibrahim', customerPhone: '+225 07 00 00 03', tier: 'platinum', currentPoints: 6780, totalPointsEarned: 15200, totalPointsRedeemed: 8420, totalSpent: 1015000, ordersCount: 65, memberSince: new Date('2022-06-15'), lastActivity: new Date('2024-03-25'), nextTierPoints: 3220, progressToNextTier: 68 },
@@ -180,7 +180,7 @@ class LoyaltyService {
       { customerId: '5', customerName: 'Touré Amadou', customerPhone: '+225 07 00 00 05', tier: 'gold', currentPoints: 2890, totalPointsEarned: 7650, totalPointsRedeemed: 4760, totalSpent: 510000, ordersCount: 42, memberSince: new Date('2023-02-10'), lastActivity: new Date('2024-03-23'), nextTierPoints: 2110, progressToNextTier: 58 },
     ];
 
-    demoCustomers.forEach(c => this.customers.set(c.customerId, c));
+    defaultCustomers.forEach(c => this.customers.set(c.customerId, c));
 
     // Demo rewards
     this.rewards = [

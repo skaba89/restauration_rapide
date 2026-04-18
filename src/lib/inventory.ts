@@ -134,10 +134,10 @@ class InventoryService {
   }
 
   /**
-   * Initialize demo data
+   * Initialize with empty data
    */
   private initializeDemoData(): void {
-    demoItems.forEach(item => this.items.set(item.id, item));
+    // In-memory store starts empty; data loaded from API
   }
 
   /**

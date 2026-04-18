@@ -38,7 +38,7 @@ export function RenewalReminders({ onSendReminder, onViewSubscription }: Renewal
         // In a real app, this would fetch from the API
         // For demo, we'll generate some sample reminders
         const today = new Date();
-        const demoReminders: RenewalReminder[] = [
+        const defaultReminders: RenewalReminder[] = [
           {
             id: 'rem-1',
             subscriptionId: 'SUB-002',
@@ -74,7 +74,7 @@ export function RenewalReminders({ onSendReminder, onViewSubscription }: Renewal
           }
         ];
         
-        setReminders(demoReminders);
+        setReminders(defaultReminders);
       } catch (error) {
         console.error('Failed to fetch reminders:', error);
       } finally {

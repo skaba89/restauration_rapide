@@ -165,10 +165,12 @@ export function useMenuManagement(restaurantSlug?: string) {
     }
   }, [restaurantSlug]);
 
-  // Load demo data as fallback
+  // Load empty data as fallback when API fails
   const loadDemoData = () => {
-    setCategories(demoCategories);
-    setItems(demoItems);
+    const fallbackCategories: MenuCategory[] = [];
+    const fallbackItems: MenuItem[] = [];
+    setCategories(fallbackCategories);
+    setItems(fallbackItems);
     setMenu({
       id: 'menu-1',
       restaurantId: restaurantSlug || 'demo-restaurant',
@@ -176,7 +178,7 @@ export function useMenuManagement(restaurantSlug?: string) {
       slug: 'menu-principal',
       description: 'Notre menu principal',
       isActive: true,
-      categories: demoCategories
+      categories: fallbackCategories
     });
   };
 

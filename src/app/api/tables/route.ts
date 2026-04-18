@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to fetch tables',
-        tables: demoTablesStore, // Fallback to demo data,
+        tables: [],
       },
       { status: 500 }
     );

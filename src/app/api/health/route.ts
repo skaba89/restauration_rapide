@@ -15,11 +15,7 @@ export async function GET() {
     buildCommit: BUILD_COMMIT,
     message: 'KFM DELICE API is running - VERSION 2.0.1 - AUTO-DEPLOY FIX',
     version: BUILD_VERSION,
-    demoAccounts: [
-      { email: 'admin@kfm-delice.com', password: 'AdminKFM2024!', role: 'SUPER_ADMIN' },
-      { email: 'contact@kfm-delice.com', password: 'KfmDelice2024!', role: 'ORG_ADMIN' },
-      { email: 'amadou@kfm-delice.com', password: 'kfm2024!', role: 'RESTAURANT_MANAGER' },
-    ],
+    demo: false,
     features: [
       'Authentication',
       'Real-time sync via WebSocket',

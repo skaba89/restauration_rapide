@@ -154,7 +154,7 @@ class EmployeeService {
    * Initialize demo data
    */
   private initializeDemoData(): void {
-    const demoEmployees: Employee[] = [
+    const defaultEmployees: Employee[] = [
       { id: '1', firstName: 'Amadou', lastName: 'Touré', email: 'amadou@restaurant.os', phone: '+225 07 00 00 01', role: 'manager', employmentType: 'full_time', hourlyRate: 5000, department: 'Management', hireDate: new Date('2022-01-15'), status: 'active', skills: ['leadership', 'inventory', 'reporting'], maxHoursPerWeek: 45 },
       { id: '2', firstName: 'Fatou', lastName: 'Diallo', email: 'fatou@restaurant.os', phone: '+225 07 00 00 02', role: 'chef', employmentType: 'full_time', hourlyRate: 4000, department: 'Cuisine', hireDate: new Date('2022-03-01'), status: 'active', skills: ['african_cuisine', 'french_cuisine', 'management'], maxHoursPerWeek: 50 },
       { id: '3', firstName: 'Ibrahim', lastName: 'Koné', email: 'ibrahim@restaurant.os', phone: '+225 07 00 00 03', role: 'cook', employmentType: 'full_time', hourlyRate: 2500, department: 'Cuisine', hireDate: new Date('2023-01-10'), status: 'active', skills: ['african_cuisine', 'grilling'], maxHoursPerWeek: 45 },
@@ -167,7 +167,7 @@ class EmployeeService {
       { id: '10', firstName: 'Aminata', lastName: 'Sanogo', email: 'aminata@restaurant.os', phone: '+225 07 00 00 10', role: 'cleaner', employmentType: 'part_time', hourlyRate: 1200, department: 'Maintenance', hireDate: new Date('2023-05-15'), status: 'active', skills: ['cleaning', 'sanitation'], maxHoursPerWeek: 20 },
     ];
 
-    demoEmployees.forEach(emp => this.employees.set(emp.id, emp));
+    defaultEmployees.forEach(emp => this.employees.set(emp.id, emp));
 
     // Create shifts for today
     const today = new Date();

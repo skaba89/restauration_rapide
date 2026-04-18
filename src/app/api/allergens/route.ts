@@ -129,16 +129,14 @@ export async function POST(request: NextRequest) {
         });
         
         if (!allergen) {
-          if (demoAllergen) {
-            allergen = await db.allergen.create({
-              data: {
-                id: allergenId,
-                name: demoAllergen.name,
-                icon: demoAllergen.icon,
-                description: demoAllergen.description
-              }
-            });
-          }
+          allergen = await db.allergen.create({
+            data: {
+              id: allergenId,
+              name: allergenId,
+              icon: '⚠️',
+              description: 'Allergène créé automatiquement'
+            }
+          });
         }
         
         await db.menuItemAllergen.create({

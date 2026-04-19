@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import EventDetail from './event-detail';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
@@ -113,7 +114,7 @@ export function EventCalendar() {
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/events');
+      const response = await fetchWithAuth('/api/events');
       const data = await response.json();
       if (data.success) {
         setEvents(data.events.map((e: Event) => ({ ...e, date: new Date(e.date) })));
@@ -204,7 +205,7 @@ export function EventCalendar() {
   // Handle status change
   const handleStatusChange = async (eventId: string, newStatus: Event['status']) => {
     try {
-      const response = await fetch('/api/events', {
+      const response = await fetchWithAuth('/api/events', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: eventId, status: newStatus }),
@@ -226,7 +227,7 @@ export function EventCalendar() {
   // Handle cancel
   const handleCancel = async (eventId: string) => {
     try {
-      const response = await fetch(`/api/events?id=${eventId}`, { method: 'DELETE' });
+      const response = await fetchWithAuth(`/api/events?id=${eventId}`, { method: 'DELETE' });
       const data = await response.json();
       if (data.success) {
         toast.success('Événement annulé');

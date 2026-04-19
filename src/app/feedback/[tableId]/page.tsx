@@ -21,6 +21,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 
 const CATEGORIES = [
   { id: 'food', name: 'Cuisine', icon: Utensils, description: 'Qualité des plats' },
@@ -67,7 +68,7 @@ export default function FeedbackFormPage() {
     setSubmitting(true);
 
     try {
-      const response = await fetch('/api/feedback', {
+      const response = await fetchWithAuth('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

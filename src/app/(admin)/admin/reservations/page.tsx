@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -85,7 +86,7 @@ export default function AdminReservationsPage() {
   useEffect(() => {
     async function fetchReservations() {
       try {
-        const response = await fetch('/api/admin/reservations');
+        const response = await fetchWithAuth('/api/admin/reservations');
         if (response.ok) {
           const data = await response.json();
           setReservations(data.data || []);

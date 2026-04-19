@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, Calculator, Flame, Beef, Wheat, Droplet, Loader2 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { useToast } from '@/hooks/use-toast';
 
 interface MenuItem {
@@ -53,7 +54,7 @@ export function NutritionCalculator() {
 
   const fetchMenuItems = async () => {
     try {
-      const response = await fetch('/api/allergens', {
+      const response = await fetchWithAuth('/api/allergens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'getMenuItems', data: { } })

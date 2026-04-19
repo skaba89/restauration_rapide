@@ -45,6 +45,7 @@ import {
 import { toast } from 'sonner';
 import EventDetail from './event-detail';
 import QuoteBuilder from './quote-builder';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
@@ -161,7 +162,7 @@ export function EventManager() {
       if (selectedEventType !== 'all') params.set('eventType', selectedEventType);
       if (searchTerm) params.set('search', searchTerm);
 
-      const response = await fetch(`/api/events?${params.toString()}`);
+      const response = await fetchWithAuth(`/api/events?${params.toString()}`);
       const data = await response.json();
 
       if (data.success) {
@@ -183,7 +184,7 @@ export function EventManager() {
   // Handle event status change
   const handleStatusChange = async (eventId: string, newStatus: Event['status']) => {
     try {
-      const response = await fetch('/api/events', {
+      const response = await fetchWithAuth('/api/events', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: eventId, status: newStatus }),
@@ -207,7 +208,7 @@ export function EventManager() {
     if (!confirm('Êtes-vous sûr de vouloir annuler cet événement ?')) return;
 
     try {
-      const response = await fetch(`/api/events?id=${eventId}`, { method: 'DELETE' });
+      const response = await fetchWithAuth(`/api/events?id=${eventId}`, { method: 'DELETE' });
       const data = await response.json();
       if (data.success) {
         toast.success('Événement annulé');

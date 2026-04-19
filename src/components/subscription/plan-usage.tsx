@@ -14,6 +14,7 @@ import {
   Check,
   ArrowRight
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import Link from 'next/link';
 
 interface PlanUsageProps {
@@ -72,7 +73,7 @@ export function PlanUsage({ organizationId }: PlanUsageProps) {
   useEffect(() => {
     async function fetchLimits() {
       try {
-        const response = await fetch(`/api/organization/limits?organizationId=${organizationId}`);
+        const response = await fetchWithAuth(`/api/organization/limits?organizationId=${organizationId}`);
         if (response.ok) {
           const result = await response.json();
           setData(result.data);

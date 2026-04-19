@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -205,7 +206,7 @@ export default function UsersManagementPage() {
 
   async function fetchUsers() {
     try {
-      const response = await fetch('/api/admin/users?limit=100');
+      const response = await fetchWithAuth('/api/admin/users?limit=100');
       if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
       setUsers(data.data || []);
@@ -221,7 +222,7 @@ export default function UsersManagementPage() {
 
   async function fetchFormData() {
     try {
-      const response = await fetch('/api/admin/users/form-data');
+      const response = await fetchWithAuth('/api/admin/users/form-data');
       if (response.ok) {
         const data = await response.json();
         setOrganizations(data.organizations || []);
@@ -285,7 +286,7 @@ export default function UsersManagementPage() {
   const handleCreateUser = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/admin/users', {
+      const response = await fetchWithAuth('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -312,7 +313,7 @@ export default function UsersManagementPage() {
     if (!selectedUser) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/admin/users', {
+      const response = await fetchWithAuth('/api/admin/users', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -346,7 +347,7 @@ export default function UsersManagementPage() {
     if (!selectedUser) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/admin/users?id=${selectedUser.id}`, {
+      const response = await fetchWithAuth(`/api/admin/users?id=${selectedUser.id}`, {
         method: 'DELETE',
       });
 
@@ -371,7 +372,7 @@ export default function UsersManagementPage() {
     if (!selectedUser || !formData.password) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/admin/users/reset-password', {
+      const response = await fetchWithAuth('/api/admin/users/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -133,8 +134,8 @@ export default function AdminHRPage() {
     async function fetchData() {
       try {
         const [empRes, driverRes] = await Promise.all([
-          fetch('/api/admin/hr/employees'),
-          fetch('/api/admin/hr/drivers'),
+          fetchWithAuth('/api/admin/hr/employees'),
+          fetchWithAuth('/api/admin/hr/drivers'),
         ]);
         
         if (empRes.ok && driverRes.ok) {
@@ -293,7 +294,7 @@ export default function AdminHRPage() {
     
     setSaving(true);
     try {
-      const response = await fetch('/api/admin/hr/employees', {
+      const response = await fetchWithAuth('/api/admin/hr/employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

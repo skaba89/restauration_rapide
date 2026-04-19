@@ -61,6 +61,7 @@ import {
 } from 'lucide-react';
 import { format, subMonths, startOfYear, endOfYear, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { fetchWithAuth } from '@/lib/api-client';
 import { useToast } from '@/hooks/use-toast';
 
 // Types
@@ -259,11 +260,11 @@ export function AccountingDashboard() {
     setLoading(true);
     try {
       const [accountsRes, entriesRes, trialRes, balanceRes, incomeRes] = await Promise.all([
-        fetch('/api/accounting/accounts?organizationId=kfm-delice'),
-        fetch('/api/accounting/entries?organizationId=kfm-delice'),
-        fetch(`/api/accounting/reports?type=trial-balance&organizationId=kfm-delice`),
-        fetch(`/api/accounting/reports?type=balance-sheet&organizationId=kfm-delice`),
-        fetch(`/api/accounting/reports?type=income-statement&organizationId=kfm-delice`),
+        fetchWithAuth('/api/accounting/accounts?organizationId=kfm-delice'),
+        fetchWithAuth('/api/accounting/entries?organizationId=kfm-delice'),
+        fetchWithAuth(`/api/accounting/reports?type=trial-balance&organizationId=kfm-delice`),
+        fetchWithAuth(`/api/accounting/reports?type=balance-sheet&organizationId=kfm-delice`),
+        fetchWithAuth(`/api/accounting/reports?type=income-statement&organizationId=kfm-delice`),
       ]);
 
       const [accountsData, entriesData, trialData, balanceData, incomeData] = await Promise.all([
@@ -321,7 +322,7 @@ export function AccountingDashboard() {
   // Handle create entry
   const handleCreateEntry = async () => {
     try {
-      const response = await fetch('/api/accounting/entries', {
+      const response = await fetchWithAuth('/api/accounting/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -353,7 +354,7 @@ export function AccountingDashboard() {
   // Handle post entry
   const handlePostEntry = async (entryId: string) => {
     try {
-      const response = await fetch('/api/accounting/entries', {
+      const response = await fetchWithAuth('/api/accounting/entries', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: entryId, action: 'post' }),
@@ -379,7 +380,7 @@ export function AccountingDashboard() {
   // Handle create account
   const handleCreateAccount = async () => {
     try {
-      const response = await fetch('/api/accounting/accounts', {
+      const response = await fetchWithAuth('/api/accounting/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

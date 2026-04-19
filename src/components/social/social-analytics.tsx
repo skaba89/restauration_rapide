@@ -24,6 +24,7 @@ import {
   BarChart3,
   Clock
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import {
   BarChart,
   Bar,
@@ -93,7 +94,7 @@ export function SocialAnalytics() {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch('/api/social?type=analytics');
+      const response = await fetchWithAuth('/api/social?type=analytics');
       const result = await response.json();
       if (result.success) {
         setAnalytics(result.data);

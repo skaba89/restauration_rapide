@@ -41,6 +41,7 @@ import {
 import { RecipeCalculator } from './recipe-calculator';
 import { RecipeDetail } from './recipe-detail';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
@@ -159,7 +160,7 @@ export function RecipeManager() {
   const fetchRecipes = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/recipes?search=${searchTerm}&category=${categoryFilter === 'all' ? '' : categoryFilter}`);
+      const response = await fetchWithAuth(`/api/recipes?search=${searchTerm}&category=${categoryFilter === 'all' ? '' : categoryFilter}`);
       if (response.ok) {
         const data = await response.json();
         setRecipes(data.data || []);
@@ -257,7 +258,7 @@ export function RecipeManager() {
     if (!selectedRecipe) return;
     
     try {
-      const response = await fetch(`/api/recipes/${selectedRecipe.id}/duplicate`, {
+      const response = await fetchWithAuth(`/api/recipes/${selectedRecipe.id}/duplicate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -282,7 +283,7 @@ export function RecipeManager() {
     
     setIsScaling(true);
     try {
-      const response = await fetch(`/api/recipes/${selectedRecipe.id}/scale`, {
+      const response = await fetchWithAuth(`/api/recipes/${selectedRecipe.id}/scale`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -307,7 +308,7 @@ export function RecipeManager() {
     if (!selectedRecipe) return;
     
     try {
-      const response = await fetch(`/api/recipes/${selectedRecipe.id}`, {
+      const response = await fetchWithAuth(`/api/recipes/${selectedRecipe.id}`, {
         method: 'DELETE',
       });
       
@@ -340,7 +341,7 @@ export function RecipeManager() {
 
     try {
       if (isEditMode && selectedRecipe) {
-        const response = await fetch(`/api/recipes/${selectedRecipe.id}`, {
+        const response = await fetchWithAuth(`/api/recipes/${selectedRecipe.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: selectedRecipe.id, ...recipeData }),
@@ -351,7 +352,7 @@ export function RecipeManager() {
           fetchRecipes();
         }
       } else {
-        const response = await fetch('/api/recipes', {
+        const response = await fetchWithAuth('/api/recipes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(recipeData),

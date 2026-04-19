@@ -16,6 +16,7 @@ import {
   ArrowRight,
   Shield,
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 interface MobileMoneyPaymentProps {
@@ -98,7 +99,7 @@ export function MobileMoneyPayment({
     setState(prev => ({ ...prev, step: 'processing' }));
 
     try {
-      const response = await fetch('/api/payments', {
+      const response = await fetchWithAuth('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -71,6 +71,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { fetchWithAuth } from '@/lib/api-client';
 import { TableCard, TableData } from './table-card';
 import { toast } from 'sonner';
 
@@ -291,7 +292,7 @@ export function FloorPlanEditor({
   const handleSave = useCallback(async () => {
     try {
       // Save to API
-      const response = await fetch('/api/tables', {
+      const response = await fetchWithAuth('/api/tables', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tables }),

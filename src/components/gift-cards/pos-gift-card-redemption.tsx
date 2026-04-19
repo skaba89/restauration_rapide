@@ -27,6 +27,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
@@ -88,7 +89,7 @@ export function PosGiftCardRedemption({
     setBalanceInfo(null);
 
     try {
-      const response = await fetch(`/api/gift-cards/${code}/balance`);
+      const response = await fetchWithAuth(`/api/gift-cards/${code}/balance`);
       const data = await response.json();
 
       if (data.success) {
@@ -126,7 +127,7 @@ export function PosGiftCardRedemption({
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/gift-cards/${code}/redeem`, {
+      const response = await fetchWithAuth(`/api/gift-cards/${code}/redeem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

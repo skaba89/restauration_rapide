@@ -64,6 +64,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 import { StockMovementModal } from './stock-movement-modal';
 import { PurchaseOrderModal } from './purchase-order-modal';
 import { useFormatCurrency } from '@/components/ui/currency-display';
@@ -241,10 +242,10 @@ export function InventoryManager() {
     setLoading(true);
     try {
       const [itemsRes, movementsRes, ordersRes, statsRes] = await Promise.all([
-        fetch('/api/inventory'),
-        fetch('/api/inventory?action=movements'),
-        fetch('/api/inventory?action=purchase-orders'),
-        fetch('/api/inventory?action=stats'),
+        fetchWithAuth('/api/inventory'),
+        fetchWithAuth('/api/inventory?action=movements'),
+        fetchWithAuth('/api/inventory?action=purchase-orders'),
+        fetchWithAuth('/api/inventory?action=stats'),
       ]);
 
       const itemsData = await itemsRes.json();
@@ -349,7 +350,7 @@ export function InventoryManager() {
 
     setActionLoading(true);
     try {
-      const response = await fetch('/api/inventory', {
+      const response = await fetchWithAuth('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -391,7 +392,7 @@ export function InventoryManager() {
 
     setActionLoading(true);
     try {
-      const response = await fetch('/api/inventory', {
+      const response = await fetchWithAuth('/api/inventory', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -433,7 +434,7 @@ export function InventoryManager() {
 
     setActionLoading(true);
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `/api/inventory?id=${selectedItem.id}`,
         { method: 'DELETE' }
       );

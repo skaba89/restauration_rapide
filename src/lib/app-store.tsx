@@ -270,7 +270,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     queryKey: ['restaurant', 'kfm-delice'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/restaurants?slug=kfm-delice');
+        const res = await fetchWithAuth('/api/restaurants?slug=kfm-delice');
         const data = await res.json();
         if (data.success && data.data?.length > 0) {
           return data.data[0];
@@ -288,7 +288,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     queryKey: ['menu-categories'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/menu-categories');
+        const res = await fetchWithAuth('/api/menu-categories');
         if (!res.ok) {
           console.warn('Categories API returned', res.status);
           return [];
@@ -325,7 +325,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     queryKey: ['menu-items'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/menu-items');
+        const res = await fetchWithAuth('/api/menu-items');
         if (!res.ok) {
           console.warn('Menu items API returned', res.status);
           return [];
@@ -400,7 +400,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     queryKey: ['deliveries'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/deliveries');
+        const res = await fetchWithAuth('/api/deliveries');
         if (!res.ok) {
           console.warn('Deliveries API returned', res.status);
           return [];

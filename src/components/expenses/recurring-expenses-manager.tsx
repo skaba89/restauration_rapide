@@ -45,6 +45,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface RecurringExpense {
   id: string;
@@ -148,7 +149,7 @@ export function RecurringExpensesManager({ onRecurringChange }: RecurringExpense
   const fetchRecurringExpenses = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/expenses/recurring');
+      const response = await fetchWithAuth('/api/expenses/recurring');
       const data = await response.json();
       
       if (data.success) {
@@ -174,7 +175,7 @@ export function RecurringExpensesManager({ onRecurringChange }: RecurringExpense
     }
 
     try {
-      const response = await fetch('/api/expenses/recurring', {
+      const response = await fetchWithAuth('/api/expenses/recurring', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -217,7 +218,7 @@ export function RecurringExpensesManager({ onRecurringChange }: RecurringExpense
     if (!editingExpense) return;
 
     try {
-      const response = await fetch('/api/expenses/recurring', {
+      const response = await fetchWithAuth('/api/expenses/recurring', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -246,7 +247,7 @@ export function RecurringExpensesManager({ onRecurringChange }: RecurringExpense
   // Delete recurring expense
   const handleDeleteExpense = async (id: string) => {
     try {
-      const response = await fetch(`/api/expenses/recurring?id=${id}`, {
+      const response = await fetchWithAuth(`/api/expenses/recurring?id=${id}`, {
         method: 'DELETE',
       });
 
@@ -268,7 +269,7 @@ export function RecurringExpensesManager({ onRecurringChange }: RecurringExpense
   // Toggle active status
   const handleToggleActive = async (expense: RecurringExpense) => {
     try {
-      const response = await fetch('/api/expenses/recurring', {
+      const response = await fetchWithAuth('/api/expenses/recurring', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 import {
   Settings,
   Store,
@@ -182,7 +183,7 @@ export default function SettingsPage() {
       }
 
       // Save settings to API
-      const response = await fetch('/api/settings', {
+      const response = await fetchWithAuth('/api/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

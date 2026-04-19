@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Star, MessageSquare, CheckCircle, Clock, Loader2, Send, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Feedback {
   id: string;
@@ -56,7 +57,7 @@ export function FeedbackDisplay() {
 
   const fetchFeedback = async () => {
     try {
-      const response = await fetch('/api/feedback');
+      const response = await fetchWithAuth('/api/feedback');
       const result = await response.json();
       if (result.success) {
         setFeedback(result.data);

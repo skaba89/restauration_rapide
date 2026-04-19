@@ -3,6 +3,7 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { usePusherChannel } from '@/hooks/use-pusher';
 import { usePusherEvent } from '@/hooks/use-pusher';
+import { fetchWithAuth } from '@/lib/api-client';
 
 const DEFAULT_RESTAURANT_ID = 'demo-rest-1';
 
@@ -129,7 +130,7 @@ export function useDriverTracking(options: {
   // Fetch driver locations from API
   const fetchDrivers = useCallback(async () => {
     try {
-      const response = await fetch('/api/drivers/tracking');
+      const response = await fetchWithAuth('/api/drivers/tracking');
       const data = await response.json();
 
       if (data.success && data.data) {

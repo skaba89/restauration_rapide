@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -121,7 +122,7 @@ export default function MyRestaurantsPage() {
     const fetchRestaurants = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/restaurant-admins?userId=${userId}`);
+        const res = await fetchWithAuth(`/api/restaurant-admins?userId=${userId}`);
         if (res.ok) {
           const data = await res.json();
           setRestaurants(data.restaurants || []);
@@ -150,7 +151,7 @@ export default function MyRestaurantsPage() {
     setCreating(true);
 
     try {
-      const res = await fetch('/api/restaurant-admins', {
+      const res = await fetchWithAuth('/api/restaurant-admins', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

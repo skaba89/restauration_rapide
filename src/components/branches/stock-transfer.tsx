@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 import { 
   ArrowRightLeft,
   Plus,
@@ -111,7 +112,7 @@ export function StockTransferManager({ branchId, branches }: StockTransferManage
   const fetchTransfers = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/branches/${branchId}/transfer`);
+      const response = await fetchWithAuth(`/api/branches/${branchId}/transfer`);
       const data = await response.json();
       if (data.success) {
         setTransfers(data.transfers);
@@ -144,7 +145,7 @@ export function StockTransferManager({ branchId, branches }: StockTransferManage
     }
 
     try {
-      const response = await fetch(`/api/branches/${branchId}/transfer`, {
+      const response = await fetchWithAuth(`/api/branches/${branchId}/transfer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -179,7 +180,7 @@ export function StockTransferManager({ branchId, branches }: StockTransferManage
 
   const handleUpdateStatus = async (transferId: string, action: string) => {
     try {
-      const response = await fetch(`/api/branches/${branchId}/transfer`, {
+      const response = await fetchWithAuth(`/api/branches/${branchId}/transfer`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transferId, action }),

@@ -22,6 +22,7 @@ import { FloorPlanEditor } from '@/components/floor-plan/floor-plan-editor';
 import { FloorPlanView } from '@/components/floor-plan/floor-plan-view';
 import { TableData } from '@/components/floor-plan/table-card';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 export default function FloorPlanPage() {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
@@ -33,7 +34,7 @@ export default function FloorPlanPage() {
   const fetchTables = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/tables');
+      const response = await fetchWithAuth('/api/tables');
       if (response.ok) {
         const data = await response.json();
         if (data.tables && data.tables.length > 0) {
@@ -50,7 +51,7 @@ export default function FloorPlanPage() {
   // Save tables to API
   const saveTables = useCallback(async (updatedTables: TableData[]) => {
     try {
-      const response = await fetch('/api/tables', {
+      const response = await fetchWithAuth('/api/tables', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tables: updatedTables }),
@@ -83,7 +84,7 @@ export default function FloorPlanPage() {
     
     // In real app, this would call the API
     try {
-      await fetch('/api/tables', {
+      await fetchWithAuth('/api/tables', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tableId, status }),

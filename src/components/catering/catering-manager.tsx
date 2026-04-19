@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrency } from '@/lib/currency-context';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Types
 interface CateringPackage {
@@ -187,7 +188,7 @@ export function CateringManager() {
   const fetchPackages = useCallback(async () => {
     setIsLoadingPackages(true);
     try {
-      const response = await fetch('/api/catering/packages');
+      const response = await fetchWithAuth('/api/catering/packages');
       const data = await response.json();
       if (data.success) {
         setPackages(data.packages);
@@ -209,7 +210,7 @@ export function CateringManager() {
       if (selectedEventType !== 'all') params.set('eventType', selectedEventType);
       if (searchTerm) params.set('search', searchTerm);
 
-      const response = await fetch(`/api/catering/orders?${params.toString()}`);
+      const response = await fetchWithAuth(`/api/catering/orders?${params.toString()}`);
       const data = await response.json();
       if (data.success) {
         setOrders(data.orders.map((o: CateringOrder) => ({ ...o, eventDate: new Date(o.eventDate), createdAt: new Date(o.createdAt) })));
@@ -230,7 +231,7 @@ export function CateringManager() {
   // Handle status change
   const handleStatusChange = async (orderId: string, action: string) => {
     try {
-      const response = await fetch('/api/catering/orders', {
+      const response = await fetchWithAuth('/api/catering/orders', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: orderId, action }),
@@ -258,7 +259,7 @@ export function CateringManager() {
 
     try {
       // Create order
-      const response = await fetch('/api/catering/orders', {
+      const response = await fetchWithAuth('/api/catering/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -273,7 +274,7 @@ export function CateringManager() {
       if (data.success) {
         // If send quote, update status
         if (sendQuote) {
-          await fetch('/api/catering/orders', {
+          await fetchWithAuth('/api/catering/orders', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: data.order.id, action: 'send_quote' }),

@@ -37,6 +37,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
@@ -103,7 +104,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
         body.pauseEndDate = pauseEndDate;
       }
 
-      const response = await fetch('/api/subscriptions', {
+      const response = await fetchWithAuth('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -131,7 +132,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/subscriptions', {
+      const response = await fetchWithAuth('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -160,7 +161,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
   const handleUnskipDay = async (date: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/subscriptions', {
+      const response = await fetchWithAuth('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -186,7 +187,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
   const handleCancel = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/subscriptions', {
+      const response = await fetchWithAuth('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,7 +213,7 @@ export function SubscriptionDetail({ subscription, onClose, onUpdate }: Subscrip
   const handleAutoRenewToggle = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/subscriptions', {
+      const response = await fetchWithAuth('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

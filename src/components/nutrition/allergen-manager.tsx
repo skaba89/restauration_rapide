@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AlertTriangle, Edit, Check, X, Search, Plus, Loader2 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { useToast } from '@/hooks/use-toast';
 
 // Common allergens
@@ -80,7 +81,7 @@ export function AllergenManager() {
 
   const fetchMenuItems = async () => {
     try {
-      const response = await fetch('/api/allergens', {
+      const response = await fetchWithAuth('/api/allergens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'getMenuItems', data: { } })

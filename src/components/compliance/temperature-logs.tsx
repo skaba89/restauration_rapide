@@ -36,6 +36,7 @@ import {
   Snowflake,
   Refrigerator
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import {
   LineChart,
   Line,
@@ -84,7 +85,7 @@ export function TemperatureLogs() {
 
   const fetchLogs = async () => {
     try {
-      const response = await fetch('/api/compliance?type=temperatures');
+      const response = await fetchWithAuth('/api/compliance?type=temperatures');
       const result = await response.json();
       if (result.success) {
         setLogs(result.data);
@@ -130,7 +131,7 @@ export function TemperatureLogs() {
     };
 
     try {
-      const response = await fetch('/api/compliance', {
+      const response = await fetchWithAuth('/api/compliance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'temperature', data: newLog }),

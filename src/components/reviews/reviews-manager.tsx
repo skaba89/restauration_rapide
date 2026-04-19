@@ -22,6 +22,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Review {
   id: string;
@@ -73,7 +74,7 @@ export function ReviewsManager() {
           ...(searchQuery && { search: searchQuery }),
         });
         
-        const response = await fetch(`/api/reviews?${params}`);
+        const response = await fetchWithAuth(`/api/reviews?${params}`);
         const data = await response.json();
         
         if (data.success) {
@@ -98,7 +99,7 @@ export function ReviewsManager() {
     }
 
     try {
-      const response = await fetch('/api/reviews', {
+      const response = await fetchWithAuth('/api/reviews', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,7 +127,7 @@ export function ReviewsManager() {
   // Update review status
   const updateStatus = async (id: string, status: string) => {
     try {
-      await fetch('/api/reviews', {
+      await fetchWithAuth('/api/reviews', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status }),

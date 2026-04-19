@@ -30,6 +30,7 @@ import {
   ShoppingBag,
   Loader2
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 // Format GNF currency
@@ -181,7 +182,7 @@ export function PreOrderForm({ preOrder, onClose, onSuccess }: PreOrderFormProps
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/pre-orders', {
+      const response = await fetchWithAuth('/api/pre-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

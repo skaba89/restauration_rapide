@@ -45,6 +45,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 import SubscriptionPlans from './subscription-plans';
 import SubscriptionDetail from './subscription-detail';
 
@@ -138,7 +139,7 @@ export function SubscriptionManager() {
       const params = new URLSearchParams();
       if (selectedStatus !== 'all') params.append('status', selectedStatus);
 
-      const response = await fetch(`/api/subscriptions?${params.toString()}`);
+      const response = await fetchWithAuth(`/api/subscriptions?${params.toString()}`);
       const data = await response.json();
       
       if (data.success) {
@@ -172,7 +173,7 @@ export function SubscriptionManager() {
   const handlePauseResume = async (subscription: Subscription) => {
     try {
       const action = subscription.status === 'active' ? 'pause' : 'resume';
-      const response = await fetch('/api/subscriptions', {
+      const response = await fetchWithAuth('/api/subscriptions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: subscription.id, action })
@@ -213,7 +214,7 @@ export function SubscriptionManager() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/subscriptions', {
+      const response = await fetchWithAuth('/api/subscriptions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

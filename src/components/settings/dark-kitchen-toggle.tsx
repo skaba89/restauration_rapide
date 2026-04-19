@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { fetchWithAuth } from '@/lib/api-client';
 import { useToast } from '@/hooks/use-toast';
 import {
   ChefHat,
@@ -71,7 +72,7 @@ export function DarkKitchenToggle() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/settings/dark-kitchen');
+        const response = await fetchWithAuth('/api/settings/dark-kitchen');
         const data = await response.json();
         if (data.success) {
           setSettings(data.settings);
@@ -89,7 +90,7 @@ export function DarkKitchenToggle() {
   const handleToggle = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/settings/dark-kitchen', {
+      const response = await fetchWithAuth('/api/settings/dark-kitchen', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled: !settings.enabled }),
@@ -122,7 +123,7 @@ export function DarkKitchenToggle() {
   const saveSettings = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/settings/dark-kitchen', {
+      const response = await fetchWithAuth('/api/settings/dark-kitchen', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...settings }),

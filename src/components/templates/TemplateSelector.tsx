@@ -21,6 +21,7 @@ import {
   Lock,
   Sparkles,
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import type { RestaurantTemplate, ThemeConfig, ComponentsConfig } from './TemplateProvider';
 
 interface TemplateSelectorProps {
@@ -57,7 +58,7 @@ export function TemplateSelector({
     const fetchTemplates = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/templates?restaurantId=${restaurantId}`);
+        const response = await fetchWithAuth(`/api/templates?restaurantId=${restaurantId}`);
         
         if (response.ok) {
           const data = await response.json();

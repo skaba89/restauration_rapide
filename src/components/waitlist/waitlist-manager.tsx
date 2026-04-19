@@ -69,6 +69,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Types
 interface WaitlistEntry {
@@ -262,7 +263,7 @@ export function WaitlistManager() {
   // Fetch waitlist data
   const fetchWaitlist = useCallback(async () => {
     try {
-      const response = await fetch('/api/waitlist');
+      const response = await fetchWithAuth('/api/waitlist');
       const data = await response.json();
       
       if (data.success) {
@@ -282,7 +283,7 @@ export function WaitlistManager() {
   // Fetch detailed stats
   const fetchDetailedStats = useCallback(async () => {
     try {
-      const response = await fetch('/api/waitlist/stats');
+      const response = await fetchWithAuth('/api/waitlist/stats');
       const data = await response.json();
       
       if (data.success) {
@@ -333,7 +334,7 @@ export function WaitlistManager() {
     }
 
     try {
-      const response = await fetch('/api/waitlist', {
+      const response = await fetchWithAuth('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -368,7 +369,7 @@ export function WaitlistManager() {
   // Update status
   const handleUpdateStatus = async (id: string, status: WaitlistEntry['status']) => {
     try {
-      const response = await fetch('/api/waitlist', {
+      const response = await fetchWithAuth('/api/waitlist', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status }),
@@ -391,7 +392,7 @@ export function WaitlistManager() {
   // Update priority via drag and drop
   const handlePriorityUpdate = async (id: string, newPriority: number) => {
     try {
-      const response = await fetch(`/api/waitlist/${id}`, {
+      const response = await fetchWithAuth(`/api/waitlist/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priority: newPriority }),
@@ -414,7 +415,7 @@ export function WaitlistManager() {
   // Delete entry
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/waitlist?id=${id}`, {
+      const response = await fetchWithAuth(`/api/waitlist?id=${id}`, {
         method: 'DELETE',
       });
 
@@ -435,7 +436,7 @@ export function WaitlistManager() {
   // Notify guest (SMS)
   const handleNotify = async (entry: WaitlistEntry) => {
     try {
-      const response = await fetch(`/api/waitlist/${entry.id}/notify`, {
+      const response = await fetchWithAuth(`/api/waitlist/${entry.id}/notify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ }),
@@ -458,7 +459,7 @@ export function WaitlistManager() {
   // Seat guest
   const handleSeat = async (entry: WaitlistEntry) => {
     try {
-      const response = await fetch(`/api/waitlist/${entry.id}/seat`, {
+      const response = await fetchWithAuth(`/api/waitlist/${entry.id}/seat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ }),
@@ -481,7 +482,7 @@ export function WaitlistManager() {
   // Cancel entry
   const handleCancel = async (entry: WaitlistEntry) => {
     try {
-      const response = await fetch(`/api/waitlist/${entry.id}/cancel`, {
+      const response = await fetchWithAuth(`/api/waitlist/${entry.id}/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ }),

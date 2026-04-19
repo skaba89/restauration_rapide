@@ -38,6 +38,7 @@ import {
 import { GiftCardDesign } from './gift-card-design';
 import { GiftCardPurchase } from './gift-card-purchase';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
@@ -107,7 +108,7 @@ export function GiftCardManager() {
   const fetchGiftCards = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `/api/gift-cards?status=${statusFilter === 'all' ? '' : statusFilter}&search=${searchTerm}`
       );
       if (response.ok) {
@@ -132,7 +133,7 @@ export function GiftCardManager() {
     if (!balanceCheckCode) return;
     
     try {
-      const response = await fetch(`/api/gift-cards?code=${balanceCheckCode}`);
+      const response = await fetchWithAuth(`/api/gift-cards?code=${balanceCheckCode}`);
       const data = await response.json();
       
       if (data.success) {

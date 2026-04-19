@@ -29,6 +29,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Driver {
   id: string;
@@ -85,7 +86,7 @@ export function DriverManager() {
         ...(filterStatus !== 'all' && { status: filterStatus }),
       });
       
-      const response = await fetch(`/api/drivers?${params}`);
+      const response = await fetchWithAuth(`/api/drivers?${params}`);
       const data = await response.json();
       
       if (data.success) {
@@ -131,7 +132,7 @@ export function DriverManager() {
     }
 
     try {
-      const response = await fetch('/api/drivers', {
+      const response = await fetchWithAuth('/api/drivers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -168,7 +169,7 @@ export function DriverManager() {
   // Toggle availability
   const handleToggleAvailability = async (id: string, currentStatus: boolean) => {
     try {
-      await fetch('/api/drivers', {
+      await fetchWithAuth('/api/drivers', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, isAvailable: !currentStatus }),
@@ -186,7 +187,7 @@ export function DriverManager() {
   // Verify driver
   const handleVerify = async (id: string) => {
     try {
-      await fetch('/api/drivers', {
+      await fetchWithAuth('/api/drivers', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, isVerified: true }),
@@ -204,7 +205,7 @@ export function DriverManager() {
     if (!confirm('Voulez-vous vraiment supprimer ce livreur?')) return;
     
     try {
-      await fetch(`/api/drivers?id=${id}`, { method: 'DELETE' });
+      await fetchWithAuth(`/api/drivers?id=${id}`, { method: 'DELETE' });
       setDrivers(prev => prev.filter(d => d.id !== id));
       toast.success('Livreur supprimé');
     } catch (error) {

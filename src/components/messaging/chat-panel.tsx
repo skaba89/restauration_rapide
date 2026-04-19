@@ -16,6 +16,7 @@ import {
   Truck,
   Store,
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -139,7 +140,7 @@ export default function ChatPanel({
 
     // Simulate API call
     try {
-      await fetch('/api/messages', {
+      await fetchWithAuth('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

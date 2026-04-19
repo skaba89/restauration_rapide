@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -94,7 +95,7 @@ export default function AdminDeliveriesPage() {
   useEffect(() => {
     async function fetchDeliveries() {
       try {
-        const response = await fetch('/api/admin/deliveries');
+        const response = await fetchWithAuth('/api/admin/deliveries');
         if (response.ok) {
           const data = await response.json();
           setDeliveries(data.data || []);

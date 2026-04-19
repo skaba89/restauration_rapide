@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -91,7 +92,7 @@ export default function AdminInvoicesPage() {
   useEffect(() => {
     async function fetchInvoices() {
       try {
-        const response = await fetch('/api/admin/invoices');
+        const response = await fetchWithAuth('/api/admin/invoices');
         if (response.ok) {
           const data = await response.json();
           setInvoices(data.data || []);

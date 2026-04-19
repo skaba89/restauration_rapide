@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Star, MessageSquare, TrendingUp, Clock, CheckCircle, Loader2 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface FeedbackStats {
   total: number;
@@ -31,7 +32,7 @@ export function FeedbackStats({ refreshKey }: FeedbackStatsProps) {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/feedback?stats=true');
+      const response = await fetchWithAuth('/api/feedback?stats=true');
       const result = await response.json();
       if (result.success) {
         setStats(result.data);

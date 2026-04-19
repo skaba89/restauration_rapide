@@ -27,6 +27,7 @@ import {
   Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface DatabaseStatus {
   status: 'not_initialized' | 'initialized' | 'checking' | 'error';
@@ -109,7 +110,7 @@ export function DatabaseStatusCard() {
   const handleSeed = async (force: boolean = false) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/seed', {
+      const response = await fetchWithAuth('/api/seed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ force }),
@@ -135,7 +136,7 @@ export function DatabaseStatusCard() {
   const handleSetupAdmin = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/setup/admin', {
+      const response = await fetchWithAuth('/api/setup/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

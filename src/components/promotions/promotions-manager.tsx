@@ -26,6 +26,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Promotion {
   id: string;
@@ -71,7 +72,7 @@ export function PromotionsManager() {
   const fetchPromotions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/promotions');
+      const response = await fetchWithAuth('/api/promotions');
       const data = await response.json();
       
       if (data.success) {
@@ -104,7 +105,7 @@ export function PromotionsManager() {
   // Toggle active status
   const handleToggleActive = async (id: string, currentStatus: boolean) => {
     try {
-      await fetch('/api/promotions', {
+      await fetchWithAuth('/api/promotions', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, isActive: !currentStatus }),
@@ -124,7 +125,7 @@ export function PromotionsManager() {
     if (!confirm('Voulez-vous vraiment supprimer cette promotion?')) return;
     
     try {
-      await fetch(`/api/promotions?id=${id}`, { method: 'DELETE' });
+      await fetchWithAuth(`/api/promotions?id=${id}`, { method: 'DELETE' });
       setPromotions(prev => prev.filter(p => p.id !== id));
       toast.success('Promotion supprimée');
     } catch (error) {
@@ -140,7 +141,7 @@ export function PromotionsManager() {
     }
 
     try {
-      const response = await fetch('/api/promotions', {
+      const response = await fetchWithAuth('/api/promotions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -180,7 +181,7 @@ export function PromotionsManager() {
     if (!editingPromo) return;
     
     try {
-      await fetch('/api/promotions', {
+      await fetchWithAuth('/api/promotions', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: editingPromo.id, ...newPromo }),

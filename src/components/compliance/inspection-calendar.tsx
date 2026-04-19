@@ -38,6 +38,7 @@ import {
   AlertCircle,
   ExternalLink
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { format, isPast, isFuture, isToday, addDays, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -94,8 +95,8 @@ export function InspectionCalendar() {
   const fetchData = async () => {
     try {
       const [inspectionsRes, certsRes] = await Promise.all([
-        fetch('/api/compliance?type=inspections'),
-        fetch('/api/compliance?type=certificates'),
+        fetchWithAuth('/api/compliance?type=inspections'),
+        fetchWithAuth('/api/compliance?type=certificates'),
       ]);
       
       const inspectionsData = await inspectionsRes.json();
@@ -120,7 +121,7 @@ export function InspectionCalendar() {
     };
 
     try {
-      const response = await fetch('/api/compliance', {
+      const response = await fetchWithAuth('/api/compliance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'inspection', data: inspection }),

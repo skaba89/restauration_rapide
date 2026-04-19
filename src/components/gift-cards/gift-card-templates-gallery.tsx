@@ -35,6 +35,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
@@ -99,7 +100,7 @@ export function GiftCardTemplatesGallery({ onSelect, selectedTemplateId }: GiftC
     const fetchTemplates = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/gift-cards/templates');
+        const response = await fetchWithAuth('/api/gift-cards/templates');
         if (response.ok) {
           const data = await response.json();
           setTemplates(data.data || []);

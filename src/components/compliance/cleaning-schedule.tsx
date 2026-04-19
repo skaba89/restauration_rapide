@@ -36,6 +36,7 @@ import {
   RefreshCw,
   Trash2
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { format, formatDistanceToNow, isPast, addDays, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -77,7 +78,7 @@ export function CleaningSchedule() {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('/api/compliance?type=cleaning');
+      const response = await fetchWithAuth('/api/compliance?type=cleaning');
       const result = await response.json();
       if (result.success) {
         setTasks(result.data);
@@ -103,7 +104,7 @@ export function CleaningSchedule() {
     };
 
     try {
-      const response = await fetch('/api/compliance', {
+      const response = await fetchWithAuth('/api/compliance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'cleaning', data: task }),
@@ -139,7 +140,7 @@ export function CleaningSchedule() {
     };
 
     try {
-      await fetch('/api/compliance', {
+      await fetchWithAuth('/api/compliance', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: taskId, type: 'cleaning', data: updatedTask }),

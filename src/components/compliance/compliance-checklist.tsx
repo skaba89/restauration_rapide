@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { fetchWithAuth } from '@/lib/api-client';
 import { 
   ClipboardCheck, 
   Plus, 
@@ -144,7 +145,7 @@ export function ComplianceChecklist() {
 
   const fetchChecklists = async () => {
     try {
-      const response = await fetch('/api/compliance?type=checklists');
+      const response = await fetchWithAuth('/api/compliance?type=checklists');
       const result = await response.json();
       if (result.success) {
         setChecklists(result.data);
@@ -260,7 +261,7 @@ export function ComplianceChecklist() {
     };
 
     try {
-      const response = await fetch('/api/compliance', {
+      const response = await fetchWithAuth('/api/compliance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'checklist', data: savedChecklist }),

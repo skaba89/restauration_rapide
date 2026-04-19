@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -69,7 +70,7 @@ export default function OrganizationsPage() {
   useEffect(() => {
     async function fetchOrganizations() {
       try {
-        const response = await fetch('/api/admin/organizations?limit=50');
+        const response = await fetchWithAuth('/api/admin/organizations?limit=50');
         if (!response.ok) {
           throw new Error('Failed to fetch organizations');
         }

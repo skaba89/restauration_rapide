@@ -41,6 +41,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Format GNF currency
 const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
@@ -258,7 +259,7 @@ export function QuoteBuilder({ event, onClose, onSuccess }: QuoteBuilderProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/events/quotes', {
+      const response = await fetchWithAuth('/api/events/quotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -284,7 +285,7 @@ export function QuoteBuilder({ event, onClose, onSuccess }: QuoteBuilderProps) {
       if (data.success) {
         // If send now, update status to sent
         if (sendNow) {
-          await fetch('/api/events/quotes', {
+          await fetchWithAuth('/api/events/quotes', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: data.quote.id, action: 'send' }),

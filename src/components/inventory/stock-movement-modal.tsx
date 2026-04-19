@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ArrowUpRight, ArrowDownRight, ArrowRight, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface InventoryItem {
   id: string;
@@ -161,7 +162,7 @@ export function StockMovementModal({
     setLoading(true);
 
     try {
-      const response = await fetch('/api/inventory', {
+      const response = await fetchWithAuth('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

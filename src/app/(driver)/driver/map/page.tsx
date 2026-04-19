@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDriverTracking } from '@/hooks/use-driver-tracking';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Dynamically import the map component
 const DriverMap = dynamic(
@@ -100,7 +101,7 @@ export default function DriverMapPage() {
   const sendLocationToServer = useCallback(async (lat: number, lng: number, heading: number, speed: number) => {
     setIsSendingLocation(true);
     try {
-      await fetch('/api/drivers/tracking', {
+      await fetchWithAuth('/api/drivers/tracking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -131,7 +132,7 @@ export default function DriverMapPage() {
     setIsOnline(!isOnline);
 
     // Update status on server
-    fetch('/api/drivers/tracking', {
+    fetchWithAuth('/api/drivers/tracking', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

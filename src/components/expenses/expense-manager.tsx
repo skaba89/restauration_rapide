@@ -55,6 +55,7 @@ import {
 import { toast } from 'sonner';
 import { ExpenseStats } from './expense-stats';
 import { useFormatCurrency } from '@/components/ui/currency-display';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Types
 type ExpenseCategory = 'supplies' | 'utilities' | 'rent' | 'salaries' | 'maintenance' | 'marketing' | 'other';
@@ -160,7 +161,7 @@ export function ExpenseManager() {
       if (dateFrom) params.append('startDate', dateFrom);
       if (dateTo) params.append('endDate', dateTo);
 
-      const response = await fetch(`/api/expenses?${params.toString()}`);
+      const response = await fetchWithAuth(`/api/expenses?${params.toString()}`);
       const data = await response.json();
       
       if (data.success) {
@@ -200,7 +201,7 @@ export function ExpenseManager() {
     }
 
     try {
-      const response = await fetch('/api/expenses', {
+      const response = await fetchWithAuth('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -236,7 +237,7 @@ export function ExpenseManager() {
   // Update expense status
   const handleUpdateStatus = async (id: string, status: ExpenseStatus) => {
     try {
-      const response = await fetch('/api/expenses', {
+      const response = await fetchWithAuth('/api/expenses', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status }),
@@ -259,7 +260,7 @@ export function ExpenseManager() {
   // Delete expense
   const handleDeleteExpense = async (id: string) => {
     try {
-      const response = await fetch(`/api/expenses?id=${id}`, {
+      const response = await fetchWithAuth(`/api/expenses?id=${id}`, {
         method: 'DELETE',
       });
 

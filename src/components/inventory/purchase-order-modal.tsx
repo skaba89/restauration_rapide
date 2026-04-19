@@ -25,6 +25,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, Loader2, Calendar, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface InventoryItem {
   id: string;
@@ -177,7 +178,7 @@ export function PurchaseOrderModal({
     setLoading(true);
 
     try {
-      const response = await fetch('/api/inventory', {
+      const response = await fetchWithAuth('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

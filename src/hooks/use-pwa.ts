@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // ============================================
 // PWA Installation Hook
@@ -251,7 +252,7 @@ export function usePushNotifications() {
       setSubscription(sub);
       
       // Send subscription to server
-      await fetch('/api/push/subscribe', {
+      await fetchWithAuth('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sub.toJSON()),
@@ -271,7 +272,7 @@ export function usePushNotifications() {
       await subscription.unsubscribe();
       
       // Remove subscription from server
-      await fetch('/api/push/unsubscribe', {
+      await fetchWithAuth('/api/push/unsubscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subscription.toJSON()),

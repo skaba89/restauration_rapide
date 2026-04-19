@@ -28,6 +28,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Reservation {
   id: string;
@@ -78,7 +79,7 @@ export function ReservationsManager() {
         ...(filterStatus !== 'all' && { status: filterStatus }),
       });
       
-      const response = await fetch(`/api/reservations?${params}`);
+      const response = await fetchWithAuth(`/api/reservations?${params}`);
       const data = await response.json();
       
       if (data.success) {
@@ -103,7 +104,7 @@ export function ReservationsManager() {
     }
 
     try {
-      const response = await fetch('/api/reservations', {
+      const response = await fetchWithAuth('/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -150,7 +151,7 @@ export function ReservationsManager() {
   // Update status
   const handleStatusChange = async (id: string, newStatus: Reservation['status']) => {
     try {
-      await fetch('/api/reservations', {
+      await fetchWithAuth('/api/reservations', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus }),
@@ -198,7 +199,7 @@ export function ReservationsManager() {
     if (!confirm('Voulez-vous vraiment annuler cette réservation?')) return;
     
     try {
-      await fetch(`/api/reservations?id=${id}`, { method: 'DELETE' });
+      await fetchWithAuth(`/api/reservations?id=${id}`, { method: 'DELETE' });
       setReservations(prev => prev.filter(r => r.id !== id));
       toast.success('Réservation annulée');
     } catch (error) {

@@ -24,6 +24,7 @@ import EventManager from '@/components/events/event-manager';
 import EventCalendar from '@/components/events/event-calendar';
 import QuoteBuilder from '@/components/events/quote-builder';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Stats Card Component
 function StatsCard({ 
@@ -80,7 +81,7 @@ function QuotesTab() {
   const fetchQuotes = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/events/quotes');
+      const response = await fetchWithAuth('/api/events/quotes');
       const data = await response.json();
       if (data.success) {
         setQuotes(data.quotes);

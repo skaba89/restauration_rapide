@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 import {
   Building,
   MapPin,
@@ -95,7 +96,7 @@ export function BranchDetail({ branchId, onEdit }: BranchDetailProps) {
       }
 
       try {
-        const response = await fetch('/api/branches');
+        const response = await fetchWithAuth('/api/branches');
         const data = await response.json();
         if (data.success) {
           const foundBranch = data.branches.find((b: BranchDetail) => b.id === branchId);

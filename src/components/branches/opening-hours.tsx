@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 import {
   Clock,
   Save,
@@ -101,7 +102,7 @@ export function OpeningHoursManager({ branchId, initialHours, onUpdate }: Openin
     setIsSaving(true);
     
     try {
-      const response = await fetch(`/api/branches/${branchId}`, {
+      const response = await fetchWithAuth(`/api/branches/${branchId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hours }),

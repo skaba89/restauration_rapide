@@ -39,6 +39,7 @@ import {
 import { SocialCalendar } from '@/components/social/social-calendar';
 import { SocialAnalytics } from '@/components/social/social-analytics';
 import { ReviewMonitor } from '@/components/social/review-monitor';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface SocialPost {
   id: string;
@@ -85,7 +86,7 @@ export default function SocialPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/social?type=stats');
+      const response = await fetchWithAuth('/api/social?type=stats');
       const result = await response.json();
       if (result.success) {
         setStats(result.data);
@@ -101,7 +102,7 @@ export default function SocialPage() {
     if (!newPost.content) return;
 
     try {
-      const response = await fetch('/api/social', {
+      const response = await fetchWithAuth('/api/social', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'post', data: newPost }),

@@ -26,6 +26,7 @@ import {
   Edit,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Integration {
   id: string;
@@ -85,7 +86,7 @@ export function IntegrationsManager() {
           ...(activeTab !== 'all' && { type: activeTab }),
         });
         
-        const response = await fetch(`/api/integrations?${params}`);
+        const response = await fetchWithAuth(`/api/integrations?${params}`);
         const data = await response.json();
         
         if (data.success) {
@@ -106,7 +107,7 @@ export function IntegrationsManager() {
   const toggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     try {
-      await fetch('/api/integrations', {
+      await fetchWithAuth('/api/integrations', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus }),
@@ -126,7 +127,7 @@ export function IntegrationsManager() {
     if (!confirm('Voulez-vous vraiment déconnecter cette intégration?')) return;
     
     try {
-      await fetch(`/api/integrations?id=${id}`, { method: 'DELETE' });
+      await fetchWithAuth(`/api/integrations?id=${id}`, { method: 'DELETE' });
       setIntegrations(prev => prev.filter(i => i.id !== id));
       toast.success('Intégration déconnectée');
     } catch (error) {
@@ -137,7 +138,7 @@ export function IntegrationsManager() {
   // Save configuration
   const saveConfig = async (id: string) => {
     try {
-      await fetch('/api/integrations', {
+      await fetchWithAuth('/api/integrations', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, config: configForm }),

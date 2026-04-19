@@ -25,6 +25,7 @@ import {
   Bell,
   Loader2,
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -74,7 +75,7 @@ export function WhatsAppNotificationModal({
     setLoading(true);
     try {
       // Call the subscribe API
-      const response = await fetch('/api/notifications/whatsapp/subscribe', {
+      const response = await fetchWithAuth('/api/notifications/whatsapp/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

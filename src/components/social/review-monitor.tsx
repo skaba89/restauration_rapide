@@ -30,6 +30,7 @@ import {
   Filter,
   Search
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -78,7 +79,7 @@ export function ReviewMonitor() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch('/api/social?type=reviews');
+      const response = await fetchWithAuth('/api/social?type=reviews');
       const result = await response.json();
       if (result.success) {
         setReviews(result.data);
@@ -94,7 +95,7 @@ export function ReviewMonitor() {
     if (!selectedReview || !replyContent.trim()) return;
 
     try {
-      const response = await fetch('/api/social', {
+      const response = await fetchWithAuth('/api/social', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

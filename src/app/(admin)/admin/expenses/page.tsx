@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -125,7 +126,7 @@ export default function AdminExpensesPage() {
   useEffect(() => {
     async function fetchExpenses() {
       try {
-        const response = await fetch('/api/admin/expenses');
+        const response = await fetchWithAuth('/api/admin/expenses');
         if (response.ok) {
           const data = await response.json();
           setExpenses(data.data || []);
@@ -251,7 +252,7 @@ export default function AdminExpensesPage() {
     
     setSaving(true);
     try {
-      const response = await fetch('/api/admin/expenses', {
+      const response = await fetchWithAuth('/api/admin/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

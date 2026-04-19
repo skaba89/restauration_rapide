@@ -19,6 +19,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Notification {
   id: string;
@@ -59,7 +60,7 @@ export function NotificationBell() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('/api/notifications');
+      const response = await fetchWithAuth('/api/notifications');
       if (response.ok) {
         const data = await response.json();
         setNotifications(data.data || []);
@@ -73,7 +74,7 @@ export function NotificationBell() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await fetch(`/api/notifications/${notificationId}/read`, { method: 'PATCH' });
+      await fetchWithAuth(`/api/notifications/${notificationId}/read`, { method: 'PATCH' });
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
       );
@@ -84,7 +85,7 @@ export function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch('/api/notifications/read-all', { method: 'PATCH' });
+      await fetchWithAuth('/api/notifications/read-all', { method: 'PATCH' });
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error('Failed to mark all as read:', error);

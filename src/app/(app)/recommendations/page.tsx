@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { RecommendationEngine } from '@/components/recommendations/recommendation-engine';
 import { PopularItems } from '@/components/recommendations/popular-items';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface RecommendationStats {
   totalRecommendations: number;
@@ -39,7 +40,7 @@ export default function RecommendationsPage() {
   const fetchStats = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/recommendations?stats=true');
+      const response = await fetchWithAuth('/api/recommendations?stats=true');
       const result = await response.json();
       if (result.success) {
         setStats(result.data.stats);

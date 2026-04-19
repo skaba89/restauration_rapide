@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,7 +77,7 @@ export default function RestaurantSettingsPage() {
   const fetchSettings = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/restaurant-settings');
+      const response = await fetchWithAuth('/api/admin/restaurant-settings');
       const result = await response.json();
       
       if (result.success && result.data) {
@@ -118,7 +119,7 @@ export default function RestaurantSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/restaurant-settings', {
+      const response = await fetchWithAuth('/api/admin/restaurant-settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -45,6 +45,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Category {
   id: string;
@@ -115,7 +116,7 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/expenses/categories');
+      const response = await fetchWithAuth('/api/expenses/categories');
       const data = await response.json();
       
       if (data.success) {
@@ -141,7 +142,7 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
     }
 
     try {
-      const response = await fetch('/api/expenses/categories', {
+      const response = await fetchWithAuth('/api/expenses/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -179,7 +180,7 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
     if (!editingCategory) return;
 
     try {
-      const response = await fetch('/api/expenses/categories', {
+      const response = await fetchWithAuth('/api/expenses/categories', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -207,7 +208,7 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
   // Delete category
   const handleDeleteCategory = async (id: string) => {
     try {
-      const response = await fetch(`/api/expenses/categories?id=${id}`, {
+      const response = await fetchWithAuth(`/api/expenses/categories?id=${id}`, {
         method: 'DELETE',
       });
 
@@ -229,7 +230,7 @@ export function CategoryManager({ onCategoryChange }: CategoryManagerProps) {
   // Toggle category active status
   const handleToggleActive = async (category: Category) => {
     try {
-      const response = await fetch('/api/expenses/categories', {
+      const response = await fetchWithAuth('/api/expenses/categories', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

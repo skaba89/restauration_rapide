@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect, useCallback } from 'react';
+import { fetchWithAuth } from '@/lib/api-client';
 
 export interface Notification {
   id: string;
@@ -48,7 +49,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         ...(unreadOnly && { unread: 'true' }),
       });
 
-      const response = await fetch(`/api/notifications?${params}`);
+      const response = await fetchWithAuth(`/api/notifications?${params}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
@@ -66,7 +67,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   const markAsRead = useCallback(async (id: string) => {
     try {
-      const response = await fetch(`/api/notifications/${id}/read`, {
+      const response = await fetchWithAuth(`/api/notifications/${id}/read`, {
         method: 'PATCH',
       });
 
@@ -82,7 +83,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   const markAllAsRead = useCallback(async () => {
     try {
-      const response = await fetch('/api/notifications/read-all', {
+      const response = await fetchWithAuth('/api/notifications/read-all', {
         method: 'PATCH',
       });
 

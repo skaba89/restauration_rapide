@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 import {
   Building,
   MapPin,
@@ -85,7 +86,7 @@ export function BranchSelector({
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const response = await fetch('/api/branches?includeStats=true');
+        const response = await fetchWithAuth('/api/branches?includeStats=true');
         const data = await response.json();
         if (data.success) {
           setBranches(data.branches);

@@ -33,76 +33,76 @@ export interface ColorPreset {
 
 export const COLOR_PRESETS: ColorPreset[] = [
   {
-    name: 'moderne-pro',
-    label: 'Moderne Pro',
-    primary: '#059669',
-    secondary: '#d1fae5',
-    accent: '#047857',
-    description: 'Palette moderne émeraude, élégante et professionnelle',
+    name: 'commercial-pro',
+    label: 'Commercial Pro',
+    primary: '#4F46E5',
+    secondary: '#EEF2FF',
+    accent: '#F97316',
+    description: 'Indigo professionnel + accent orange, idéal commercial',
+  },
+  {
+    name: 'bleu-trust',
+    label: 'Bleu Trust',
+    primary: '#2563EB',
+    secondary: '#DBEAFE',
+    accent: '#F59E0B',
+    description: 'Bleu confiance + accent ambre, SaaS premium',
+  },
+  {
+    name: 'teal-fresh',
+    label: 'Teal Frais',
+    primary: '#0D9488',
+    secondary: '#CCFBF1',
+    accent: '#F43F5E',
+    description: 'Teal dynamique + accent rose, moderne et vif',
   },
   {
     name: 'classique-orange',
     label: 'Classique Orange',
-    primary: '#f97316',
-    secondary: '#fed7aa',
-    accent: '#ea580c',
-    description: 'Le thème original chaleureux de Restaurant OS',
-  },
-  {
-    name: 'vert-afrique',
-    label: 'Vert Afrique',
-    primary: '#16a34a',
-    secondary: '#bbf7d0',
-    accent: '#15803d',
-    description: 'Tons émeraude inspirés des forêts africaines',
-  },
-  {
-    name: 'bleu-ocean',
-    label: 'Bleu Océan',
-    primary: '#0ea5e9',
-    secondary: '#bae6fd',
-    accent: '#0284c7',
-    description: 'Tons bleus océaniques frais et apaisants',
-  },
-  {
-    name: 'rouge-passion',
-    label: 'Rouge Passion',
-    primary: '#dc2626',
-    secondary: '#fecaca',
-    accent: '#b91c1c',
-    description: 'Rouge passion pour une ambiance vibrante',
+    primary: '#EA580C',
+    secondary: '#FFF7ED',
+    accent: '#7C3AED',
+    description: 'Orange chaleureux + accent violet, restaurant premium',
   },
   {
     name: 'violet-royal',
     label: 'Violet Royal',
-    primary: '#9333ea',
-    secondary: '#e9d5ff',
-    accent: '#7e22ce',
-    description: 'Tons violet pour une touche royale',
+    primary: '#7C3AED',
+    secondary: '#EDE9FE',
+    accent: '#F97316',
+    description: 'Violet premium + accent orange, luxe et innovation',
+  },
+  {
+    name: 'rouge-passion',
+    label: 'Rouge Passion',
+    primary: '#DC2626',
+    secondary: '#FEF2F2',
+    accent: '#1D4ED8',
+    description: 'Rouge vibrant + accent bleu, audacieux et fort',
   },
   {
     name: 'rose-flamme',
     label: 'Rose Flamme',
-    primary: '#ec4899',
-    secondary: '#fce7f3',
-    accent: '#db2777',
-    description: 'Rose vif pour une ambiance moderne',
+    primary: '#EC4899',
+    secondary: '#FDF2F8',
+    accent: '#6366F1',
+    description: 'Rose tendance + accent indigo, style startup',
   },
   {
     name: 'ambre-dore',
     label: 'Ambre Doré',
-    primary: '#d97706',
-    secondary: '#fef3c7',
-    accent: '#b45309',
-    description: 'Tons dorés et ambrés pour un luxe subtil',
+    primary: '#D97706',
+    secondary: '#FFFBEB',
+    accent: '#4F46E5',
+    description: 'Ambre riche + accent indigo, chaleur et professionnalisme',
   },
   {
     name: 'slate-moderne',
     label: 'Slate Moderne',
     primary: '#475569',
-    secondary: '#e2e8f0',
-    accent: '#334155',
-    description: 'Palette neutre et professionnelle',
+    secondary: '#F1F5F9',
+    accent: '#4F46E5',
+    description: 'Neutre élégant + accent indigo, minimaliste',
   },
 ];
 
@@ -126,15 +126,15 @@ export type FontOption = (typeof FONT_OPTIONS)[number];
 // --- Default Config ---
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  preset: 'moderne-pro',
-  primaryColor: '#059669',
-  secondaryColor: '#d1fae5',
-  accentColor: '#047857',
+  preset: 'commercial-pro',
+  primaryColor: '#4F46E5',
+  secondaryColor: '#EEF2FF',
+  accentColor: '#F97316',
   fontHeading: 'Inter',
   fontBody: 'Inter',
   borderRadius: 0.625,
   sidebarStyle: 'light',
-  sidebarColor: '#f8fafc',
+  sidebarColor: '#FAFBFF',
   targetPages: ['admin', 'pos', 'kitchen', 'driver', 'public', 'organisateur'],
 };
 
@@ -326,12 +326,12 @@ export function applyTheme(config: ThemeConfig): void {
 
   switch (config.sidebarStyle) {
     case 'dark':
-      sidebarBg = hexToOkLCH(config.sidebarColor || '#064e3b');
-      sidebarFg = hexToOkLCH('#f0fdf4');
+      sidebarBg = hexToOkLCH(config.sidebarColor || '#1e1b4b');
+      sidebarFg = hexToOkLCH('#e0e7ff');
       sidebarPrimary = primaryOkLCH;
       sidebarPrimaryFg = primaryFg;
-      sidebarAccent = hexToOkLCH(lightenHex(config.sidebarColor || '#064e3b', 0.1));
-      sidebarAccentFg = hexToOkLCH('#f0fdf4');
+      sidebarAccent = hexToOkLCH(lightenHex(config.sidebarColor || '#1e1b4b', 0.1));
+      sidebarAccentFg = hexToOkLCH('#e0e7ff');
       break;
     case 'colored':
       sidebarBg = hexToOkLCH(config.sidebarColor);
@@ -361,10 +361,10 @@ export function applyTheme(config: ThemeConfig): void {
 
   // Border colors for sidebar
   const sidebarBorder = config.sidebarStyle === 'dark'
-    ? hexToOkLCH(lightenHex(config.sidebarColor || '#064e3b', 0.1))
+    ? hexToOkLCH(lightenHex(config.sidebarColor || '#1e1b4b', 0.1))
     : config.sidebarStyle === 'colored'
     ? hexToOkLCH(lightenHex(config.sidebarColor, 0.15))
-    : hexToOkLCH('#e7e5e4');
+    : hexToOkLCH('#e2e5f1');
   root.style.setProperty('--sidebar-border', sidebarBorder);
 
   // 5. Load Google Fonts

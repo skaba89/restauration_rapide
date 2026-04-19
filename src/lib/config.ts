@@ -240,7 +240,7 @@ export const useConfig = create<ConfigState>()(
       currentRestaurant: null,
       currentCurrency: DEFAULT_CURRENCIES.GNF,
       currentCountry: DEFAULT_COUNTRIES[0],
-      restaurants: currencies: DEFAULT_CURRENCIES,
+      currencies: DEFAULT_CURRENCIES,
       countries: DEFAULT_COUNTRIES,
       
       // Actions

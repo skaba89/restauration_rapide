@@ -1,38 +1,15 @@
 // Menu Items Management API - Uses Prisma Database (SimpleMenuItem)
-// SECURITY (P1): Cache-Control no-store on all responses
-// FIX: Increased timeout, better error handling, retry logic
+// Direct DB access with automatic retry on cold starts
 import { NextResponse, NextRequest } from 'next/server';
-import { db, ensureDbConnection, markDatabaseUnavailable, resetConnectionStatus, getDatabaseStatus } from '@/lib/db';
+import { db, ensureDbConnection } from '@/lib/db';
 import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
 import { withAdminAuth } from '@/lib/auth-middleware';
 
-// Cache-Control headers to prevent stale data
 const NO_CACHE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate',
   'Pragma': 'no-cache',
   'Expires': '0',
 };
-
-// Helper: merge update data with proper type conversion
-function formatUpdateData(updateData: Record<string, unknown>) {
-  const formatted: Record<string, unknown> = {};
-  if (updateData.name !== undefined) formatted.name = updateData.name;
-  if (updateData.description !== undefined) formatted.description = updateData.description;
-  if (updateData.category !== undefined) formatted.category = updateData.category;
-  if (updateData.price !== undefined) formatted.price = parseFloat(String(updateData.price));
-  if (updateData.costPrice !== undefined) formatted.costPrice = parseFloat(String(updateData.costPrice));
-  if (updateData.isAvailable !== undefined) formatted.isAvailable = updateData.isAvailable;
-  if (updateData.isPopular !== undefined) formatted.isPopular = updateData.isPopular;
-  if (updateData.isNew !== undefined) formatted.isNew = updateData.isNew;
-  if (updateData.preparationTime !== undefined) formatted.preparationTime = parseInt(String(updateData.preparationTime));
-  if (updateData.image !== undefined) formatted.image = updateData.image;
-  if (updateData.allergens !== undefined) {
-    formatted.allergens = updateData.allergens && (updateData.allergens as unknown[]).length > 0 
-      ? JSON.stringify(updateData.allergens) 
-      : null;
-  }
-  return formatted;
-}
 
 function formatDbItem(item: any) {
   return {
@@ -52,72 +29,51 @@ function formatDbItem(item: any) {
   };
 }
 
-// Ensure database is ready with retry and detailed error info
-async function ensureDatabaseReady(): Promise<{ ready: boolean; error?: string }> {
-  // Check if db client exists
-  if (!db) {
-    return { ready: false, error: 'DATABASE_URL non configurée. Vérifiez les variables d\'environnement sur Render.' };
+function formatUpdateData(updateData: Record<string, unknown>) {
+  const formatted: Record<string, unknown> = {};
+  if (updateData.name !== undefined) formatted.name = updateData.name;
+  if (updateData.description !== undefined) formatted.description = updateData.description;
+  if (updateData.category !== undefined) formatted.category = updateData.category;
+  if (updateData.price !== undefined) formatted.price = parseFloat(String(updateData.price));
+  if (updateData.costPrice !== undefined) formatted.costPrice = parseFloat(String(updateData.costPrice));
+  if (updateData.isAvailable !== undefined) formatted.isAvailable = updateData.isAvailable;
+  if (updateData.isPopular !== undefined) formatted.isPopular = updateData.isPopular;
+  if (updateData.isNew !== undefined) formatted.isNew = updateData.isNew;
+  if (updateData.preparationTime !== undefined) formatted.preparationTime = parseInt(String(updateData.preparationTime));
+  if (updateData.image !== undefined) formatted.image = updateData.image;
+  if (updateData.allergens !== undefined) {
+    formatted.allergens = updateData.allergens && (updateData.allergens as unknown[]).length > 0
+      ? JSON.stringify(updateData.allergens)
+      : null;
   }
-
-  // Test connection with increased timeout for cold starts
-  const dbReady = await ensureDbConnection(15000);
-  if (!dbReady) {
-    const status = getDatabaseStatus();
-    return { 
-      ready: false, 
-      error: `Base de données inaccessible (statut: ${status}). La base de données est peut-être en cours de démarrage. Réessayez dans quelques secondes.` 
-    };
-  }
-
-  // Ensure SimpleMenuItem table is accessible
-  const tableReady = await ensureSimpleMenuItemTable();
-  if (!tableReady) {
-    return { ready: false, error: 'Table des articles indisponible. Vérifiez la connexion à la base de données et réessayez.' };
-  }
-
-  return { ready: true };
+  return formatted;
 }
 
-// GET - Fetch all menu items for admin
+// GET - Fetch all menu items
 export async function GET() {
   try {
-    const dbCheck = await ensureDatabaseReady();
-    
-    if (!dbCheck.ready) {
-      return NextResponse.json({
-        success: true,
-        data: [],
-        source: 'database',
-        message: dbCheck.error,
-        totalAvailable: 0,
-        totalItems: 0,
-        timestamp: new Date().toISOString(),
-      }, { headers: NO_CACHE_HEADERS });
+    if (!db) {
+      return NextResponse.json({ success: false, error: 'Base de données non configurée' }, { status: 503, headers: NO_CACHE_HEADERS });
     }
 
-    const items = await db!.simpleMenuItem.findMany({
-      orderBy: [
-        { category: 'asc' },
-        { name: 'asc' },
-      ],
+    await ensureDbConnection(15000);
+    await ensureSimpleMenuItemTable();
+
+    const items = await db.simpleMenuItem.findMany({
+      orderBy: [{ category: 'asc' }, { name: 'asc' }],
     });
 
-    const formattedItems = items.map(formatDbItem);
     return NextResponse.json({
       success: true,
-      data: formattedItems,
+      data: items.map(formatDbItem),
       source: 'database',
-      totalAvailable: formattedItems.filter(i => i.isAvailable).length,
-      totalItems: formattedItems.length,
+      totalAvailable: items.filter(i => i.isAvailable).length,
+      totalItems: items.length,
       timestamp: new Date().toISOString(),
     }, { headers: NO_CACHE_HEADERS });
   } catch (error) {
-    console.error('Error fetching menu:', error);
-    markDatabaseUnavailable();
-    return NextResponse.json({
-      success: false,
-      error: 'Erreur lors du chargement du menu',
-    }, { status: 500, headers: NO_CACHE_HEADERS });
+    console.error('[MENU GET] Error:', error);
+    return NextResponse.json({ success: false, error: 'Erreur lors du chargement du menu: ' + (error instanceof Error ? error.message : 'Erreur inconnue') }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 
@@ -128,23 +84,17 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
     const { name, description, category, price, costPrice, preparationTime, isAvailable, allergens, image, isPopular, isNew } = body;
 
     if (!name || price === undefined) {
-      return NextResponse.json(
-        { success: false, error: 'Le nom et le prix sont requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Le nom et le prix sont requis' }, { status: 400 });
     }
 
-    const dbCheck = await ensureDatabaseReady();
-    
-    if (!dbCheck.ready) {
-      console.error('[MENU CREATE] Database not ready:', dbCheck.error);
-      return NextResponse.json({ 
-        success: false, 
-        error: dbCheck.error || 'Base de données non disponible' 
-      }, { status: 503 });
+    if (!db) {
+      return NextResponse.json({ success: false, error: 'Base de données non configurée' }, { status: 503 });
     }
 
-    const newItem = await db!.simpleMenuItem.create({
+    await ensureDbConnection(15000);
+
+    // Try to create directly - table exists from prisma db push
+    const newItem = await db.simpleMenuItem.create({
       data: {
         name, description: description || '', category: category || 'Plats',
         price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
@@ -154,14 +104,11 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
         image: image || null,
       },
     });
+
     return NextResponse.json({ success: true, data: formatDbItem(newItem), message: 'Article créé avec succès' });
   } catch (error) {
-    console.error('Error creating menu item:', error);
-    markDatabaseUnavailable();
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Erreur lors de la création: ' + (error instanceof Error ? error.message : 'Erreur inconnue')
-    }, { status: 500 });
+    console.error('[MENU POST] Error:', error);
+    return NextResponse.json({ success: false, error: 'Erreur lors de la création: ' + (error instanceof Error ? error.message : 'Erreur inconnue') }, { status: 500 });
   }
 });
 
@@ -175,22 +122,12 @@ export const PATCH = withAdminAuth(async (request: NextRequest) => {
       return NextResponse.json({ success: false, error: 'ID est requis' }, { status: 400 });
     }
 
-    const dbCheck = await ensureDatabaseReady();
-    if (!dbCheck.ready) {
-      return NextResponse.json({ success: false, error: dbCheck.error || 'Base de données non disponible' }, { status: 503 });
-    }
-
     const prismaUpdateData = formatUpdateData(updateData);
-    const updatedItem = await db!.simpleMenuItem.update({
-      where: { id },
-      data: prismaUpdateData,
-    });
+    const updatedItem = await db.simpleMenuItem.update({ where: { id }, data: prismaUpdateData });
     return NextResponse.json({ success: true, data: formatDbItem(updatedItem), message: 'Article mis à jour' });
-  } catch (dbError: unknown) {
-    const err = dbError as { code?: string; message?: string };
-    console.error('Database error updating menu item:', err.message || err);
-    markDatabaseUnavailable();
-    return NextResponse.json({ success: false, error: 'Erreur lors de la mise à jour' }, { status: 500 });
+  } catch (error) {
+    console.error('[MENU PATCH] Error:', error);
+    return NextResponse.json({ success: false, error: 'Erreur lors de la mise à jour: ' + (error instanceof Error ? error.message : 'Erreur inconnue') }, { status: 500 });
   }
 });
 
@@ -204,17 +141,10 @@ export const DELETE = withAdminAuth(async (request: NextRequest) => {
       return NextResponse.json({ success: false, error: 'ID est requis' }, { status: 400 });
     }
 
-    const dbCheck = await ensureDatabaseReady();
-    if (!dbCheck.ready) {
-      return NextResponse.json({ success: false, error: dbCheck.error || 'Base de données non disponible' }, { status: 503 });
-    }
-
-    await db!.simpleMenuItem.delete({ where: { id } });
+    await db.simpleMenuItem.delete({ where: { id } });
     return NextResponse.json({ success: true, message: 'Article supprimé' });
-  } catch (dbError: unknown) {
-    const err = dbError as { code?: string; message?: string };
-    console.error('Database error deleting menu item:', err.message || err);
-    markDatabaseUnavailable();
-    return NextResponse.json({ success: false, error: 'Erreur lors de la suppression' }, { status: 500 });
+  } catch (error) {
+    console.error('[MENU DELETE] Error:', error);
+    return NextResponse.json({ success: false, error: 'Erreur lors de la suppression: ' + (error instanceof Error ? error.message : 'Erreur inconnue') }, { status: 500 });
   }
 });

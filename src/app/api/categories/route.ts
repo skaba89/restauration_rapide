@@ -1,11 +1,21 @@
 // Categories API - MenuCategory management
-import { db } from '@/lib/db';
+import { db, ensureDbConnection, markDatabaseUnavailable } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler, getPaginationParams } from '@/lib/api-responses';
 import { generateSlug } from '@/lib/utils-helpers';
 
 // GET /api/categories - List categories
 export async function GET(request: Request) {
   return withErrorHandler(async () => {
+    // Guard: check database is available
+    if (!db) {
+      return apiError('Base de données non configurée', 503);
+    }
+    
+    const dbReady = await ensureDbConnection(15000);
+    if (!dbReady) {
+      return apiError('Base de données temporairement indisponible. Réessayez dans quelques secondes.', 503);
+    }
+
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = getPaginationParams(searchParams);
     const restaurantId = searchParams.get('restaurantId');

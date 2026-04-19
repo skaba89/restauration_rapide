@@ -22,3 +22,30 @@ Stage Summary:
 - 11 warnings ESLint → 0 warnings
 - Build Next.js: réussi
 - Fichiers modifiés: 18 fichiers dans src/
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Fix 15 creation/runtime bugs found via comprehensive code audit
+
+Work Log:
+- Analyzed all API routes, services, and components for creation-related bugs
+- Found 15 bugs: 4 critical, 3 high, 6 medium, 2 low
+- Fixed auth/setup: countryId/currencyId were raw strings ('GN', 'XOF') instead of CUID lookups
+- Fixed gift-cards GET: `let giftCards;;` shadowed module variable + `filteredCards` was never declared
+- Fixed setup page: `useState()` used as `useEffect()` for mount-time fetch
+- Fixed StaffService: 4x `if (demo)` references to undefined variable, 2x wrong arg count in getStaffStats
+- Fixed 7x `throw error` in StaffService with proper `throw new Error(...)` 
+- Fixed 3x `throw error` in inventory-service.ts
+- Fixed 1x `throw error` in pusher.ts
+- Fixed 1x `throw error` in accounting/accounts/route.ts
+- Fixed api-client.ts throwing plain object instead of Error instance
+- Fixed orders POST: stock decrement now checks trackInventory flag and is wrapped in try/catch
+- Fixed orders DELETE: added `delivery: true` to include for proper delivery cancellation
+- Build: 0 errors, 247 routes generated successfully
+- Pushed to GitHub: e01de68
+
+Stage Summary:
+- 9 files modified, 74 insertions, 46 deletions
+- All critical and high bugs resolved
+- Commit: e01de68 pushed to origin/master

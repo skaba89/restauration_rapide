@@ -1,21 +1,35 @@
 // Health check API - Simple route to verify API is working
+// Enhanced: includes database warmup on health check
 import { NextResponse } from 'next/server';
+import { db, ensureDbConnection, getDatabaseStatus } from '@/lib/db';
 
-// Version unique pour forcer le rebuild - VERSION 2.0.1 - Build 2026-04-09
-const BUILD_VERSION = '2.0.1';
+// Version unique pour forcer le rebuild - VERSION 2.0.2
+const BUILD_VERSION = '2.0.2';
 const BUILD_TIME = new Date().toISOString();
 const BUILD_COMMIT = 'LATEST_DEPLOY';
 
 export async function GET() {
+  // Attempt to warm up database connection on health check
+  let dbStatus = 'not_configured';
+  try {
+    if (db) {
+      const ready = await ensureDbConnection(10000);
+      dbStatus = ready ? 'connected' : getDatabaseStatus();
+    }
+  } catch (e) {
+    dbStatus = 'error';
+  }
+
   return NextResponse.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     buildTime: BUILD_TIME,
     buildVersion: BUILD_VERSION,
     buildCommit: BUILD_COMMIT,
-    message: 'KFM DELICE API is running - VERSION 2.0.1 - AUTO-DEPLOY FIX',
+    message: 'KFM DELICE API is running - VERSION 2.0.2 - DB WARMUP',
     version: BUILD_VERSION,
     demo: false,
+    database: dbStatus,
     features: [
       'Authentication',
       'Real-time sync via WebSocket',
@@ -23,6 +37,7 @@ export async function GET() {
       'GNF as default currency',
       'Inventory management',
       'Order management',
+      'Database auto-warmup',
     ],
   });
 }

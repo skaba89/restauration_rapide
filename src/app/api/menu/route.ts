@@ -1,11 +1,21 @@
 // Menu API - Menu management with demo support
-import { db } from '@/lib/db';
+import { db, ensureDbConnection, markDatabaseUnavailable } from '@/lib/db';
 import { apiSuccess, apiError, withErrorHandler } from '@/lib/api-responses';
 import { generateSlug } from '@/lib/utils-helpers';
 
 // GET /api/menu - List menus with categories and items
 export async function GET(request: Request) {
   return withErrorHandler(async () => {
+    // Guard: check database is available
+    if (!db) {
+      return apiError('Base de données non configurée', 503);
+    }
+    
+    const dbReady = await ensureDbConnection(15000);
+    if (!dbReady) {
+      return apiError('Base de données temporairement indisponible. Réessayez dans quelques secondes.', 503);
+    }
+
     const { searchParams } = new URL(request.url);
     const restaurantId = searchParams.get('restaurantId');
     const menuId = searchParams.get('menuId');

@@ -1,7 +1,8 @@
 // Menu Items Management API - Uses Prisma Database (SimpleMenuItem)
 // SECURITY (P1): Cache-Control no-store on all responses
+// FIX: Increased timeout, better error handling, retry logic
 import { NextResponse, NextRequest } from 'next/server';
-import { db, ensureDbConnection, markDatabaseUnavailable } from '@/lib/db';
+import { db, ensureDbConnection, markDatabaseUnavailable, resetConnectionStatus, getDatabaseStatus } from '@/lib/db';
 import { ensureSimpleMenuItemTable } from '@/lib/db-setup';
 import { withAdminAuth } from '@/lib/auth-middleware';
 
@@ -51,59 +52,68 @@ function formatDbItem(item: any) {
   };
 }
 
+// Ensure database is ready with retry and detailed error info
+async function ensureDatabaseReady(): Promise<{ ready: boolean; error?: string }> {
+  // Check if db client exists
+  if (!db) {
+    return { ready: false, error: 'DATABASE_URL non configurée. Vérifiez les variables d\'environnement sur Render.' };
+  }
+
+  // Test connection with increased timeout for cold starts
+  const dbReady = await ensureDbConnection(15000);
+  if (!dbReady) {
+    const status = getDatabaseStatus();
+    return { 
+      ready: false, 
+      error: `Base de données inaccessible (statut: ${status}). La base de données est peut-être en cours de démarrage. Réessayez dans quelques secondes.` 
+    };
+  }
+
+  // Ensure SimpleMenuItem table exists
+  const tableReady = await ensureSimpleMenuItemTable();
+  if (!tableReady) {
+    return { ready: false, error: 'Impossible de créer/accéder à la table des articles. Vérifiez les permissions de la base de données.' };
+  }
+
+  return { ready: true };
+}
+
 // GET - Fetch all menu items for admin
 export async function GET() {
   try {
-    const dbReady = await ensureDbConnection(3000);
-
-    if (dbReady && db) {
-      try {
-        const tableReady = await ensureSimpleMenuItemTable();
-        if (tableReady) {
-          const items = await db.simpleMenuItem.findMany({
-            orderBy: [
-              { category: 'asc' },
-              { name: 'asc' },
-            ],
-          });
-
-          const formattedItems = items.map(formatDbItem);
-          return NextResponse.json({
-            success: true,
-            data: formattedItems,
-            source: 'database',
-            totalAvailable: formattedItems.filter(i => i.isAvailable).length,
-            totalItems: formattedItems.length,
-            timestamp: new Date().toISOString(),
-          }, { headers: NO_CACHE_HEADERS });
-        }
-
-        return NextResponse.json({
-          success: true,
-          data: [],
-          source: 'database',
-          message: 'Table non disponible',
-          totalAvailable: 0,
-          totalItems: 0,
-          timestamp: new Date().toISOString(),
-        }, { headers: NO_CACHE_HEADERS });
-      } catch (dbError) {
-        console.error('Database error:', dbError);
-        markDatabaseUnavailable();
-      }
+    const dbCheck = await ensureDatabaseReady();
+    
+    if (!dbCheck.ready) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        source: 'database',
+        message: dbCheck.error,
+        totalAvailable: 0,
+        totalItems: 0,
+        timestamp: new Date().toISOString(),
+      }, { headers: NO_CACHE_HEADERS });
     }
 
+    const items = await db!.simpleMenuItem.findMany({
+      orderBy: [
+        { category: 'asc' },
+        { name: 'asc' },
+      ],
+    });
+
+    const formattedItems = items.map(formatDbItem);
     return NextResponse.json({
       success: true,
-      data: [],
+      data: formattedItems,
       source: 'database',
-      message: 'Base de données non disponible',
-      totalAvailable: 0,
-      totalItems: 0,
+      totalAvailable: formattedItems.filter(i => i.isAvailable).length,
+      totalItems: formattedItems.length,
       timestamp: new Date().toISOString(),
     }, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error('Error fetching menu:', error);
+    markDatabaseUnavailable();
     return NextResponse.json({
       success: false,
       error: 'Erreur lors du chargement du menu',
@@ -124,34 +134,34 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
       );
     }
 
-    const dbReady = await ensureDbConnection(3000);
-
-    if (dbReady && db) {
-      try {
-        const tableReady = await ensureSimpleMenuItemTable();
-        if (tableReady) {
-          const newItem = await db.simpleMenuItem.create({
-            data: {
-              name, description: description || '', category: category || 'Plats',
-              price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
-              isAvailable: isAvailable !== false, preparationTime: parseInt(preparationTime) || 15,
-              isPopular: isPopular || false, isNew: isNew || false,
-              allergens: allergens && allergens.length > 0 ? JSON.stringify(allergens) : null,
-              image: image || null,
-            },
-          });
-          return NextResponse.json({ success: true, data: formatDbItem(newItem), message: 'Article créé avec succès' });
-        }
-      } catch (dbError) {
-        console.error('Database error creating menu item:', dbError);
-        markDatabaseUnavailable();
-      }
+    const dbCheck = await ensureDatabaseReady();
+    
+    if (!dbCheck.ready) {
+      console.error('[MENU CREATE] Database not ready:', dbCheck.error);
+      return NextResponse.json({ 
+        success: false, 
+        error: dbCheck.error || 'Base de données non disponible' 
+      }, { status: 503 });
     }
 
-    return NextResponse.json({ success: false, error: 'Base de données non disponible' }, { status: 503 });
+    const newItem = await db!.simpleMenuItem.create({
+      data: {
+        name, description: description || '', category: category || 'Plats',
+        price: parseFloat(price) || 0, costPrice: parseFloat(costPrice) || 0,
+        isAvailable: isAvailable !== false, preparationTime: parseInt(preparationTime) || 15,
+        isPopular: isPopular || false, isNew: isNew || false,
+        allergens: allergens && allergens.length > 0 ? JSON.stringify(allergens) : null,
+        image: image || null,
+      },
+    });
+    return NextResponse.json({ success: true, data: formatDbItem(newItem), message: 'Article créé avec succès' });
   } catch (error) {
     console.error('Error creating menu item:', error);
-    return NextResponse.json({ success: false, error: 'Erreur lors de la création' }, { status: 500 });
+    markDatabaseUnavailable();
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Erreur lors de la création: ' + (error instanceof Error ? error.message : 'Erreur inconnue')
+    }, { status: 500 });
   }
 });
 
@@ -165,28 +175,21 @@ export const PATCH = withAdminAuth(async (request: NextRequest) => {
       return NextResponse.json({ success: false, error: 'ID est requis' }, { status: 400 });
     }
 
-    const dbReady = await ensureDbConnection(3000);
-    if (dbReady && db) {
-      try {
-        const tableReady = await ensureSimpleMenuItemTable();
-        if (tableReady) {
-          const prismaUpdateData = formatUpdateData(updateData);
-          const updatedItem = await db.simpleMenuItem.update({
-            where: { id },
-            data: prismaUpdateData,
-          });
-          return NextResponse.json({ success: true, data: formatDbItem(updatedItem), message: 'Article mis à jour' });
-        }
-      } catch (dbError: unknown) {
-        const err = dbError as { code?: string; message?: string };
-        console.error('Database error updating menu item:', err.message || err);
-        markDatabaseUnavailable();
-      }
+    const dbCheck = await ensureDatabaseReady();
+    if (!dbCheck.ready) {
+      return NextResponse.json({ success: false, error: dbCheck.error || 'Base de données non disponible' }, { status: 503 });
     }
 
-    return NextResponse.json({ success: false, error: 'Base de données non disponible' }, { status: 503 });
-  } catch (error) {
-    console.error('Error updating menu item:', error);
+    const prismaUpdateData = formatUpdateData(updateData);
+    const updatedItem = await db!.simpleMenuItem.update({
+      where: { id },
+      data: prismaUpdateData,
+    });
+    return NextResponse.json({ success: true, data: formatDbItem(updatedItem), message: 'Article mis à jour' });
+  } catch (dbError: unknown) {
+    const err = dbError as { code?: string; message?: string };
+    console.error('Database error updating menu item:', err.message || err);
+    markDatabaseUnavailable();
     return NextResponse.json({ success: false, error: 'Erreur lors de la mise à jour' }, { status: 500 });
   }
 });
@@ -201,24 +204,17 @@ export const DELETE = withAdminAuth(async (request: NextRequest) => {
       return NextResponse.json({ success: false, error: 'ID est requis' }, { status: 400 });
     }
 
-    const dbReady = await ensureDbConnection(3000);
-    if (dbReady && db) {
-      try {
-        const tableReady = await ensureSimpleMenuItemTable();
-        if (tableReady) {
-          await db.simpleMenuItem.delete({ where: { id } });
-          return NextResponse.json({ success: true, message: 'Article supprimé' });
-        }
-      } catch (dbError: unknown) {
-        const err = dbError as { code?: string; message?: string };
-        console.error('Database error deleting menu item:', err.message || err);
-        markDatabaseUnavailable();
-      }
+    const dbCheck = await ensureDatabaseReady();
+    if (!dbCheck.ready) {
+      return NextResponse.json({ success: false, error: dbCheck.error || 'Base de données non disponible' }, { status: 503 });
     }
 
-    return NextResponse.json({ success: false, error: 'Base de données non disponible' }, { status: 503 });
-  } catch (error) {
-    console.error('Error deleting menu item:', error);
+    await db!.simpleMenuItem.delete({ where: { id } });
+    return NextResponse.json({ success: true, message: 'Article supprimé' });
+  } catch (dbError: unknown) {
+    const err = dbError as { code?: string; message?: string };
+    console.error('Database error deleting menu item:', err.message || err);
+    markDatabaseUnavailable();
     return NextResponse.json({ success: false, error: 'Erreur lors de la suppression' }, { status: 500 });
   }
 });

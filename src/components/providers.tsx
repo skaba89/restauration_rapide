@@ -13,6 +13,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { SkipLink } from '@/lib/accessibility';
 import { CurrencyProvider } from '@/lib/currency-context';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { ThemeInitializer } from '@/components/theme/theme-initializer';
 import { useState } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -53,6 +54,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
           <TooltipProvider delayDuration={0}>
             <CurrencyProvider>
+              {/* Apply saved theme config on app load */}
+              <ThemeInitializer />
               {/* Skip link for accessibility */}
               <SkipLink />
               {children}

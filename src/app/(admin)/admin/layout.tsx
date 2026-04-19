@@ -66,7 +66,7 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -78,23 +78,23 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-sidebar transform transition-transform duration-200 ease-in-out lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
+          <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
             <Link href="/admin" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">R</span>
               </div>
-              <span className="font-bold text-white">Admin</span>
+              <span className="font-bold text-sidebar-foreground">Admin</span>
             </Link>
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-gray-400 hover:text-white"
+              className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-5 w-5" />
@@ -112,8 +112,8 @@ export default function AdminLayout({
                   className={cn(
                     'flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-orange-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export default function AdminLayout({
                     {item.name}
                   </div>
                   {item.badge && (
-                    <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-300">
+                    <Badge variant="secondary" className="text-xs bg-sidebar-accent text-sidebar-foreground">
                       {item.badge}
                     </Badge>
                   )}
@@ -131,16 +131,16 @@ export default function AdminLayout({
           </nav>
 
           {/* User section */}
-          <div className="p-4 border-t border-gray-800">
+          <div className="p-4 border-t border-sidebar-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                <span className="text-white font-medium">AD</span>
+              <div className="w-10 h-10 bg-sidebar-accent rounded-full flex items-center justify-center">
+                <span className="text-sidebar-foreground font-medium">AD</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">Admin</p>
-                <p className="text-xs text-gray-400 truncate">admin@restaurant-os.com</p>
+                <p className="text-sm font-medium text-sidebar-foreground truncate">Admin</p>
+                <p className="text-xs text-sidebar-foreground/60 truncate">admin@restaurant-os.com</p>
               </div>
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+              <Button variant="ghost" size="icon" className="text-sidebar-foreground/60 hover:text-sidebar-foreground">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -151,7 +151,7 @@ export default function AdminLayout({
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Header */}
-        <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 bg-white border-b lg:px-6">
+        <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 bg-background border-b lg:px-6">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -161,14 +161,14 @@ export default function AdminLayout({
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
-              <Link href="/admin" className="hover:text-gray-900">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+              <Link href="/admin" className="hover:text-foreground">
                 Admin
               </Link>
               {pathname !== '/admin' && (
                 <>
                   <ChevronRight className="h-4 w-4" />
-                  <span className="text-gray-900 font-medium">
+                  <span className="text-foreground font-medium">
                     {navigation.find((n) => pathname.startsWith(n.href))?.name || 'Dashboard'}
                   </span>
                 </>

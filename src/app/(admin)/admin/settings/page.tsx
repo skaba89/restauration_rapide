@@ -31,7 +31,9 @@ import {
   Key,
   Save,
   RefreshCw,
+  Paintbrush,
 } from 'lucide-react';
+import { ThemeCustomizer } from '@/components/theme/theme-customizer';
 import { useToast } from '@/hooks/use-toast';
 
 // Currency options
@@ -128,7 +130,7 @@ export default function AdminSettingsPage() {
       </div>
 
       <Tabs defaultValue="platform" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="platform" className="gap-2">
             <Globe className="h-4 w-4" />
             <span className="hidden sm:inline">Plateforme</span>
@@ -144,6 +146,10 @@ export default function AdminSettingsPage() {
           <TabsTrigger value="security" className="gap-2">
             <Shield className="h-4 w-4" />
             <span className="hidden sm:inline">Sécurité</span>
+          </TabsTrigger>
+          <TabsTrigger value="theme" className="gap-2">
+            <Paintbrush className="h-4 w-4" />
+            <span className="hidden sm:inline">Thème & Design</span>
           </TabsTrigger>
         </TabsList>
 
@@ -455,6 +461,11 @@ export default function AdminSettingsPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Theme & Design */}
+        <TabsContent value="theme">
+          <ThemeCustomizer />
         </TabsContent>
       </Tabs>
     </div>

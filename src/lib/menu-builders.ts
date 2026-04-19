@@ -2,8 +2,7 @@
 // Used by /api/public/menu and /api/public/restaurant/[slug]
 
 const CATEGORY_ORDER = [
-  'Plats Ivoiriens', 'Plats Sénégalais', 'Plats Guinéens',
-  'Grillades', 'Fast Food', 'Boissons', 'Desserts', 'Autres',
+  'Plats Guinéens', 'Grillades', 'Fast Food', 'Boissons', 'Desserts', 'Petit-déjeuner', 'Plats Ivoiriens', 'Plats Sénégalais', 'Autres',
 ];
 
 // Build categories from SimpleMenuItem DB records (flat table used by admin menu CRUD)

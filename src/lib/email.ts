@@ -76,6 +76,7 @@ interface OrderEmailData {
   paymentMethod: string;
   restaurantName: string;
   restaurantPhone?: string;
+  currency?: string;
 }
 
 interface ReservationEmailData {
@@ -274,8 +275,8 @@ const emailTemplates = {
       <tr>
         <td>${item.name}</td>
         <td>${item.quantity}</td>
-        <td>${item.price.toLocaleString()} FCFA</td>
-        <td>${item.total.toLocaleString()} FCFA</td>
+        <td>${item.price.toLocaleString()} ${data.currency || 'FGN'}</td>
+        <td>${item.total.toLocaleString()} ${data.currency || 'FGN'}</td>
       </tr>
     `).join('');
 
@@ -311,17 +312,17 @@ const emailTemplates = {
         <tfoot>
           <tr>
             <td colspan="3">Sous-total</td>
-            <td>${data.subtotal.toLocaleString()} FCFA</td>
+            <td>${data.subtotal.toLocaleString()} ${data.currency || 'FGN'}</td>
           </tr>
           ${data.tax ? `
           <tr>
             <td colspan="3">TVA</td>
-            <td>${data.tax.toLocaleString()} FCFA</td>
+            <td>${data.tax.toLocaleString()} ${data.currency || 'FGN'}</td>
           </tr>
           ` : ''}
           <tr class="total-row">
             <td colspan="3">Total</td>
-            <td>${data.total.toLocaleString()} FCFA</td>
+            <td>${data.total.toLocaleString()} ${data.currency || 'FGN'}</td>
           </tr>
         </tfoot>
       </table>

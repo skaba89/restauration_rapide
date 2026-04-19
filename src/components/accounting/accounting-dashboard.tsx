@@ -776,7 +776,7 @@ export function AccountingDashboard() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-green-500 h-2 rounded-full"
-                        style={{ width: `${(incomeStatement.revenue.foodSales / incomeStatement.revenue.totalRevenue) * 100}%` }}
+                        style={{ width: `${incomeStatement.revenue.totalRevenue > 0 ? (incomeStatement.revenue.foodSales / incomeStatement.revenue.totalRevenue) * 100 : 0}%` }}
                       />
                     </div>
                     <div className="flex justify-between items-center">
@@ -786,7 +786,7 @@ export function AccountingDashboard() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-blue-500 h-2 rounded-full"
-                        style={{ width: `${(incomeStatement.revenue.beverageSales / incomeStatement.revenue.totalRevenue) * 100}%` }}
+                        style={{ width: `${incomeStatement.revenue.totalRevenue > 0 ? (incomeStatement.revenue.beverageSales / incomeStatement.revenue.totalRevenue) * 100 : 0}%` }}
                       />
                     </div>
                     <div className="flex justify-between items-center">
@@ -796,7 +796,7 @@ export function AccountingDashboard() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-orange-500 h-2 rounded-full"
-                        style={{ width: `${(incomeStatement.revenue.deliveryFees / incomeStatement.revenue.totalRevenue) * 100}%` }}
+                        style={{ width: `${incomeStatement.revenue.totalRevenue > 0 ? (incomeStatement.revenue.deliveryFees / incomeStatement.revenue.totalRevenue) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
@@ -819,7 +819,7 @@ export function AccountingDashboard() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-red-500 h-2 rounded-full"
-                        style={{ width: `${(incomeStatement.operatingExpenses.salaries / incomeStatement.operatingExpenses.totalExpenses) * 100}%` }}
+                        style={{ width: `${incomeStatement.operatingExpenses.totalExpenses > 0 ? (incomeStatement.operatingExpenses.salaries / incomeStatement.operatingExpenses.totalExpenses) * 100 : 0}%` }}
                       />
                     </div>
                     <div className="flex justify-between items-center">
@@ -829,7 +829,7 @@ export function AccountingDashboard() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-purple-500 h-2 rounded-full"
-                        style={{ width: `${(incomeStatement.operatingExpenses.rent / incomeStatement.operatingExpenses.totalExpenses) * 100}%` }}
+                        style={{ width: `${incomeStatement.operatingExpenses.totalExpenses > 0 ? (incomeStatement.operatingExpenses.rent / incomeStatement.operatingExpenses.totalExpenses) * 100 : 0}%` }}
                       />
                     </div>
                     <div className="flex justify-between items-center">
@@ -839,7 +839,7 @@ export function AccountingDashboard() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-yellow-500 h-2 rounded-full"
-                        style={{ width: `${(incomeStatement.operatingExpenses.marketing / incomeStatement.operatingExpenses.totalExpenses) * 100}%` }}
+                        style={{ width: `${incomeStatement.operatingExpenses.totalExpenses > 0 ? (incomeStatement.operatingExpenses.marketing / incomeStatement.operatingExpenses.totalExpenses) * 100 : 0}%` }}
                       />
                     </div>
                   </div>

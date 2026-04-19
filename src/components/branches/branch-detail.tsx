@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   Building,
   MapPin,
@@ -80,11 +81,10 @@ const STATUS_COLORS: Record<string, string> = {
   closed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border-red-200',
 };
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
 export function BranchDetail({ branchId, onEdit }: BranchDetailProps) {
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
   const [isLoading, setIsLoading] = useState(true);
   const [branch, setBranch] = useState<BranchDetail | null>(null);
 

@@ -12,7 +12,7 @@ async function getOrCreateDefaultOrganization() {
     let currency = await db.currency.findUnique({ where: { code: 'GNF' } });
     if (!currency) {
       currency = await db.currency.create({
-        data: { code: 'GNF', name: 'Franc Guinéen', symbol: 'GNF', decimalPlaces: 0 },
+        data: { code: 'GNF', name: 'Franc Guinéen (FGN)', symbol: 'FGN', decimalPlaces: 0 },
       });
     }
     

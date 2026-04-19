@@ -49,12 +49,22 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${(amount / 1000000).toFixed(1)}M GNF`;
-
 export function BranchAnalytics() {
+  const { formatCurrency, currencySymbol } = useCurrencySafe();
   const [isLoading, setIsLoading] = useState(true);
-  const [analytics, setAnalytics] = useState([]);
+  const [analytics, setAnalytics] = useState({
+    comparison: {
+      totalRevenue: 0,
+      totalOrders: 0,
+      avgRating: 0,
+      avgGrowth: 0,
+    },
+    branches: [] as { name: string; revenue: number; orders: number; rating: number; growth: number }[],
+    revenueTrend: [] as Record<string, string | number>[],
+    ordersByBranch: [] as { name: string; value: number; color: string }[],
+    hourlyPerformance: [] as Record<string, string | number>[],
+    topPerformers: [] as { branch: string; metric: string; value: string; change: string; up: boolean }[],
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -100,7 +110,7 @@ export function BranchAnalytics() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Revenus totaux</p>
-                <p className="text-xl font-bold">{formatCurrency(analytics.comparison.totalRevenue)}</p>
+                <p className="text-xl font-bold">{analytics.comparison.totalRevenue > 0 ? `${(analytics.comparison.totalRevenue / 1000000).toFixed(1)}M ${currencySymbol}` : '0'}</p>
               </div>
               <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
                 <DollarSign className="h-5 w-5 text-orange-600" />
@@ -196,7 +206,7 @@ export function BranchAnalytics() {
                       </div>
                     </td>
                     <td className="text-right py-3 px-4 font-mono">
-                      {branch.revenue > 0 ? formatCurrency(branch.revenue) : '-'}
+                      {branch.revenue > 0 ? `${(branch.revenue / 1000000).toFixed(1)}M ${currencySymbol}` : '-'}
                     </td>
                     <td className="text-right py-3 px-4">
                       {branch.orders > 0 ? branch.orders : '-'}

@@ -5,18 +5,16 @@ import { db, isDatabaseAvailable } from '@/lib/db';
 // Reference data for Guinea
 const REFERENCE_DATA = {
   currencies: [
-    { code: 'GNF', name: 'Franc Guinéen', symbol: 'GNF', decimalPlaces: 0 },
-    { code: 'XOF', name: 'Franc CFA BCEAO', symbol: 'FCFA', decimalPlaces: 0 },
-    { code: 'XAF', name: 'Franc CFA BEAC', symbol: 'FCFA', decimalPlaces: 0 },
+    { code: 'GNF', name: 'Franc Guinéen (FGN)', symbol: 'FGN', decimalPlaces: 0 },
     { code: 'EUR', name: 'Euro', symbol: '€', decimalPlaces: 2 },
     { code: 'USD', name: 'US Dollar', symbol: '$', decimalPlaces: 2 },
   ],
   countries: [
     { code: 'GN', name: 'Guinée', dialCode: '+224', currencyCode: 'GNF' },
-    { code: 'CI', name: "Côte d'Ivoire", dialCode: '+225', currencyCode: 'XOF' },
-    { code: 'SN', name: 'Sénégal', dialCode: '+221', currencyCode: 'XOF' },
-    { code: 'ML', name: 'Mali', dialCode: '+223', currencyCode: 'XOF' },
-    { code: 'BF', name: 'Burkina Faso', dialCode: '+226', currencyCode: 'XOF' },
+    { code: 'CI', name: "Côte d'Ivoire", dialCode: '+225', currencyCode: 'GNF' },
+    { code: 'SN', name: 'Sénégal', dialCode: '+221', currencyCode: 'GNF' },
+    { code: 'ML', name: 'Mali', dialCode: '+223', currencyCode: 'GNF' },
+    { code: 'BF', name: 'Burkina Faso', dialCode: '+226', currencyCode: 'GNF' },
   ],
 };
 

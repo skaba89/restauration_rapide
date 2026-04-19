@@ -139,8 +139,8 @@ export async function POST(request: NextRequest) {
       currency = await db.currency.create({
         data: {
           code: 'GNF',
-          name: 'Franc Guinéen',
-          symbol: 'GNF',
+          name: 'Franc Guinéen (FGN)',
+          symbol: 'FGN',
           decimalPlaces: 0,
           isActive: true,
         },

@@ -23,8 +23,8 @@ export const POST = withAdminAuth(async (request: NextRequest) => {
     // 1. Create currencies
     const gnf = await db.currency.upsert({
       where: { code: 'GNF' },
-      update: { name: 'Franc Guinéen', symbol: 'GNF' },
-      create: { code: 'GNF', name: 'Franc Guinéen', symbol: 'GNF', isActive: true },
+      update: { name: 'Franc Guinéen (FGN)', symbol: 'FGN' },
+      create: { code: 'GNF', name: 'Franc Guinéen (FGN)', symbol: 'FGN', isActive: true },
     });
 
     // 2. Create Guinea country

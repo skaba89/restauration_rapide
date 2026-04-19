@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       avatar,
       dateOfBirth,
       language = 'fr',
-      currency = 'XOF',
+      currency = 'GNF',
       addresses,
       dietaryPreferences,
       allergies,

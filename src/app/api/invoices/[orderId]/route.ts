@@ -147,7 +147,7 @@ async function fetchInvoiceData(orderId: string, language: 'fr' | 'en'): Promise
     tip: order.tip || undefined,
     deliveryFee: order.deliveryFee || undefined,
     total: order.total,
-    currency: 'XOF',
+    currency: 'GNF',
     
     payment: {
       method: (payment?.method || 'CASH') as any,

@@ -39,15 +39,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import type { TaxSummary } from '@/lib/accounting-export';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface TaxSummaryProps {
   data?: TaxSummary | null;
   loading?: boolean;
   onExport?: (type: 'csv' | 'pdf') => void;
 }
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
 // TVA rates
 const TVA_RATES = [
@@ -57,6 +55,7 @@ const TVA_RATES = [
 ];
 
 export function TaxSummaryComponent({ data, loading, onExport }: TaxSummaryProps) {
+  const { formatCurrency, currencySymbol } = useCurrencySafe();
   const [selectedRate, setSelectedRate] = useState<string>('18');
 
   if (loading) {
@@ -187,7 +186,7 @@ export function TaxSummaryComponent({ data, loading, onExport }: TaxSummaryProps
                 <p className="text-sm text-muted-foreground">CA Taxable</p>
                 <p className="text-xl font-bold text-purple-600">{formatCurrency(data.taxableRevenue)}</p>
                 <p className="text-xs text-muted-foreground">
-                  Taux effectif: {effectiveRate.toFixed(1)}%
+                  Taux effectif: {effectiveRate.toFixed(1) ?? '0.0'}%
                 </p>
               </div>
               <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
@@ -386,7 +385,7 @@ export function TaxSummaryComponent({ data, loading, onExport }: TaxSummaryProps
               <li>• La déclaration TVA doit être déposée mensuellement</li>
               <li>• Le paiement doit intervenir avant le 15 du mois suivant</li>
               <li>• Conservation des factures: 10 ans minimum</li>
-              <li>• Seuil de franchise: 50,000,000 GNF de CA annuel</li>
+              <li>• Seuil de franchise: 50 000 000 {currencySymbol} de CA annuel</li>
             </ul>
           </CardContent>
         </Card>

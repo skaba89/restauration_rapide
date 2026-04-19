@@ -99,7 +99,7 @@ export function ComplianceManager() {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Tâches complétés</p>
             <p className="text-2xl font-bold text-blue-600">
-              {Math.round((completedItems / totalItems) * 100)}%
+              {totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0}%
             </p>
           </CardContent>
         </Card>

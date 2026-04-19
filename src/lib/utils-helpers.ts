@@ -40,7 +40,7 @@ export function generateTransactionId(prefix: string = 'TXN'): string {
 // CURRENCY & FORMATTING
 // ============================================
 
-export function formatCurrency(amount: number, currency: string = 'XOF'): string {
+export function formatCurrency(amount: number, currency: string = 'GNF'): string {
   const formatter = new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: currency,

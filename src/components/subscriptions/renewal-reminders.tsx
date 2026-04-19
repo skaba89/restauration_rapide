@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertTriangle, Bell, CheckCircle, Clock, RefreshCcw, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface RenewalReminder {
   id: string;
@@ -85,9 +86,7 @@ export function RenewalReminders({ onSendReminder, onViewSubscription }: Renewal
     fetchReminders();
   }, []);
 
-  const formatCurrency = (amount: number) => {
-    return `${amount.toLocaleString('fr-FR')} GNF`;
-  };
+  const { formatCurrency } = useCurrencySafe();
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('fr-FR', {

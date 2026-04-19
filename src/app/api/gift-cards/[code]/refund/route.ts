@@ -47,7 +47,7 @@ export const POST = withErrorHandler(async (
   if (actualRefundAmount > card.currentBalance) {
     return NextResponse.json({
       success: false,
-      error: `Le montant du remboursement ne peut pas dépasser le solde actuel (${card.currentBalance.toLocaleString('fr-FR')} GNF)`,
+      error: `Le montant du remboursement ne peut pas dépasser le solde actuel (${card.currentBalance.toLocaleString('fr-FR')} FGN)`,
     }, { status: 400 });
   }
 
@@ -91,8 +91,8 @@ export const POST = withErrorHandler(async (
       newStatus: card.status,
       transactionId: transaction.id,
       message: actualRefundAmount === previousBalance
-        ? `Carte cadeau annulée. Remboursement de ${actualRefundAmount.toLocaleString('fr-FR')} GNF effectué`
-        : `Remboursement partiel de ${actualRefundAmount.toLocaleString('fr-FR')} GNF effectué. Solde restant: ${card.currentBalance.toLocaleString('fr-FR')} GNF`,
+        ? `Carte cadeau annulée. Remboursement de ${actualRefundAmount.toLocaleString('fr-FR')} FGN effectué`
+        : `Remboursement partiel de ${actualRefundAmount.toLocaleString('fr-FR')} FGN effectué. Solde restant: ${card.currentBalance.toLocaleString('fr-FR')} FGN`,
     },
   });
 });

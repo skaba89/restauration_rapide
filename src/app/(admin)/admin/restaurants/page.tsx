@@ -332,7 +332,7 @@ export default function RestaurantsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {(restaurants.reduce((sum, r) => sum + r.rating, 0) / restaurants.length).toFixed(1)}
+                  {restaurants.length > 0 ? (restaurants.reduce((sum, r) => sum + r.rating, 0) / restaurants.length).toFixed(1) : '0.0'}
                 </p>
                 <p className="text-xs text-muted-foreground">Avg Rating</p>
               </div>

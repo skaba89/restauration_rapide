@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { fetchWithAuth } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface MobileMoneyPaymentProps {
   amount: number;
@@ -78,7 +79,7 @@ export function MobileMoneyPayment({
     },
   ];
 
-  const formatAmount = (value: number) => `${value.toLocaleString('fr-FR')} GNF`;
+  const { formatCurrency } = useCurrencySafe();
 
   const validatePhoneNumber = (phone: string) => {
     const cleaned = phone.replace(/\D/g, '');
@@ -150,7 +151,7 @@ export function MobileMoneyPayment({
           <p className="text-gray-500 mb-4">
             Vérifiez votre téléphone pour valider le paiement
           </p>
-          <p className="text-2xl font-bold text-orange-600">{formatAmount(amount)}</p>
+          <p className="text-2xl font-bold text-orange-600">{formatCurrency(amount)}</p>
         </CardContent>
       </Card>
     );
@@ -167,7 +168,7 @@ export function MobileMoneyPayment({
           {state.transactionId && (
             <Badge className="bg-green-100 text-green-700 mb-4">#{state.transactionId}</Badge>
           )}
-          <p className="text-2xl font-bold text-green-600">{formatAmount(amount)}</p>
+          <p className="text-2xl font-bold text-green-600">{formatCurrency(amount)}</p>
         </CardContent>
       </Card>
     );
@@ -202,7 +203,7 @@ export function MobileMoneyPayment({
         <CardContent className="space-y-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl p-4 text-center">
             <p className="text-sm opacity-80">Montant à payer</p>
-            <p className="text-3xl font-bold">{formatAmount(amount)}</p>
+            <p className="text-3xl font-bold">{formatCurrency(amount)}</p>
           </div>
 
           <RadioGroup value={state.provider || ''} className="space-y-3">

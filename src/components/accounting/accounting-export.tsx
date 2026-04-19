@@ -43,6 +43,7 @@ import {
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { AccountingExport, ProfitLossData, TaxSummary } from '@/lib/accounting-export';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface AccountingExportProps {
   onExport?: (type: 'csv' | 'excel' | 'quickbooks' | 'sage', startDate: Date, endDate: Date, dataType: 'pnl' | 'tax') => void;
@@ -85,14 +86,13 @@ const EXPORT_TYPES: Array<{
   },
 ];
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
 export function AccountingExportComponent({ 
   onExport, 
   exportHistory,
   loading 
 }: AccountingExportProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [selectedType, setSelectedType] = useState<'csv' | 'excel' | 'quickbooks' | 'sage'>('csv');
   const [dataType, setDataType] = useState<'pnl' | 'tax'>('pnl');
   const [startDate, setStartDate] = useState<Date>(new Date(new Date().getFullYear(), 0, 1));

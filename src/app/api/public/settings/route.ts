@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
               city: organization.city,
               logo: organization.logo,
               currency: organization.currency?.code || 'GNF',
-              currencyInfo: organization.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+              currencyInfo: organization.currency || { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
             }
           });
         }
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
               city: restaurant.city,
               logo: restaurant.logo,
               currency: restaurant.organization?.currency?.code || 'GNF',
-              currencyInfo: restaurant.organization?.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+              currencyInfo: restaurant.organization?.currency || { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
               organizationId: restaurant.organization?.id,
             }
           });
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
             city: firstOrg.city,
             logo: firstOrg.logo,
             currency: firstOrg.currency?.code || 'GNF',
-            currencyInfo: firstOrg.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+            currencyInfo: firstOrg.currency || { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
             settings: firstOrg.settings,
           }
         });
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         ...DEFAULT_SETTINGS,
-        currencyInfo: { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+        currencyInfo: { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
       }
     });
   } catch (error) {
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         ...DEFAULT_SETTINGS,
-        currencyInfo: { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+        currencyInfo: { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
       }
     });
   }

@@ -551,7 +551,7 @@ class PDFReceiptService {
       taxRate: 18,
       discount: order.discount,
       total: order.total,
-      currency: 'FCFA',
+      currency: 'FGN',
       
       payment: {
         method: order.payment?.method || 'Non spécifié',

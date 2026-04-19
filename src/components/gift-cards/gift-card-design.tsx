@@ -3,9 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Gift, Calendar, Phone, User } from 'lucide-react';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Status colors
 const STATUS_COLORS: Record<string, string> = {
@@ -39,6 +37,7 @@ interface GiftCardDesignProps {
 }
 
 export function GiftCardDesign({ card, variant = 'full', showQRCode = false }: GiftCardDesignProps) {
+  const { formatCurrency } = useCurrencySafe();
   const expiryDate = card.expiresAt
     ? new Date(card.expiresAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
     : 'N/A';

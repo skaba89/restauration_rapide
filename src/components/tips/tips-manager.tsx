@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface Tip {
@@ -70,9 +71,6 @@ interface TipDistribution {
   status: 'pending' | 'paid';
 }
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
-
 // Method icons
 const METHOD_ICONS: Record<string, React.ReactNode> = {
   cash: <Banknote className="h-4 w-4" />,
@@ -87,6 +85,7 @@ const METHOD_LABELS: Record<string, string> = {
 };
 
 export function TipsManager() {
+  const { formatCurrency } = useCurrencySafe();
   const [tips, setTips] = useState<Tip[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -390,6 +389,7 @@ export function TipsManager() {
 
 // Tip Card Component
 function TipCard({ tip, onViewDetail }: { tip: Tip; onViewDetail: (tip: Tip) => void }) {
+  const { formatCurrency } = useCurrencySafe();
   return (
     <div 
       className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"

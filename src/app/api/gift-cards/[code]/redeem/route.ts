@@ -55,7 +55,7 @@ export const POST = withErrorHandler(async (
   if (card.currentBalance < redeemAmount) {
     return NextResponse.json({
       success: false,
-      error: `Solde insuffisant. Solde disponible: ${card.currentBalance.toLocaleString('fr-FR')} GNF`,
+      error: `Solde insuffisant. Solde disponible: ${card.currentBalance.toLocaleString('fr-FR')} FGN`,
       data: {
         currentBalance: card.currentBalance,
         requestedAmount: redeemAmount,
@@ -99,7 +99,7 @@ export const POST = withErrorHandler(async (
       transactionId: transaction.id,
       message: redeemAmount === previousBalance
         ? 'Carte cadeau entièrement utilisée'
-        : `Paiement de ${redeemAmount.toLocaleString('fr-FR')} GNF effectué. Solde restant: ${card.currentBalance.toLocaleString('fr-FR')} GNF`,
+        : `Paiement de ${redeemAmount.toLocaleString('fr-FR')} FGN effectué. Solde restant: ${card.currentBalance.toLocaleString('fr-FR')} FGN`,
     },
   });
 });

@@ -126,14 +126,14 @@ export const notificationTemplates: Record<string, NotificationTemplate> = {
   // Driver notifications
   new_delivery_request: {
     title: 'Nouvelle livraison',
-    message: 'Une nouvelle livraison est disponible ({amount} FCFA)',
+    message: 'Une nouvelle livraison est disponible ({amount} FGN)',
     type: 'driver',
     priority: 'high',
     channels: ['push', 'in_app'],
   },
   payment_received: {
     title: 'Paiement reçu',
-    message: 'Vous avez reçu {amount} FCFA sur votre wallet',
+    message: 'Vous avez reçu {amount} FGN sur votre wallet',
     type: 'payment',
     priority: 'normal',
     channels: ['push', 'in_app'],
@@ -142,7 +142,7 @@ export const notificationTemplates: Record<string, NotificationTemplate> = {
   // Daily summary
   daily_summary: {
     title: 'Résumé du jour',
-    message: '{ordersCount} commandes - {revenue} FCFA de chiffre d\'affaires',
+    message: '{ordersCount} commandes - {revenue} FGN de chiffre d\'affaires',
     type: 'summary',
     priority: 'low',
     channels: ['in_app', 'email'],
@@ -351,7 +351,7 @@ export async function getUserNotifications(userId: string, options?: { limit?: n
     {
       id: '3',
       title: 'Résumé quotidien',
-      message: '27 commandes - 1,250,000 FCFA aujourd\'hui',
+      message: '27 commandes - 1,250,000 FGN aujourd\'hui',
       type: 'summary',
       priority: 'low',
       read: true,

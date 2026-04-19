@@ -18,9 +18,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Category labels
 const CATEGORY_LABELS: Record<string, string> = {
@@ -73,6 +71,7 @@ interface RecipeDetailProps {
 }
 
 export function RecipeDetail({ recipe, onBack, onEdit, onDelete }: RecipeDetailProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [isPrinting, setIsPrinting] = useState(false);
 
   // Calculate cost per serving

@@ -5,8 +5,8 @@ import { createContext, useContext, ReactNode, useCallback, useState, useEffect 
 // Currency configuration
 const DEFAULT_CURRENCY = {
   code: 'GNF',
-  symbol: 'GNF',
-  name: 'Franc Guinéen',
+  symbol: 'FGN',
+  name: 'Franc Guinéen (FGN)',
   decimalPlaces: 0,
 };
 
@@ -27,7 +27,7 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 
 // All supported currencies
 const ALL_CURRENCIES: Record<string, Currency> = {
-  GNF: { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen', decimalPlaces: 0 },
+  GNF: { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)', decimalPlaces: 0 },
   XOF: { code: 'XOF', symbol: 'FCFA', name: 'Franc CFA (BCEAO)', decimalPlaces: 0 },
   XAF: { code: 'XAF', symbol: 'FCFA', name: 'Franc CFA (BEAC)', decimalPlaces: 0 },
   NGN: { code: 'NGN', symbol: '₦', name: 'Nigerian Naira', decimalPlaces: 2 },

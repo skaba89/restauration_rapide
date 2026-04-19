@@ -65,7 +65,7 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-6 border-b">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
           <ChefHat className="h-6 w-6 text-white" />
         </div>
         <div>
@@ -89,14 +89,14 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
                 onClick={onNavigate}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                    : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+                    ? 'bg-primary/10 text-primary dark:bg-primary/20'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                 }`}
               >
                 <item.icon className="h-5 w-5" />
                 <span className="font-medium">{item.title}</span>
                 {item.badge && (
-                  <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  <span className="ml-auto bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
                     {item.badge}
                   </span>
                 )}
@@ -108,7 +108,7 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
 
       {/* Loyalty Card */}
       <div className="p-4 border-t">
-        <div className="p-3 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 text-white">
+        <div className="p-3 rounded-lg bg-primary text-primary-foreground">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs opacity-80">Points Fidélité</span>
             <Gift className="h-4 w-4" />
@@ -148,15 +148,15 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r bg-white dark:bg-gray-950">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r bg-sidebar">
         <NavContent pathname={pathname} />
       </aside>
 
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-64">
+        <SheetContent side="left" className="p-0 w-64 bg-sidebar">
           <VisuallyHidden.Root>
             <SheetTitle>Menu de navigation client</SheetTitle>
           </VisuallyHidden.Root>
@@ -167,7 +167,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-white dark:bg-gray-950 border-b">
+        <header className="sticky top-0 z-40 bg-background border-b">
           <div className="flex items-center justify-between px-4 py-3">
             {/* Mobile Menu */}
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
@@ -201,7 +201,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
                   {cartCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-orange-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center">
                       {cartCount}
                     </span>
                   )}
@@ -214,7 +214,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src={user?.avatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-600 text-white">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
                         {user?.firstName?.[0] || 'C'}
                         {user?.lastName?.[0] || 'L'}
                       </AvatarFallback>
@@ -248,7 +248,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600" onClick={handleLogout}>
+                  <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Déconnexion
                   </DropdownMenuItem>

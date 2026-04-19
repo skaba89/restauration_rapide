@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Promotion {
   id: string;
@@ -52,6 +53,7 @@ const PROMO_TYPES = [
 ];
 
 export function PromotionsManager() {
+  const { formatCurrency } = useCurrencySafe();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -221,8 +223,6 @@ export function PromotionsManager() {
   const getTypeConfig = (type: string) => {
     return PROMO_TYPES.find(t => t.value === type) || PROMO_TYPES[0];
   };
-
-  const formatCurrency = (value: number) => `${value.toLocaleString('fr-FR')} GNF`;
 
   const activePromos = promotions.filter(p => p.isActive);
   const totalUsage = promotions.reduce((sum, p) => sum + p.usageCount, 0);
@@ -399,7 +399,7 @@ export function PromotionsManager() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Code promo</Label><Input value={newPromo.code} onChange={(e) => setNewPromo(prev => ({ ...prev, code: e.target.value }))} placeholder="Ex: BIENVENUE" /></div>
-              <div><Label>Min. commande (GNF)</Label><Input type="number" value={newPromo.minOrder} onChange={(e) => setNewPromo(prev => ({ ...prev, minOrder: parseInt(e.target.value) }))} /></div>
+              <div><Label>Min. commande</Label><Input type="number" value={newPromo.minOrder} onChange={(e) => setNewPromo(prev => ({ ...prev, minOrder: parseInt(e.target.value) }))} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Date début *</Label><Input type="date" value={newPromo.validFrom} onChange={(e) => setNewPromo(prev => ({ ...prev, validFrom: e.target.value }))} /></div>

@@ -9,27 +9,27 @@ import { NextRequest } from 'next/server';
 const MOBILE_MONEY_CONFIGS = {
   MOBILE_MONEY_ORANGE: {
     name: 'Orange Money',
-    currency: 'XOF',
+    currency: 'GNF',
     countries: ['CI', 'SN', 'ML', 'BF'],
   },
   MOBILE_MONEY_MTN: {
     name: 'MTN Mobile Money',
-    currency: 'XOF',
+    currency: 'GNF',
     countries: ['CI', 'BJ', 'TG', 'GW'],
   },
   MOBILE_MONEY_WAVE: {
     name: 'Wave',
-    currency: 'XOF',
+    currency: 'GNF',
     countries: ['CI', 'SN'],
   },
   MOBILE_MONEY_MPESA: {
     name: 'M-Pesa',
-    currency: 'XOF',
+    currency: 'GNF',
     countries: ['CD', 'CG', 'MZ', 'KE', 'TZ', 'UG', 'RW'],
   },
   MOBILE_MONEY_MOOV: {
     name: 'Moov Money',
-    currency: 'XOF',
+    currency: 'GNF',
     countries: ['BJ', 'TG', 'CI', 'BF', 'NE'],
   },
 };

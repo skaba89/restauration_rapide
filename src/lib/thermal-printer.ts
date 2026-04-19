@@ -159,8 +159,10 @@ function getQRDataCommands(data: string): number[] {
 export class ThermalPrinterService {
   private printers: Map<string, Printer> = new Map();
   private printJobs: Map<string, PrintJob> = new Map();
+  private currency: string = 'FGN';
   
-  constructor() {
+  constructor(currency?: string) {
+    if (currency) this.currency = currency;
     this.loadPrinters();
   }
   
@@ -583,7 +585,7 @@ export class ThermalPrinterService {
   }
   
   private formatCurrency(amount: number): string {
-    return `${amount.toLocaleString('fr-FR')} FCFA`;
+    return `${amount.toLocaleString('fr-FR')} ${this.currency}`;
   }
   
   private getOrderTypeLabel(type: string): string {

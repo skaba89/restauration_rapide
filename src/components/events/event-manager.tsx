@@ -46,9 +46,7 @@ import { toast } from 'sonner';
 import EventDetail from './event-detail';
 import QuoteBuilder from './quote-builder';
 import { fetchWithAuth } from '@/lib/api-client';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface EventMenuItem {
@@ -141,6 +139,7 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
 };
 
 export function EventManager() {
+  const { formatCurrency } = useCurrencySafe();
   const [events, setEvents] = useState<Event[]>([]);
   const [stats, setStats] = useState<EventStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);

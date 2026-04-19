@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Driver {
   id: string;
@@ -62,6 +63,7 @@ const VEHICLE_ICONS: Record<string, string> = {
 };
 
 export function DriverManager() {
+  const { formatCurrency } = useCurrencySafe();
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -212,8 +214,6 @@ export function DriverManager() {
       toast.error('Erreur lors de la suppression');
     }
   };
-
-  const formatCurrency = (value: number) => `${value.toLocaleString('fr-FR')} GNF`;
 
   const getStatusColor = (status: string) => {
     switch (status) {

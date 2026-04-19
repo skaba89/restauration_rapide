@@ -3,7 +3,7 @@ import { withErrorHandler } from '@/lib/api-responses';
 import { db } from '@/lib/db';
 
 // Format currency helper
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FGN`;
 
 // GET - Calculate recipe cost from inventory
 export const GET = withErrorHandler(async (

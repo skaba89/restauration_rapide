@@ -150,15 +150,15 @@ export default function DriverEarningsPage() {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Gain moyen / commande</span>
-              <span className="font-medium">{formatCurrency(Math.round(data.amount / data.orders))}</span>
+              <span className="font-medium">{formatCurrency(data.orders > 0 ? Math.round(data.amount / data.orders) : 0)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Gain moyen / heure</span>
-              <span className="font-medium">{formatCurrency(Math.round(data.amount / data.hours))}</span>
+              <span className="font-medium">{formatCurrency(data.hours > 0 ? Math.round(data.amount / data.hours) : 0)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Taux de pourboire</span>
-              <span className="font-medium text-green-600">{Math.round((data.tips / data.orders) * 100)}%</span>
+              <span className="font-medium text-green-600">{data.orders > 0 ? Math.round((data.tips / data.orders) * 100) : 0}%</span>
             </div>
           </CardContent>
         </Card>

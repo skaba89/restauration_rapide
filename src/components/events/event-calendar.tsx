@@ -22,9 +22,7 @@ import {
 import { toast } from 'sonner';
 import EventDetail from './event-detail';
 import { fetchWithAuth } from '@/lib/api-client';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface EventMenuItem {
@@ -104,6 +102,7 @@ const DAY_NAMES = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 const DAY_NAMES_FULL = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
 export function EventCalendar() {
+  const { formatCurrency } = useCurrencySafe();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());

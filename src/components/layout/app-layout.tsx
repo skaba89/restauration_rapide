@@ -214,8 +214,8 @@ function NavCategoryItem({
         <button
           className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
             isChildActive
-              ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-              : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+              ? 'bg-primary/10 text-primary dark:bg-primary/20'
+              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
           }`}
         >
           <category.icon className="h-4 w-4" />
@@ -238,14 +238,14 @@ function NavCategoryItem({
               onClick={onNavigate}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                 isActive
-                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                  : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+                  ? 'bg-primary/10 text-primary dark:bg-primary/20'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               }`}
             >
               <item.icon className="h-4 w-4" />
               <span className="text-sm">{item.title}</span>
               {item.badge && (
-                <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
+                <span className="ml-auto bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
                   {item.badge}
                 </span>
               )}
@@ -263,8 +263,8 @@ function NavContent({ pathname, onNavigate, categories = NAV_CATEGORIES }: { pat
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-6 border-b">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-          <ChefHat className="h-6 w-6 text-white" />
+        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+          <ChefHat className="h-6 w-6 text-primary-foreground" />
         </div>
         <div>
           <h1 className="font-bold text-lg">KFM DELICE</h1>
@@ -288,7 +288,7 @@ function NavContent({ pathname, onNavigate, categories = NAV_CATEGORIES }: { pat
 
       {/* Restaurant Info */}
       <div className="p-4 border-t">
-        <div className="p-3 rounded-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
+        <div className="p-3 rounded-lg bg-primary/5">
           <p className="font-semibold text-sm">KFM DELICE</p>
           <p className="text-xs text-muted-foreground">Conakry, Guinée</p>
           <div className="flex items-center gap-1 mt-2">
@@ -374,11 +374,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'order': return 'bg-orange-100 text-orange-600';
-      case 'delivery': return 'bg-purple-100 text-purple-600';
-      case 'reservation': return 'bg-blue-100 text-blue-600';
-      case 'alert': return 'bg-red-100 text-red-600';
-      default: return 'bg-gray-100 text-gray-600';
+      case 'order': return 'bg-primary/10 text-primary';
+      case 'delivery': return 'bg-primary/10 text-primary';
+      case 'reservation': return 'bg-primary/10 text-primary';
+      case 'alert': return 'bg-destructive/10 text-destructive';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -395,15 +395,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r bg-white dark:bg-gray-950">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r bg-sidebar">
         <NavContent pathname={pathname} categories={activeNavCategories} />
       </aside>
 
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-64">
+        <SheetContent side="left" className="p-0 w-64 bg-sidebar">
           <VisuallyHidden>
             <SheetTitle>Menu de navigation</SheetTitle>
           </VisuallyHidden>
@@ -414,7 +414,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-white dark:bg-gray-950 border-b">
+        <header className="sticky top-0 z-40 bg-background border-b">
           <div className="flex items-center justify-between px-4 py-3">
             {/* Mobile Menu */}
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
@@ -455,7 +455,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">
                         {unreadCount}
                       </span>
                     )}
@@ -484,8 +484,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                           return (
                             <div 
                               key={notification.id} 
-                              className={`p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer ${
-                                !notification.read ? 'bg-orange-50/50 dark:bg-orange-950/10' : ''
+                              className={`p-3 hover:bg-accent/50 cursor-pointer ${
+                                !notification.read ? 'bg-primary/5' : ''
                               }`}
                               onClick={() => markAsRead(notification.id)}
                             >
@@ -532,7 +532,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src={user?.avatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-600 text-white">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
                         {user?.firstName?.[0] || 'A'}
                         {user?.lastName?.[0] || 'D'}
                       </AvatarFallback>
@@ -560,7 +560,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600" onClick={handleLogout}>
+                  <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Déconnexion
                   </DropdownMenuItem>

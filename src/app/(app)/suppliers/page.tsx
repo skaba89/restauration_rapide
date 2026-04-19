@@ -997,7 +997,7 @@ export default function SuppliersPage() {
                   <p className="text-xs text-muted-foreground">Articles</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted">
-                  <p className="text-2xl font-bold">{selectedSupplier.rating.toFixed(1)}</p>
+                  <p className="text-2xl font-bold">{(selectedSupplier.rating ?? 0).toFixed(1)}</p>
                   <p className="text-xs text-muted-foreground">Note</p>
                 </div>
               </div>

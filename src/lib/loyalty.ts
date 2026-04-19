@@ -16,7 +16,7 @@ export type RewardType = 'discount' | 'free_item' | 'cashback' | 'free_delivery'
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
 
 export interface LoyaltyConfig {
-  pointsPerFCFA: number; // Points earned per FCFA spent
+  pointsPerFCFA: number; // Points earned per currency unit spent
   minimumOrderForPoints: number;
   pointsExpiryDays: number;
   tiers: LoyaltyTierConfig[];
@@ -154,15 +154,15 @@ class LoyaltyService {
    */
   private getDefaultConfig(): LoyaltyConfig {
     return {
-      pointsPerFCFA: 0.01, // 1 point per 100 FCFA
+      pointsPerFCFA: 0.01, // 1 point per 100 FGN
       minimumOrderForPoints: 1000,
       pointsExpiryDays: 365,
       tiers: [
-        { tier: 'bronze', name: 'Bronze', minPoints: 0, multiplier: 1, benefits: ['1 point par 100 FCFA'], color: '#CD7F32', icon: '🥉' },
-        { tier: 'silver', name: 'Argent', minPoints: 500, multiplier: 1.25, benefits: ['1.25 points par 100 FCFA', '5% de remise'], color: '#C0C0C0', icon: '🥈' },
-        { tier: 'gold', name: 'Or', minPoints: 2000, multiplier: 1.5, benefits: ['1.5 points par 100 FCFA', '10% de remise', 'Livraison gratuite'], color: '#FFD700', icon: '🥇' },
-        { tier: 'platinum', name: 'Platine', minPoints: 5000, multiplier: 2, benefits: ['2 points par 100 FCFA', '15% de remise', 'Livraison gratuite', 'Accès prioritaire'], color: '#E5E4E2', icon: '💎' },
-        { tier: 'diamond', name: 'Diamant', minPoints: 10000, multiplier: 2.5, benefits: ['2.5 points par 100 FCFA', '20% de remise', 'Livraison gratuite', 'Menu exclusif', 'Concierge'], color: '#B9F2FF', icon: '💠' },
+        { tier: 'bronze', name: 'Bronze', minPoints: 0, multiplier: 1, benefits: ['1 point par 100 FGN'], color: '#CD7F32', icon: '🥉' },
+        { tier: 'silver', name: 'Argent', minPoints: 500, multiplier: 1.25, benefits: ['1.25 points par 100 FGN', '5% de remise'], color: '#C0C0C0', icon: '🥈' },
+        { tier: 'gold', name: 'Or', minPoints: 2000, multiplier: 1.5, benefits: ['1.5 points par 100 FGN', '10% de remise', 'Livraison gratuite'], color: '#FFD700', icon: '🥇' },
+        { tier: 'platinum', name: 'Platine', minPoints: 5000, multiplier: 2, benefits: ['2 points par 100 FGN', '15% de remise', 'Livraison gratuite', 'Accès prioritaire'], color: '#E5E4E2', icon: '💎' },
+        { tier: 'diamond', name: 'Diamant', minPoints: 10000, multiplier: 2.5, benefits: ['2.5 points par 100 FGN', '20% de remise', 'Livraison gratuite', 'Menu exclusif', 'Concierge'], color: '#B9F2FF', icon: '💠' },
       ],
     };
   }
@@ -189,7 +189,7 @@ class LoyaltyService {
       { id: '3', name: 'Boisson gratuite', description: 'Une boisson gratuite de votre choix', type: 'free_item', pointsCost: 150, value: 1, minTier: 'bronze', isActive: true, startDate: new Date('2024-01-01'), currentRedemptions: 234 },
       { id: '4', name: 'Dessert gratuit', description: 'Un dessert gratuit de votre choix', type: 'free_item', pointsCost: 250, value: 1, minTier: 'silver', isActive: true, startDate: new Date('2024-01-01'), currentRedemptions: 98 },
       { id: '5', name: 'Livraison gratuite', description: 'Livraison gratuite sur votre prochaine commande', type: 'free_delivery', pointsCost: 100, value: 1, isActive: true, startDate: new Date('2024-01-01'), currentRedemptions: 312 },
-      { id: '6', name: 'Cashback 2000 FCFA', description: '2000 FCFA de cashback sur votre compte', type: 'cashback', pointsCost: 400, value: 2000, minTier: 'gold', isActive: true, startDate: new Date('2024-01-01'), currentRedemptions: 45 },
+      { id: '6', name: 'Cashback 2000 FGN', description: '2000 FGN de cashback sur votre compte', type: 'cashback', pointsCost: 400, value: 2000, minTier: 'gold', isActive: true, startDate: new Date('2024-01-01'), currentRedemptions: 45 },
       { id: '7', name: '15% de réduction', description: '15% de réduction - Exclusif Platine', type: 'discount', pointsCost: 350, value: 15, minTier: 'platinum', isActive: true, startDate: new Date('2024-01-01'), currentRedemptions: 23 },
       { id: '8', name: 'Menu dégustation', description: 'Accès au menu dégustation exclusif', type: 'special_access', pointsCost: 500, value: 1, minTier: 'diamond', isActive: true, startDate: new Date('2024-01-01'), currentRedemptions: 8, maxRedemptions: 50 },
     ];

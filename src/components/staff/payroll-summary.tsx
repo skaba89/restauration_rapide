@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface PayrollEntry {
@@ -57,9 +58,6 @@ const getInitials = (name: string) => {
   return parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : name.slice(0, 2).toUpperCase();
 };
 
-// Format currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
-
 // Role colors
 const ROLE_COLORS: Record<string, string> = {
   manager: 'bg-purple-100 text-purple-700',
@@ -72,6 +70,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export function PayrollSummary() {
+  const { formatCurrency } = useCurrencySafe();
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [payroll, setPayroll] = useState<PayrollEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');

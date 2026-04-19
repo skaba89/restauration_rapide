@@ -6,12 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Star, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => {
-  if (amount === 0) return 'Sur devis';
-  return `${amount.toLocaleString('fr-FR')} GNF/mois`;
-};
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface SubscriptionPlan {
   id: string;
@@ -30,6 +25,7 @@ interface SubscriptionPlansProps {
 }
 
 export function SubscriptionPlans({ onSelectPlan, selectedPlanId }: SubscriptionPlansProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -88,7 +84,7 @@ export function SubscriptionPlans({ onSelectPlan, selectedPlanId }: Subscription
           <CardContent className="space-y-4">
             <div>
               <span className="text-2xl font-bold text-orange-600">
-                {formatCurrency(plan.pricePerMonth)}
+                {plan.pricePerMonth === 0 ? 'Sur devis' : `${formatCurrency(plan.pricePerMonth)}/mois`}
               </span>
             </div>
 

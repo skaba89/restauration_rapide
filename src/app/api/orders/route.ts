@@ -170,9 +170,9 @@ export const POST = withAuth(async (request: NextRequest, user) => {
     if (!currency) {
       currency = await db.currency.create({
         data: {
-          code: 'XOF',
-          name: 'Franc CFA',
-          symbol: 'FCFA',
+          code: 'GNF',
+          name: 'Franc Guinéen (FGN)',
+          symbol: 'FGN',
           decimalPlaces: 0,
           isActive: true,
         },

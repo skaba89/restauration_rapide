@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         body: `🍕 *${order.restaurant.name}*\n\n` +
               `✅ Votre commande #${order.orderNumber} a été reçue!\n\n` +
               `📦 Statut: En attente de confirmation\n\n` +
-              `💰 Total: ${order.total.toLocaleString()} GNF\n\n` +
+              `💰 Total: ${order.total.toLocaleString()} FGN\n\n` +
               `Nous vous tiendrons informé de l'avancement de votre commande.`,
       },
     };

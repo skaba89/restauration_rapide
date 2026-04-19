@@ -90,7 +90,7 @@ async function runSeed() {
   let currency = await db.currency.findFirst({ where: { code: 'GNF' } });
   if (!currency) {
     currency = await db.currency.create({
-      data: { code: 'GNF', name: 'Franc Guinéen', symbol: 'FG', decimalPlaces: 0, isActive: true }
+      data: { code: 'GNF', name: 'Franc Guinéen (FGN)', symbol: 'FGN', decimalPlaces: 0, isActive: true }
     });
   }
 

@@ -38,9 +38,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const STATUS_CONFIG = {
   active: { label: 'Actif', color: 'bg-green-100 text-green-700 border-green-300', icon: CheckCircle },
@@ -83,6 +81,7 @@ interface SubscriptionDetailProps {
 }
 
 export function SubscriptionDetail({ subscription, onClose, onUpdate }: SubscriptionDetailProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [isLoading, setIsLoading] = useState(false);
   const [showPauseDialog, setShowPauseDialog] = useState(false);
   const [showSkipDialog, setShowSkipDialog] = useState(false);

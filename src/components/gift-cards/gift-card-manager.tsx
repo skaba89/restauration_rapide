@@ -39,9 +39,7 @@ import { GiftCardDesign } from './gift-card-design';
 import { GiftCardPurchase } from './gift-card-purchase';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Format date
 const formatDate = (date: Date | string) => {
@@ -84,6 +82,7 @@ interface GiftCard {
 }
 
 export function GiftCardManager() {
+  const { formatCurrency } = useCurrencySafe();
   const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
                     deliveryTime: restaurantInfo?.deliveryTime ?? 30,
                     rating: restaurantInfo?.rating ?? 4.5,
                     reviewCount: restaurantInfo?.reviewCount ?? 0,
-                    currency: restaurantInfo?.organization?.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+                    currency: restaurantInfo?.organization?.currency || { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
                   },
                   categories,
                   menus: [{
@@ -212,7 +212,7 @@ export async function GET(request: NextRequest) {
                 deliveryTime: restaurant.deliveryTime || 30,
                 rating: restaurant.rating || 0,
                 reviewCount: restaurant.reviewCount || 0,
-                currency: restaurant.organization?.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+                currency: restaurant.organization?.currency || { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
               },
               categories: allCategories,
               menus: restaurant.menus.map(menu => ({
@@ -292,7 +292,7 @@ export async function GET(request: NextRequest) {
           deliveryTime: 30,
           rating: 0,
           reviewCount: 0,
-          currency: { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+          currency: { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
         },
         categories: [],
         menus: [],

@@ -130,13 +130,13 @@ export default function RestaurantAdminLayout({
   const isActive = (href: string) => pathname === href;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b px-4 py-3">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b px-4 py-3">
         <div className="flex items-center justify-between">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-accent rounded-lg"
           >
             <MenuIcon className="w-6 h-6" />
           </button>
@@ -156,7 +156,7 @@ export default function RestaurantAdminLayout({
           <Link href={`/restaurant/${restaurantId}/orders`} className="relative">
             <Bell className="w-6 h-6" />
             {pendingOrders > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
                 {pendingOrders > 9 ? '9+' : pendingOrders}
               </span>
             )}
@@ -174,7 +174,7 @@ export default function RestaurantAdminLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r z-50 transform transition-transform ${
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-sidebar border-r z-50 transform transition-transform ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -186,7 +186,7 @@ export default function RestaurantAdminLayout({
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1 hover:bg-gray-100 rounded"
+              className="lg:hidden p-1 hover:bg-accent rounded"
             >
               <X className="w-5 h-5" />
             </button>
@@ -197,7 +197,7 @@ export default function RestaurantAdminLayout({
             <div className="relative">
               <button
                 onClick={() => setShowRestaurantPicker(!showRestaurantPicker)}
-                className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100"
+                className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-accent"
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
@@ -218,14 +218,14 @@ export default function RestaurantAdminLayout({
 
               {/* Dropdown */}
               {showRestaurantPicker && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-10">
                   {restaurants.map((r) => (
                     <Link
                       key={r.id}
                       href={`/restaurant/${r.id}/dashboard`}
                       onClick={() => setShowRestaurantPicker(false)}
-                      className={`flex items-center gap-2 p-2 hover:bg-gray-50 ${
-                        r.id === restaurantId ? 'bg-orange-50' : ''
+                      className={`flex items-center gap-2 p-2 hover:bg-accent/50 ${
+                        r.id === restaurantId ? 'bg-primary/5' : ''
                       }`}
                     >
                       <div
@@ -239,7 +239,7 @@ export default function RestaurantAdminLayout({
                   ))}
                   <Link
                     href="/my-restaurants"
-                    className="flex items-center gap-2 p-2 border-t text-orange-600 hover:bg-orange-50"
+                    className="flex items-center gap-2 p-2 border-t text-primary hover:bg-primary/5"
                   >
                     <Plus className="w-5 h-5" />
                     <span className="text-sm">Nouveau restaurant</span>
@@ -259,14 +259,14 @@ export default function RestaurantAdminLayout({
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                 isActive(item.href)
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-accent'
               }`}
             >
               {item.icon}
               <span className="flex-1">{item.label}</span>
               {item.badge !== undefined && item.badge > 0 && (
-                <Badge className="bg-red-500 text-white text-xs">
+                <Badge className="bg-destructive text-destructive-foreground text-xs">
                   {item.badge > 99 ? '99+' : item.badge}
                 </Badge>
               )}
@@ -279,7 +279,7 @@ export default function RestaurantAdminLayout({
           <div className="flex items-center gap-3">
             <Link
               href="/my-restaurants"
-              className="flex-1 text-center text-sm text-gray-500 hover:text-gray-700"
+              className="flex-1 text-center text-sm text-muted-foreground hover:text-foreground"
             >
               Tous mes restaurants
             </Link>
@@ -289,7 +289,7 @@ export default function RestaurantAdminLayout({
                 document.cookie = 'session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
                 router.push('/login');
               }}
-              className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
+              className="p-2 hover:bg-accent rounded-lg text-gray-500"
             >
               <LogOut className="w-5 h-5" />
             </button>

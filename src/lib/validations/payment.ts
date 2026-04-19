@@ -39,7 +39,7 @@ export const mobileMoneyProviderSchema = z.enum([
 export const createPaymentSchema = z.object({
   orderId: z.string().min(1, 'La commande est requise'),
   amount: z.number().positive('Le montant doit etre positif'),
-  currency: z.string().length(3, 'Code devise invalide').default('XOF'),
+  currency: z.string().length(3, 'Code devise invalide').default('GNF'),
   method: paymentMethodSchema,
   phoneNumber: z.string().min(8, 'Numero de telephone invalide').optional(),
   customerEmail: z.string().email('Email invalide').optional(),
@@ -61,7 +61,7 @@ export const mobileMoneyPaymentSchema = z.object({
   amount: z.number().positive('Le montant doit etre positif'),
   provider: mobileMoneyProviderSchema,
   phoneNumber: z.string().min(8, 'Numero de telephone invalide'),
-  currency: z.string().length(3).default('XOF'),
+  currency: z.string().length(3).default('GNF'),
   callbackUrl: z.string().url().optional(),
   metadata: z.record(z.string(), z.any()).optional(),
 });
@@ -117,7 +117,7 @@ export const orangeMoneyPaymentSchema = z.object({
   orderId: z.string().min(1),
   amount: z.number().positive(),
   phoneNumber: z.string().regex(/^(\+225|225)?[0-9]{8,10}$/, 'Numero Orange Money invalide'),
-  currency: z.string().default('XOF'),
+  currency: z.string().default('GNF'),
 });
 
 // MTN MoMo specific schema
@@ -125,7 +125,7 @@ export const mtnMomoPaymentSchema = z.object({
   orderId: z.string().min(1),
   amount: z.number().positive(),
   phoneNumber: z.string().regex(/^(\+225|225)?[0-9]{8,10}$/, 'Numero MTN invalide'),
-  currency: z.string().default('XOF'),
+  currency: z.string().default('GNF'),
 });
 
 // Wave specific schema
@@ -133,7 +133,7 @@ export const wavePaymentSchema = z.object({
   orderId: z.string().min(1),
   amount: z.number().positive(),
   phoneNumber: z.string().regex(/^(\+221|221)?[0-9]{9}$/, 'Numero Wave invalide'),
-  currency: z.string().default('XOF'),
+  currency: z.string().default('GNF'),
 });
 
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;

@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Integration {
   id: string;
@@ -70,6 +71,7 @@ const PROVIDER_DETAILS: Record<string, { name: string; logo: string; logoImg?: s
 };
 
 export function IntegrationsManager() {
+  const { currencySymbol } = useCurrencySafe();
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [summary, setSummary] = useState<IntegrationSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -317,7 +319,7 @@ export function IntegrationsManager() {
                     {integration.type === 'payment' && integration.fees && (
                       <p className="text-sm text-gray-600">
                         Frais: {integration.fees.percentage}% 
-                        {integration.fees.fixed > 0 && ` + ${integration.fees.fixed} GNF`}
+                        {integration.fees.fixed > 0 && ` + ${integration.fees.fixed} ${currencySymbol}`}
                       </p>
                     )}
 

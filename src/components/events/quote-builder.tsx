@@ -42,9 +42,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface QuoteItem {
@@ -139,6 +137,7 @@ interface QuoteBuilderProps {
 }
 
 export function QuoteBuilder({ event, onClose, onSuccess }: QuoteBuilderProps) {
+  const { formatCurrency, currencySymbol } = useCurrencySafe();
   // Customer info state
   const [customerName, setCustomerName] = useState(event?.customerName || '');
   const [customerPhone, setCustomerPhone] = useState(event?.customerPhone || '');
@@ -645,7 +644,7 @@ export function QuoteBuilder({ event, onClose, onSuccess }: QuoteBuilderProps) {
                   className="w-32"
                   min="0"
                 />
-                <span className="text-muted-foreground">GNF</span>
+                <span className="text-muted-foreground">{currencySymbol}</span>
               </div>
 
               {/* Deposit */}

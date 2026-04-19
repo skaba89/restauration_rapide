@@ -357,9 +357,9 @@ export const notificationTemplates: Record<
 // ============================================
 
 /**
- * Format currency (FCFA by default)
+ * Format currency (FGN by default)
  */
-function formatCurrency(amount: number, currency: string = 'FCFA'): string {
+function formatCurrency(amount: number, currency: string = 'FGN'): string {
   return `${amount.toLocaleString('fr-FR')} ${currency}`;
 }
 

@@ -28,6 +28,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { BranchAnalytics } from './branch-analytics';
 import { BranchDetail } from './branch-detail';
+import { useCurrencySafe } from '@/lib/currency-context';
 import { 
   Building, 
   MapPin, 
@@ -60,11 +61,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   closed: { label: 'Fermé', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', icon: XCircle },
 };
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
-
 export function BranchManager() {
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
   const [branches, setBranches] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);

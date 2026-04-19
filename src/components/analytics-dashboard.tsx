@@ -487,7 +487,7 @@ function RevenueTab({ revenue }: { revenue?: any }) {
           <div className="flex justify-between">
             <span className="text-muted-foreground">Variation %</span>
             <Badge variant={revenue.changePercent >= 0 ? 'default' : 'destructive'}>
-              {revenue.changePercent >= 0 ? '+' : ''}{revenue.changePercent.toFixed(1)}%
+              {(revenue?.changePercent ?? 0) >= 0 ? '+' : ''}{(revenue?.changePercent ?? 0).toFixed(1)}%
             </Badge>
           </div>
         </CardContent>

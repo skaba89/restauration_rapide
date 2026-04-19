@@ -42,9 +42,7 @@ import { RecipeCalculator } from './recipe-calculator';
 import { RecipeDetail } from './recipe-detail';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Category labels
 const CATEGORY_LABELS: Record<string, string> = {
@@ -125,6 +123,7 @@ interface Recipe {
 }
 
 export function RecipeManager() {
+  const { formatCurrency } = useCurrencySafe();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

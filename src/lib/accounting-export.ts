@@ -275,9 +275,9 @@ export const defaultExports: AccountingExport[] = [
   },
 ];
 
-// Format currency in GNF
-export const formatGNF = (amount: number): string => {
-  return `${amount.toLocaleString('fr-FR')} GNF`;
+// Format currency with dynamic currency code
+export const formatGNF = (amount: number, currency: string = 'GNF'): string => {
+  return `${amount.toLocaleString('fr-FR')} ${currency}`;
 };
 
 // Format date for exports

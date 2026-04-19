@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { format, differenceInMinutes } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface TimeEntry {
@@ -80,7 +81,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export function TimeClock() {
-  const { formatCurrency } = useCurrencySafe();
+  const { formatCurrency, currencySymbol } = useCurrencySafe();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedStaffId, setSelectedStaffId] = useState<string>('');
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
@@ -319,7 +320,7 @@ export function TimeClock() {
                         <div>
                           <p className="font-medium">Non pointé</p>
                           <p className="text-sm text-muted-foreground">
-                            {staff?.hourlyRate.toLocaleString()} GNF/h
+                            {formatCurrency(staff?.hourlyRate || 0)}/h
                           </p>
                         </div>
                       </div>

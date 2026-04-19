@@ -27,17 +27,10 @@ export async function GET() {
       // Create currencies
       const gnf = await db.currency.upsert({
         where: { code: 'GNF' },
-        update: { name: 'Franc Guinéen', symbol: 'GNF', decimalPlaces: 0, isActive: true },
-        create: { code: 'GNF', name: 'Franc Guinéen', symbol: 'GNF', decimalPlaces: 0, isActive: true },
+        update: { name: 'Franc Guinéen (FGN)', symbol: 'FGN', decimalPlaces: 0, isActive: true },
+        create: { code: 'GNF', name: 'Franc Guinéen (FGN)', symbol: 'FGN', decimalPlaces: 0, isActive: true },
       });
       result.steps.push(`✓ Currency GNF`);
-
-      await db.currency.upsert({
-        where: { code: 'XOF' },
-        update: { name: 'Franc CFA', symbol: 'FCFA', decimalPlaces: 0, isActive: true },
-        create: { code: 'XOF', name: 'Franc CFA', symbol: 'FCFA', decimalPlaces: 0, isActive: true },
-      });
-      result.steps.push(`✓ Currency XOF`);
 
       // Create country
       const guinea = await db.country.upsert({

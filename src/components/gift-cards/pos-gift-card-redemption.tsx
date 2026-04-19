@@ -28,9 +28,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Status config
 const STATUS_CONFIG: Record<string, { color: string; bgColor: string; label: string; icon: React.ElementType }> = {
@@ -66,6 +64,7 @@ export function PosGiftCardRedemption({
   onRedeem,
   processedBy
 }: PosGiftCardRedemptionProps) {
+  const { formatCurrency, currencySymbol } = useCurrencySafe();
   const [code, setCode] = useState('');
   const [balanceInfo, setBalanceInfo] = useState<GiftCardBalance | null>(null);
   const [redeemAmount, setRedeemAmount] = useState('');
@@ -280,7 +279,7 @@ export function PosGiftCardRedemption({
                   <div className="flex gap-2">
                     <Input
                       type="number"
-                      placeholder="Montant en GNF"
+                      placeholder={`Montant en ${currencySymbol}`}
                       value={redeemAmount}
                       onChange={(e) => setRedeemAmount(e.target.value)}
                       max={balanceInfo.balance}

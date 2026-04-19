@@ -111,7 +111,7 @@ export function TipsByEmployee({
   const totalEarned = earnings.reduce((sum, e) => sum + e.tipsEarned, 0);
   const totalPending = earnings.reduce((sum, e) => sum + e.pendingTips, 0);
   const totalPaid = earnings.reduce((sum, e) => sum + e.paidTips, 0);
-  const avgPerHour = earnings.reduce((sum, e) => sum + e.tipsPerHour, 0) / earnings.length;
+  const avgPerHour = earnings.length > 0 ? earnings.reduce((sum, e) => sum + e.tipsPerHour, 0) / earnings.length : 0;
 
   // Prepare chart data
   const chartData = filteredEarnings.slice(0, 5).map(e => ({
@@ -329,7 +329,7 @@ function EmployeeCard({
   rank: number;
   maxEarned: number;
 }) {
-  const percentage = (employee.tipsEarned / maxEarned) * 100;
+  const percentage = maxEarned > 0 ? (employee.tipsEarned / maxEarned) * 100 : 0;
   
   return (
     <div className="p-4 rounded-lg border hover:bg-muted/50 transition-colors">
@@ -381,7 +381,7 @@ function EmployeeCard({
             </p>
           )}
           <p className="text-xs text-muted-foreground">
-            {((employee.tipsEarned / maxEarned) * 100).toFixed(1)}% du max
+            {maxEarned > 0 ? ((employee.tipsEarned / maxEarned) * 100).toFixed(1) : '0.0'}% du max
           </p>
         </div>
       </div>

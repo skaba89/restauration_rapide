@@ -24,9 +24,7 @@ import {
 } from '@/components/ui/table';
 import { Calculator, Plus, Trash2, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Common units
 const UNITS = [
@@ -80,6 +78,7 @@ interface RecipeCalculatorProps {
 }
 
 export function RecipeCalculator({ initialIngredients = [], onCalculate }: RecipeCalculatorProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     initialIngredients.length > 0 ? initialIngredients : [
       { id: '1', inventoryItemId: '', name: '', quantity: 0, unit: 'kg', cost: 0 }

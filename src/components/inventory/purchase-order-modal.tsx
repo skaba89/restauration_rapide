@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, Loader2, Calendar, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface InventoryItem {
   id: string;
@@ -63,15 +64,13 @@ interface PurchaseOrderModalProps {
   onSuccess?: () => void;
 }
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
-
 export function PurchaseOrderModal({
   open,
   onOpenChange,
   items,
   onSuccess,
 }: PurchaseOrderModalProps) {
+  const { formatCurrency } = useCurrencySafe();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [suppliers] = useState<Supplier[]>([]);

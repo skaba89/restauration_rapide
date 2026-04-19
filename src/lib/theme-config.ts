@@ -33,6 +33,14 @@ export interface ColorPreset {
 
 export const COLOR_PRESETS: ColorPreset[] = [
   {
+    name: 'moderne-pro',
+    label: 'Moderne Pro',
+    primary: '#059669',
+    secondary: '#d1fae5',
+    accent: '#047857',
+    description: 'Palette moderne émeraude, élégante et professionnelle',
+  },
+  {
     name: 'classique-orange',
     label: 'Classique Orange',
     primary: '#f97316',
@@ -54,7 +62,7 @@ export const COLOR_PRESETS: ColorPreset[] = [
     primary: '#0ea5e9',
     secondary: '#bae6fd',
     accent: '#0284c7',
-    description: 'Tons bleus rappelant l\'océan Atlantique',
+    description: 'Tons bleus océaniques frais et apaisants',
   },
   {
     name: 'rouge-passion',
@@ -118,15 +126,15 @@ export type FontOption = (typeof FONT_OPTIONS)[number];
 // --- Default Config ---
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  preset: 'bleu-ocean',
-  primaryColor: '#0ea5e9',
-  secondaryColor: '#bae6fd',
-  accentColor: '#0284c7',
+  preset: 'moderne-pro',
+  primaryColor: '#059669',
+  secondaryColor: '#d1fae5',
+  accentColor: '#047857',
   fontHeading: 'Inter',
   fontBody: 'Inter',
-  borderRadius: 0.75,
+  borderRadius: 0.625,
   sidebarStyle: 'dark',
-  sidebarColor: '#1c1917',
+  sidebarColor: '#064e3b',
   targetPages: ['admin', 'pos', 'kitchen', 'driver', 'public', 'organisateur'],
 };
 
@@ -318,12 +326,12 @@ export function applyTheme(config: ThemeConfig): void {
 
   switch (config.sidebarStyle) {
     case 'dark':
-      sidebarBg = hexToOkLCH('#1c1917');
-      sidebarFg = hexToOkLCH('#fafaf9');
+      sidebarBg = hexToOkLCH(config.sidebarColor || '#064e3b');
+      sidebarFg = hexToOkLCH('#f0fdf4');
       sidebarPrimary = primaryOkLCH;
       sidebarPrimaryFg = primaryFg;
-      sidebarAccent = hexToOkLCH('#292524');
-      sidebarAccentFg = hexToOkLCH('#fafaf9');
+      sidebarAccent = hexToOkLCH(lightenHex(config.sidebarColor || '#064e3b', 0.1));
+      sidebarAccentFg = hexToOkLCH('#f0fdf4');
       break;
     case 'colored':
       sidebarBg = hexToOkLCH(config.sidebarColor);
@@ -353,7 +361,7 @@ export function applyTheme(config: ThemeConfig): void {
 
   // Border colors for sidebar
   const sidebarBorder = config.sidebarStyle === 'dark'
-    ? hexToOkLCH('#292524')
+    ? hexToOkLCH(lightenHex(config.sidebarColor || '#064e3b', 0.1))
     : config.sidebarStyle === 'colored'
     ? hexToOkLCH(lightenHex(config.sidebarColor, 0.15))
     : hexToOkLCH('#e7e5e4');

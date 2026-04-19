@@ -369,7 +369,7 @@ function formatCurrency(amount: number, locale: Locale): string {
     style: 'decimal',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount) + ' FCFA';
+  }).format(amount) + ' FGN';
 }
 
 /**

@@ -44,9 +44,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface EventMenuItem {
@@ -131,6 +129,7 @@ export function EventDetail({
   onCreateQuote,
   onClose,
 }: EventDetailProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
 

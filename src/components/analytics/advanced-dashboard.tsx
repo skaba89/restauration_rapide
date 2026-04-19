@@ -24,6 +24,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface DashboardStats {
   revenue: { total: number; change: number; trend: number[] };
@@ -65,7 +66,7 @@ function SimplePieChart({ data }: { data: { label: string; value: number; color:
   
   // Calculate cumulative angles for each segment
   const segments = data.reduce<Array<{ startAngle: number; endAngle: number; color: string }>>((acc, d) => {
-    const angle = (d.value / total) * 360;
+    const angle = total > 0 ? (d.value / total) * 360 : 0;
     const startAngle = acc.length > 0 ? acc[acc.length - 1].endAngle : 0;
     acc.push({ startAngle, endAngle: startAngle + angle, color: d.color });
     return acc;
@@ -110,6 +111,7 @@ function SimplePieChart({ data }: { data: { label: string; value: number; color:
 }
 
 export function AdvancedDashboard() {
+  const { formatCurrency } = useCurrencySafe();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState('week');
@@ -207,8 +209,6 @@ export function AdvancedDashboard() {
   }
 
   if (!stats) return null;
-
-  const formatCurrency = (value: number) => `${value.toLocaleString('fr-FR')} GNF`;
 
   return (
     <div className="space-y-6">
@@ -477,7 +477,7 @@ export function AdvancedDashboard() {
                       <div className="h-2 bg-gray-200 rounded-full">
                         <div 
                           className="h-2 bg-orange-500 rounded-full"
-                          style={{ width: `${(product.revenue / stats.products.top[0].revenue) * 100}%` }}
+                          style={{ width: `${stats.products.top[0]?.revenue > 0 ? (product.revenue / stats.products.top[0].revenue) * 100 : 0}%` }}
                         />
                       </div>
                     </div>

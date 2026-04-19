@@ -109,7 +109,7 @@ export function TipsDistribution({
     switch (method) {
       case 'equal':
         // Equal split among all staff
-        const equalAmount = Math.round(pendingAmount / staff.length);
+        const equalAmount = staff.length > 0 ? Math.round(pendingAmount / staff.length) : 0;
         staff.forEach(s => {
           distributions.push({
             id: `dist-preview-${s.id}`,
@@ -117,7 +117,7 @@ export function TipsDistribution({
             staffId: s.id,
             staffName: s.name,
             amount: equalAmount,
-            percentage: (equalAmount / pendingAmount) * 100,
+            percentage: pendingAmount > 0 ? (equalAmount / pendingAmount) * 100 : 0,
             hoursWorked: s.hoursWorked,
             status: 'pending'
           });
@@ -128,14 +128,14 @@ export function TipsDistribution({
         // Distribution based on hours worked
         const totalHours = staff.reduce((sum, s) => sum + s.hoursWorked, 0);
         staff.forEach(s => {
-          const amount = Math.round(pendingAmount * (s.hoursWorked / totalHours));
+          const amount = totalHours > 0 ? Math.round(pendingAmount * (s.hoursWorked / totalHours)) : 0;
           distributions.push({
             id: `dist-preview-${s.id}`,
             tipId: 'preview',
             staffId: s.id,
             staffName: s.name,
             amount,
-            percentage: (amount / pendingAmount) * 100,
+            percentage: pendingAmount > 0 ? (amount / pendingAmount) * 100 : 0,
             hoursWorked: s.hoursWorked,
             status: 'pending'
           });
@@ -152,7 +152,7 @@ export function TipsDistribution({
 
         Object.entries(staffByRole).forEach(([role, members]) => {
           const roleTotal = pendingAmount * ((rolePercentages[role as keyof typeof rolePercentages] || 0) / 100);
-          const perMember = Math.round(roleTotal / members.length);
+          const perMember = members.length > 0 ? Math.round(roleTotal / members.length) : 0;
           
           members.forEach(s => {
             distributions.push({
@@ -161,7 +161,7 @@ export function TipsDistribution({
               staffId: s.id,
               staffName: s.name,
               amount: perMember,
-              percentage: (perMember / pendingAmount) * 100,
+              percentage: pendingAmount > 0 ? (perMember / pendingAmount) * 100 : 0,
               hoursWorked: s.hoursWorked,
               status: 'pending'
             });

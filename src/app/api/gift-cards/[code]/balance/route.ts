@@ -37,7 +37,7 @@ export const GET = withErrorHandler(async (
       expiresAt: card.expiresAt,
       purchasedAt: card.purchasedAt,
       recipientName: card.recipientName,
-      formattedBalance: `${card.currentBalance.toLocaleString('fr-FR')} GNF`,
+      formattedBalance: `${card.currentBalance.toLocaleString('fr-FR')} FGN`,
       formattedExpiry: new Date(card.expiresAt).toLocaleDateString('fr-FR', {
         day: 'numeric',
         month: 'long',

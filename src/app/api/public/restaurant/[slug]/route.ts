@@ -29,8 +29,8 @@ const DEFAULT_RESTAURANT = {
   reviewCount: 0,
   currency: {
     code: 'GNF',
-    symbol: 'GNF',
-    name: 'Franc Guinéen',
+    symbol: 'FGN',
+    name: 'Franc Guinéen (FGN)',
   },
   settings: {
     acceptsCash: true,
@@ -234,7 +234,7 @@ export async function GET(
         if (restaurant && restaurant.menus.length > 0) {
           const formattedRestaurant = {
             ...restaurant,
-            currency: restaurant.organization?.currency || { code: 'GNF', symbol: 'GNF', name: 'Franc Guinéen' },
+            currency: restaurant.organization?.currency || { code: 'GNF', symbol: 'FGN', name: 'Franc Guinéen (FGN)' },
             organization: undefined,
             settings: restaurant.settings as any,
             hours: restaurant.hours.map((h: any) => ({ dayOfWeek: h.dayOfWeek, openTime: h.openTime, closeTime: h.closeTime, isClosed: h.isClosed })),

@@ -21,8 +21,8 @@ let packagesStore = [];
 // Helper to generate IDs
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+// Format FGN currency
+const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FGN`;
 
 // GET - List packages
 export const GET = withErrorHandler(async (request: NextRequest) => {

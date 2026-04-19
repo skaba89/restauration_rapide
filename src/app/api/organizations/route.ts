@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       address,
       city,
       countryId = 'ci',
-      currencyId = 'xof',
+      currencyId = 'gnf',
       businessType,
       taxId,
       website,
@@ -134,8 +134,8 @@ export async function POST(request: Request) {
       currency = await db.currency.create({
         data: {
           code: currencyId.toUpperCase(),
-          name: currencyId.toUpperCase() === 'XOF' ? 'Franc CFA' : currencyId,
-          symbol: currencyId.toUpperCase() === 'XOF' ? 'FCFA' : currencyId,
+          name: currencyId.toUpperCase() === 'GNF' ? 'Franc Guinéen (FGN)' : currencyId,
+          symbol: currencyId.toUpperCase() === 'GNF' ? 'FGN' : currencyId,
           decimalPlaces: 0,
           isActive: true,
         },

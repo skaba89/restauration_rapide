@@ -188,7 +188,7 @@ export const openApiSpec = {
           id: { type: 'string' },
           orderId: { type: 'string' },
           amount: { type: 'number' },
-          currency: { type: 'string', example: 'XOF' },
+          currency: { type: 'string', example: 'GNF' },
           method: { type: 'string', enum: ['CASH', 'MOBILE_MONEY_ORANGE', 'MOBILE_MONEY_MTN', 'MOBILE_MONEY_WAVE', 'MOBILE_MONEY_MPESA', 'CARD', 'WALLET'] },
           status: { type: 'string', enum: ['PENDING', 'PROCESSING', 'PAID', 'PARTIAL', 'FAILED', 'REFUNDED', 'CANCELLED'] },
           transactionId: { type: 'string' },

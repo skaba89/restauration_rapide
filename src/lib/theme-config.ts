@@ -411,20 +411,15 @@ export function useThemeConfig(): {
     // Initialize from localStorage synchronously (only runs on first render)
     return loadThemeConfig();
   });
-  const hasAppliedRef = useRef(false);
 
-  // Apply theme on mount (side effect for DOM manipulation)
+  // Apply theme whenever config changes (proper side effect via useEffect)
   useEffect(() => {
-    if (!hasAppliedRef.current) {
-      applyTheme(config);
-      hasAppliedRef.current = true;
-    }
+    applyTheme(config);
   }, [config]);
 
   const updateConfig = useCallback((partial: Partial<ThemeConfig>) => {
     setConfig((prev) => {
       const next = { ...prev, ...partial };
-      applyTheme(next);
       saveThemeConfig(next);
       return next;
     });
@@ -441,7 +436,6 @@ export function useThemeConfig(): {
         secondaryColor: preset.secondary,
         accentColor: preset.accent,
       };
-      applyTheme(next);
       saveThemeConfig(next);
       return next;
     });
@@ -449,7 +443,6 @@ export function useThemeConfig(): {
 
   const resetToDefaults = useCallback(() => {
     setConfig(DEFAULT_THEME_CONFIG);
-    applyTheme(DEFAULT_THEME_CONFIG);
     saveThemeConfig(DEFAULT_THEME_CONFIG);
   }, []);
 

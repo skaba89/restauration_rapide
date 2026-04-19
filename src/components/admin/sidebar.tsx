@@ -155,8 +155,8 @@ function SidebarCategory({ category, pathname, onNavigate }: SidebarCategoryProp
         <button
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
             isChildActive
-              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-              : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+              ? 'bg-primary/10 text-primary dark:bg-primary/20'
+              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
           }`}
         >
           <category.icon className="h-5 w-5" />
@@ -179,8 +179,8 @@ function SidebarCategory({ category, pathname, onNavigate }: SidebarCategoryProp
               onClick={onNavigate}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                 isActive
-                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                  : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-foreground'
+                  ? 'bg-primary/10 text-primary dark:bg-primary/20'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               }`}
             >
               <item.icon className="h-4 w-4" />
@@ -208,12 +208,12 @@ export function AdminSidebarContent({ pathname, onNavigate }: AdminSidebarConten
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-6 border-b">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-          <Shield className="h-6 w-6 text-white" />
+        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+          <Shield className="h-6 w-6 text-primary-foreground" />
         </div>
         <div>
           <h1 className="font-bold text-lg">Restaurant OS</h1>
-          <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Admin Panel</p>
+          <p className="text-xs text-primary font-medium">Admin Panel</p>
         </div>
       </div>
 
@@ -224,6 +224,10 @@ export function AdminSidebarContent({ pathname, onNavigate }: AdminSidebarConten
           <span className="text-green-600 dark:text-green-400 font-medium">Plateforme opérationnelle</span>
         </div>
         <p className="text-xs text-muted-foreground mt-1">Tous les systèmes fonctionnent</p>
+        <div className="flex items-center gap-1 mt-2">
+          <Globe className="h-3 w-3 text-primary" />
+          <span className="text-xs text-primary">v2.0.0</span>
+        </div>
       </div>
 
       {/* Navigation with categories */}
@@ -242,16 +246,12 @@ export function AdminSidebarContent({ pathname, onNavigate }: AdminSidebarConten
 
       {/* Admin Info */}
       <div className="p-4 border-t">
-        <div className="p-3 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20">
+        <div className="p-3 rounded-lg bg-primary/5">
           <div className="flex items-center gap-2">
-            <Database className="h-4 w-4 text-purple-600" />
+            <Database className="h-4 w-4 text-primary" />
             <span className="font-semibold text-sm">SaaS Multi-Tenant</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">Plateforme Africa-First</p>
-          <div className="flex items-center gap-1 mt-2">
-            <Globe className="h-3 w-3 text-purple-500" />
-            <span className="text-xs text-purple-600 dark:text-purple-400">v2.0.0</span>
-          </div>
         </div>
       </div>
     </div>

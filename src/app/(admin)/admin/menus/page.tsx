@@ -227,14 +227,15 @@ export default function AdminMenusPage() {
       setLoading(true);
       const response = await fetchWithAuth('/api/admin/menus');
       if (!response.ok) throw new Error('Failed to fetch menus');
-      const data = await response.json();
-      setRestaurants(data.restaurants || []);
+      const result = await response.json();
+      const restaurantsData = result.data?.restaurants || result.restaurants || [];
+      setRestaurants(restaurantsData);
       
       // Select first restaurant by default
-      if (data.restaurants?.length > 0 && !selectedRestaurantId) {
-        setSelectedRestaurantId(data.restaurants[0].id);
-        if (data.restaurants[0].menus?.length > 0) {
-          setSelectedMenuId(data.restaurants[0].menus[0].id);
+      if (restaurantsData.length > 0 && !selectedRestaurantId) {
+        setSelectedRestaurantId(restaurantsData[0].id);
+        if (restaurantsData[0].menus?.length > 0) {
+          setSelectedMenuId(restaurantsData[0].menus[0].id);
         }
       }
     } catch (error) {

@@ -219,11 +219,11 @@ export default function SetupPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="firstName">Prénom *</Label>
-                <Input id="firstName" placeholder="Amadou" value={firstName} onChange={e => setFirstName(e.target.value)} />
+                <Input id="firstName" placeholder="Amadou" value={firstName} onChange={e => setFirstName(e.target.value)} aria-required="true" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Nom *</Label>
-                <Input id="lastName" placeholder="Diallo" value={lastName} onChange={e => setLastName(e.target.value)} />
+                <Input id="lastName" placeholder="Diallo" value={lastName} onChange={e => setLastName(e.target.value)} aria-required="true" />
               </div>
             </div>
 
@@ -231,7 +231,7 @@ export default function SetupPage() {
               <Label htmlFor="email">Email *</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="email" type="email" placeholder="votre@email.com" className="pl-10" value={email} onChange={e => setEmail(e.target.value)} />
+                <Input id="email" type="email" placeholder="votre@email.com" className="pl-10" value={email} onChange={e => setEmail(e.target.value)} aria-required="true" />
               </div>
             </div>
 
@@ -247,7 +247,7 @@ export default function SetupPage() {
               <Label htmlFor="password">Mot de passe * (min. 8 caractères)</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Min. 8 caractères" className="pl-10 pr-10" value={password} onChange={e => setPassword(e.target.value)} />
+                <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Min. 8 caractères" className="pl-10 pr-10" value={password} onChange={e => setPassword(e.target.value)} aria-required="true" />
                 <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
@@ -258,7 +258,7 @@ export default function SetupPage() {
               <Label htmlFor="confirmPassword">Confirmer le mot de passe *</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="confirmPassword" type="password" placeholder="Confirmer" className="pl-10" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                <Input id="confirmPassword" type="password" placeholder="Confirmer" className="pl-10" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} aria-required="true" />
               </div>
             </div>
 
@@ -272,7 +272,7 @@ export default function SetupPage() {
               <Label htmlFor="restaurantName">Nom du restaurant *</Label>
               <div className="relative">
                 <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="restaurantName" placeholder="KFM Delice" className="pl-10" value={restaurantName} onChange={e => handleRestaurantNameChange(e.target.value)} />
+                <Input id="restaurantName" placeholder="KFM Delice" className="pl-10" value={restaurantName} onChange={e => handleRestaurantNameChange(e.target.value)} aria-required="true" />
               </div>
             </div>
 

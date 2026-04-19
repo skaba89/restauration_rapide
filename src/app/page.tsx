@@ -65,6 +65,8 @@ export async function generateMetadata(): Promise<Metadata> {
       'product:brand': 'Restaurant OS',
       'product:category': 'Business Software',
       'app:version': '1.0.0',
+      'article:modified_time': new Date().toISOString().split('T')[0],
+      'article:published_time': '2025-01-15',
     },
   };
 }

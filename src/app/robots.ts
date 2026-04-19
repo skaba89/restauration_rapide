@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://restaurant-os.app';
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://restauration-kfm.onrender.com';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -64,22 +64,36 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: 'TelegramBot',
         allow: '/',
       },
-      // Block AI training crawlers (optional - remove if you want AI indexing)
+      // Allow AI training crawlers for Generative Engine Optimization (GEO)
       {
         userAgent: 'GPTBot',
-        disallow: '/',
+        allow: '/',
+        disallow: ['/api/', '/_next/', '/admin/'],
       },
       {
         userAgent: 'ChatGPT-User',
-        disallow: '/',
+        allow: '/',
+        disallow: ['/api/', '/_next/', '/admin/'],
       },
       {
         userAgent: 'CCBot',
-        disallow: '/',
+        allow: '/',
+        disallow: ['/api/', '/_next/', '/admin/'],
       },
       {
         userAgent: 'anthropic-ai',
-        disallow: '/',
+        allow: '/',
+        disallow: ['/api/', '/_next/', '/admin/'],
+      },
+      {
+        userAgent: 'Google-Extended',
+        allow: '/',
+        disallow: ['/api/', '/_next/', '/admin/'],
+      },
+      {
+        userAgent: 'PerplexityBot',
+        allow: '/',
+        disallow: ['/api/', '/_next/', '/admin/'],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

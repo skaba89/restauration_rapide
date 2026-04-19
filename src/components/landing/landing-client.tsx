@@ -5,7 +5,7 @@
 // Africa-First Restaurant Management System
 // ============================================
 
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, useState } from 'react';
 import Link from 'next/link';
 import {
   Smartphone,
@@ -19,9 +19,10 @@ import {
   Play,
   Star,
   MapPin,
-  Globe
+  Globe,
+  ChevronDown
 } from 'lucide-react';
-import { LandingPageJsonLd } from '@/components/seo/json-ld';
+import { LandingPageJsonLd, FAQJsonLd } from '@/components/seo/json-ld';
 
 // Feature data
 const features = [
@@ -128,6 +129,40 @@ const testimonials = [
   }
 ];
 
+// FAQ items
+const faqItems = [
+  {
+    question: "Qu'est-ce que Restaurant OS ?",
+    answer:
+      "Restaurant OS est un système de gestion complet tout-en-un conçu spécifiquement pour les restaurants en Afrique. Il comprend la gestion des commandes, un Kitchen Display System (KDS), le suivi GPS des livraisons moto, l'intégration Mobile Money (Orange Money, MTN MoMo, Wave, M-Pesa), des analytics avancés et un mode hors-ligne. C'est la plateforme utilisée par KFM DELICE à Conakry.",
+  },
+  {
+    question: "Comment fonctionne le paiement Mobile Money ?",
+    answer:
+      "Restaurant OS intègre nativement les principaux opérateurs de paiement mobile africains : Orange Money et MTN MoMo en Guinée, Wave au Sénégal, et M-Pesa au Kenya. Lorsqu'un client passe commande, il peut payer directement via son téléphone mobile en quelques secondes. La transaction est confirmée en temps réel et le restaurant reçoit la notification instantanément.",
+  },
+  {
+    question: "Restaurant OS fonctionne-t-il hors ligne ?",
+    answer:
+      "Oui ! Restaurant OS est une Progressive Web App (PWA) conçue avec une architecture offline-first. Si la connexion internet est interrompue, vous pouvez continuer à prendre des commandes, gérer votre menu et suivre les livraisons. Toutes les données sont synchronisées automatiquement dès que la connexion est rétablie.",
+  },
+  {
+    question: "Combien coûte Restaurant OS ?",
+    answer:
+      "Restaurant OS propose un plan gratuit pour découvrir la plateforme avec 1 restaurant et 2 utilisateurs. Ensuite, les plans démarrent à 29 $/mois (Starter) et vont jusqu'à 199 $/mois (Business) selon vos besoins. Tous les plans incluent un essai gratuit de 14 jours sans carte de crédit requise.",
+  },
+  {
+    question: "Quels pays sont couverts ?",
+    answer:
+      "Restaurant OS est conçu pour l'Afrique et couvre actuellement la Guinée (Conakry), la Côte d'Ivoire (Abidjan), le Sénégal (Dakar) et le Ghana (Accra). Nous prévoyons d'étendre notre couverture au Mali, au Burkina Faso, au Cameroun et au Nigeria dans les prochains mois. Chaque pays bénéficie d'une intégration avec les opérateurs Mobile Money locaux.",
+  },
+  {
+    question: "Comment démarrer avec Restaurant OS ?",
+    answer:
+      "C'est très simple ! Créez un compte gratuitement sur notre plateforme, configurez les informations de votre restaurant (nom, menu, horaires), et vous êtes opérationnel en moins de 5 minutes. Notre équipe d'assistance est disponible pour vous accompagner et répondre à toutes vos questions.",
+  },
+];
+
 // Mobile Money partners with official logos
 const mobileMoneyPartners = [
   { name: 'Orange Money', color: '#FF6600', logo: '/images/partners/orange-money.png' },
@@ -142,6 +177,11 @@ export default function LandingPageClient() {
     () => true,
     () => false
   );
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -149,7 +189,7 @@ export default function LandingPageClient() {
       <LandingPageJsonLd />
       
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+      <nav aria-label="Navigation principale" className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center gap-2">
@@ -163,6 +203,7 @@ export default function LandingPageClient() {
               <a href="#features" className="text-gray-600 hover:text-orange-600 transition-colors">Fonctionnalités</a>
               <a href="#pricing" className="text-gray-600 hover:text-orange-600 transition-colors">Tarifs</a>
               <a href="#testimonials" className="text-gray-600 hover:text-orange-600 transition-colors">Témoignages</a>
+              <a href="#faq" className="text-gray-600 hover:text-orange-600 transition-colors">FAQ</a>
               <Link href="/login" className="text-gray-600 hover:text-orange-600 transition-colors">Connexion</Link>
             </div>
 
@@ -174,7 +215,7 @@ export default function LandingPageClient() {
                 Essai Gratuit
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
-              <button className="md:hidden p-2 text-gray-600">
+              <button aria-label="Menu de navigation" aria-expanded={false} className="md:hidden p-2 text-gray-600">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -496,6 +537,72 @@ export default function LandingPageClient() {
               </div>
             ))}
           </div>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "ItemList",
+                itemListElement: testimonials.map((t, i) => ({
+                  "@type": "ListItem",
+                  position: i + 1,
+                  item: {
+                    "@type": "Review",
+                    author: { "@type": "Person", name: t.name },
+                    reviewRating: { "@type": "Rating", ratingValue: t.rating, bestRating: 5 },
+                    reviewBody: t.content,
+                  },
+                })),
+              }),
+            }}
+          />
+        </div>
+      </section>
+      <section id="faq" className="py-20 md:py-28 bg-gray-50">
+        <FAQJsonLd items={faqItems} />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Questions Fréquentes
+            </h2>
+            <p className="text-lg text-gray-600">
+              Tout ce que vous devez savoir sur Restaurant OS et KFM DELICE
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqItems.map((item, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleFaq(index)}
+                  className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+                  aria-expanded={openFaq === index}
+                >
+                  <h3 className="text-lg font-semibold text-gray-900 pr-4">
+                    {item.question}
+                  </h3>
+                  <ChevronDown
+                    className={`w-5 h-5 text-gray-500 flex-shrink-0 transition-transform duration-200 ${
+                      openFaq === index ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    openFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <p className="px-6 pb-6 text-gray-600 leading-relaxed">
+                    {item.answer}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -556,7 +663,7 @@ export default function LandingPageClient() {
             <div>
               <h4 className="font-semibold text-white mb-4">Entreprise</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="mailto:contact@restaurant-os.app" className="hover:text-white transition-colors">À propos</a></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">À propos</Link></li>
                 <li><a href="https://twitter.com/restaurantos" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a></li>
                 <li><a href="mailto:jobs@restaurant-os.app" className="hover:text-white transition-colors">Carrières</a></li>
                 <li><a href="mailto:partners@restaurant-os.app" className="hover:text-white transition-colors">Partenaires</a></li>
@@ -568,6 +675,8 @@ export default function LandingPageClient() {
               <ul className="space-y-2 text-sm">
                 <li><a href="mailto:support@restaurant-os.app" className="hover:text-white transition-colors">Centre d&apos;aide</a></li>
                 <li><a href="mailto:contact@restaurant-os.app" className="hover:text-white transition-colors">Contact</a></li>
+                <li><a href="tel:+224620000000" className="hover:text-white transition-colors">+224 620 00 00 00</a></li>
+                <li><span>Conakry, Guinée</span></li>
                 <li><a href="https://status.restaurant-os.app" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Status</a></li>
                 <li><a href="mailto:privacy@restaurant-os.app" className="hover:text-white transition-colors">Confidentialité</a></li>
               </ul>

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 // Base URL for the application
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://restaurant-os.app";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://restauration-kfm.onrender.com";
 
 // Comprehensive metadata for SEO
 export const metadata: Metadata = {
@@ -204,23 +204,23 @@ const jsonLdOrganization = {
   logo: `${baseUrl}/logo.png`,
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: "+225-07-00-00-00-00",
-    contactType: "sales",
-    areaServed: "Africa",
-    availableLanguage: ["French", "English"],
+    telephone: "+224-620-00-00-00",
+    contactType: "customer service",
+    areaServed: "GN",
+    availableLanguage: ["French"],
   },
   sameAs: [
-    "https://twitter.com/restaurantos",
-    "https://linkedin.com/company/restaurant-os",
-    "https://facebook.com/restaurantos",
+    "https://facebook.com/kfmdelice",
+    "https://instagram.com/kfmdelice",
+    "https://whatsapp.com/channel/kfmdelice",
   ],
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Plateau, Rue du Commerce",
-    addressLocality: "Abidjan",
-    addressRegion: "Abidjan",
-    postalCode: "01 BP 000",
-    addressCountry: "CI",
+    streetAddress: "Kaloum, Avenue de la République",
+    addressLocality: "Conakry",
+    addressRegion: "Conakry",
+    postalCode: "00224",
+    addressCountry: "GN",
   },
 };
 
@@ -309,6 +309,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
         suppressHydrationWarning
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-orange-600 focus:text-white focus:rounded-lg"
+        >
+          Aller au contenu principal
+        </a>
         <Providers>
           <div id="main-content" role="main" tabIndex={-1}>
             {children}

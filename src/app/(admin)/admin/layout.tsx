@@ -9,53 +9,42 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard,
-  Building2,
-  Store,
-  Users,
-  CreditCard,
-  BarChart3,
-  Settings,
-  Menu,
   X,
   ChevronRight,
-  Bell,
   LogOut,
-  ShoppingCart,
-  Truck,
-  Calendar,
-  FileText,
-  Users2,
-  Receipt,
-  Wallet,
-  Package,
-  AlertTriangle,
-  UserCog,
+  Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { AdminSidebarContent } from '@/components/admin/sidebar';
 
-const navigation = [
-  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Commandes', href: '/admin/orders', icon: ShoppingCart, badge: '24' },
-  { name: 'Livraisons', href: '/admin/deliveries', icon: Truck, badge: '8' },
-  { name: 'Réservations', href: '/admin/reservations', icon: Calendar },
-  { name: 'Organisations', href: '/admin/organizations', icon: Building2 },
-  { name: 'Restaurants', href: '/admin/restaurants', icon: Store },
-  { name: 'Menus', href: '/admin/menus', icon: Menu },
-  { name: 'Utilisateurs', href: '/admin/users', icon: Users },
-  { name: 'Gestion Equipe', href: '/admin/restaurant-users', icon: UserCog },
-  { name: 'RH', href: '/admin/hr', icon: Users2 },
-  { name: 'Factures', href: '/admin/invoices', icon: FileText },
-  { name: 'Dépenses', href: '/admin/expenses', icon: Wallet },
-  { name: 'Inventaire', href: '/admin/inventory', icon: Package },
-  { name: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  { name: 'Rapports', href: '/admin/reports', icon: Receipt },
-  { name: 'Paramètres', href: '/admin/settings', icon: Settings },
-];
+// Mapping for breadcrumb display from category sub-items
+const PAGE_NAMES: Record<string, string> = {
+  '/admin': 'Tableau de bord',
+  '/admin/analytics': 'Analyses',
+  '/admin/reports': 'Rapports',
+  '/admin/organizations': 'Organisations',
+  '/admin/restaurants': 'Restaurants',
+  '/admin/users': 'Utilisateurs',
+  '/admin/restaurant-users': 'Gestion Equipe',
+  '/admin/hr': 'Ressources Humaines',
+  '/admin/menus': 'Menus',
+  '/admin/inventory': 'Inventaire',
+  '/admin/orders': 'Commandes',
+  '/admin/reservations': 'Réservations',
+  '/admin/deliveries': 'Livraisons',
+  '/admin/pos': 'Point de vente',
+  '/admin/invoices': 'Factures',
+  '/admin/expenses': 'Dépenses',
+  '/admin/subscriptions': 'Abonnements',
+  '/admin/settings': 'Paramètres',
+  '/admin/restaurant': 'Mon Restaurant',
+  '/admin/settings/notifications': 'Notifications',
+  '/admin/settings/security': 'Sécurité',
+  '/admin/settings/audit-logs': 'Logs d\'audit',
+  '/admin/drivers': 'Livreurs',
+};
 
 export default function AdminLayout({
   children,
@@ -78,57 +67,26 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-sidebar transform transition-transform duration-200 ease-in-out lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-200 ease-in-out lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
-            <Link href="/admin" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">R</span>
-              </div>
-              <span className="font-bold text-sidebar-foreground">Admin</span>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+        <div className="flex flex-col h-full relative">
+          {/* Mobile close button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-3 right-2 z-10 lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
 
-          {/* Navigation */}
-          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <item.icon className="h-5 w-5" />
-                    {item.name}
-                  </div>
-                  {item.badge && (
-                    <Badge variant="secondary" className="text-xs bg-sidebar-accent text-sidebar-foreground">
-                      {item.badge}
-                    </Badge>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Sidebar content with collapsible categories & sub-items */}
+          <AdminSidebarContent
+            pathname={pathname}
+            onNavigate={() => setSidebarOpen(false)}
+          />
 
           {/* User section */}
           <div className="p-4 border-t border-sidebar-border">
@@ -169,7 +127,7 @@ export default function AdminLayout({
                 <>
                   <ChevronRight className="h-4 w-4" />
                   <span className="text-foreground font-medium">
-                    {navigation.find((n) => pathname.startsWith(n.href))?.name || 'Dashboard'}
+                    {PAGE_NAMES[pathname] || PAGE_NAMES[pathname.replace(/\/[^/]+$/, '')] || 'Dashboard'}
                   </span>
                 </>
               )}

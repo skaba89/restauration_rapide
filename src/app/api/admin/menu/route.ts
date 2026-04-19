@@ -69,10 +69,10 @@ async function ensureDatabaseReady(): Promise<{ ready: boolean; error?: string }
     };
   }
 
-  // Ensure SimpleMenuItem table exists
+  // Ensure SimpleMenuItem table is accessible
   const tableReady = await ensureSimpleMenuItemTable();
   if (!tableReady) {
-    return { ready: false, error: 'Impossible de créer/accéder à la table des articles. Vérifiez les permissions de la base de données.' };
+    return { ready: false, error: 'Table des articles indisponible. Vérifiez la connexion à la base de données et réessayez.' };
   }
 
   return { ready: true };

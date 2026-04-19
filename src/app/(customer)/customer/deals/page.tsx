@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useCurrencySafe } from '@/lib/currency-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +24,7 @@ const DEALS_DATA = [
   {
     id: '1',
     title: 'Menu du Jour',
-    description: 'Attieké Poisson + Jus au choix à 4000 FCFA au lieu de 5000 FCFA',
+    description: 'Attieké Poisson + Jus au choix',
     discount: '20%',
     validUntil: 'Aujourd\'hui 15:00',
     image: '🐟',
@@ -47,7 +48,7 @@ const DEALS_DATA = [
   {
     id: '3',
     title: 'Weekend Famille',
-    description: '15% de réduction sur les commandes de plus de 15 000 FCFA',
+    description: '15% de réduction sur les commandes de plus de',
     discount: '15%',
     validUntil: 'Samedi & Dimanche',
     image: '👨‍👩‍👧‍👦',
@@ -59,8 +60,8 @@ const DEALS_DATA = [
   {
     id: '4',
     title: 'Première Commande',
-    description: '500 FCFA de réduction sur votre première commande',
-    discount: '500F',
+    description: 'Réduction sur votre première commande',
+    discount: 'Réduc',
     validUntil: 'Nouveaux clients',
     image: '🎉',
     code: 'BIENVENUE',
@@ -72,7 +73,7 @@ const DEALS_DATA = [
 
 const FLASH_SALE = {
   title: 'Vente Flash - Poulet Braisé',
-  description: 'Poulet braisé à 2500 FCFA au lieu de 3500 FCFA',
+  description: 'Poulet braisé',
   originalPrice: 3500,
   salePrice: 2500,
   endTime: '14:00',
@@ -84,6 +85,7 @@ const FLASH_SALE = {
 };
 
 export default function CustomerDealsPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [deals, setDeals] = useState(DEALS_DATA);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [flashSale, setFlashSale] = useState(FLASH_SALE);
@@ -161,7 +163,7 @@ export default function CustomerDealsPage() {
 
     toast({ 
       title: 'Ajouté au panier !', 
-      description: `${flashSale.name} à ${flashSale.salePrice.toLocaleString()} FCFA a été ajouté` 
+      description: `${flashSale.name} à ${formatCurrency(flashSale.salePrice)} a été ajouté` 
     });
   };
 
@@ -191,8 +193,8 @@ export default function CustomerDealsPage() {
             <div className="flex-1">
               <p className="font-semibold">{FLASH_SALE.title}</p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm line-through text-muted-foreground">{FLASH_SALE.originalPrice.toLocaleString()} FCFA</span>
-                <span className="text-xl font-bold text-orange-600">{FLASH_SALE.salePrice.toLocaleString()} FCFA</span>
+                <span className="text-sm line-through text-muted-foreground">{formatCurrency(FLASH_SALE.originalPrice)}</span>
+                <span className="text-xl font-bold text-orange-600">{formatCurrency(FLASH_SALE.salePrice)}</span>
               </div>
               <div className="mt-2">
                 <div className="flex justify-between text-sm mb-1">
@@ -234,7 +236,15 @@ export default function CustomerDealsPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{deal.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {deal.description}
+                        {deal.dealPrice > 0 && deal.originalPrice > 0 && deal.id === '1' && (
+                          <> à {formatCurrency(deal.dealPrice)} au lieu de {formatCurrency(deal.originalPrice)}</>
+                        )}
+                        {deal.id === '3' && (
+                          <> {formatCurrency(15000)}</>
+                        )}
+                      </p>
                     </div>
                     <Badge className="bg-green-100 text-green-700 text-lg">
                       -{deal.discount}

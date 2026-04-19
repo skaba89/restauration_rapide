@@ -19,6 +19,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { apiGet } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Driver {
   id: string;
@@ -40,6 +41,7 @@ export default function RestaurantDriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     loadDrivers();
@@ -208,7 +210,7 @@ export default function RestaurantDriversPage() {
                 <div className="text-right">
                   <p className="text-lg font-bold text-orange-600">{driver.todayDeliveries}</p>
                   <p className="text-sm text-muted-foreground">livraisons aujourd'hui</p>
-                  <p className="text-sm font-medium mt-1">{driver.todayEarnings.toLocaleString()} FCFA</p>
+                  <p className="text-sm font-medium mt-1">{formatCurrency(driver.todayEarnings)}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm">

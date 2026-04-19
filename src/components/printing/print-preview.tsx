@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   Printer as PrinterIcon,
   Eye,
@@ -79,7 +80,7 @@ export function ReceiptPreview({
     return left + ' '.repeat(spaces) + right;
   };
 
-  const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
+  const { formatCurrency } = useCurrencySafe();
 
   const getOrderTypeLabel = (type: string) => {
     const labels: Record<string, string> = {

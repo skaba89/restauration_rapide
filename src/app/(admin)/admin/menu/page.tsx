@@ -360,7 +360,7 @@ export default function MenuPage() {
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="price">Prix de vente (GNF) *</Label>
+          <Label htmlFor="price">Prix de vente *</Label>
           <Input
             id="price"
             type="number"
@@ -370,7 +370,7 @@ export default function MenuPage() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="costPrice">Prix de revient (GNF)</Label>
+          <Label htmlFor="costPrice">Prix de revient</Label>
           <Input
             id="costPrice"
             type="number"

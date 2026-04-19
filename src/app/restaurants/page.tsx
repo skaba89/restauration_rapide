@@ -27,6 +27,7 @@ import {
   Utensils,
 } from 'lucide-react';
 import Image from 'next/image';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Restaurant {
   id: string;
@@ -65,6 +66,7 @@ const ITEMS_PER_PAGE = 6;
 
 export default function RestaurantsPage() {
   const router = useRouter();
+  const { formatCurrency } = useCurrencySafe();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -144,9 +146,7 @@ export default function RestaurantsPage() {
     return pages;
   }, [totalPages, currentPage]);
 
-  const formatPrice = (price: number, currency?: { code: string }) => {
-    return `${price.toLocaleString()} ${currency?.code || 'GNF'}`;
-  };
+
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -25,6 +25,7 @@ import EventCalendar from '@/components/events/event-calendar';
 import QuoteBuilder from '@/components/events/quote-builder';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Stats Card Component
 function StatsCard({ 
@@ -97,7 +98,7 @@ function QuotesTab() {
     fetchQuotes();
   });
 
-  const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
+  const { formatCurrency } = useCurrencySafe();
 
   const STATUS_LABELS: Record<string, string> = {
     draft: 'Brouillon',
@@ -200,6 +201,7 @@ function QuotesTab() {
 }
 
 export default function EventsPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [showNewEvent, setShowNewEvent] = useState(false);
 
   return (
@@ -245,7 +247,7 @@ export default function EventsPage() {
         />
         <StatsCard
           title="Revenus prévus"
-          value="67.1M GNF"
+          value={formatCurrency(67100000)}
           icon={DollarSign}
           trend="+15% vs mois dernier"
           color="green"

@@ -38,6 +38,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // Currency options
 const CURRENCIES = [
+  { code: 'GNF', name: 'Franc Guinéen', symbol: 'FG' },
   { code: 'XOF', name: 'Franc CFA (BCEAO)', symbol: 'FCFA' },
   { code: 'XAF', name: 'Franc CFA (BEAC)', symbol: 'FCFA' },
   { code: 'NGN', name: 'Nigerian Naira', symbol: '₦' },
@@ -67,7 +68,7 @@ export default function AdminSettingsPage() {
     platform: {
       name: '',
       supportEmail: '',
-      defaultCurrency: 'XOF',
+      defaultCurrency: 'GNF',
       defaultLanguage: 'fr',
       defaultCountry: 'CI',
       maintenanceMode: false,

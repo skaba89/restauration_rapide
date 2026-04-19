@@ -33,7 +33,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useRestaurantCartStore } from '@/lib/restaurant-cart-store';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrencySafe } from '@/lib/currency-context';
+import { formatCurrency as formatCurrencyUtil } from '@/lib/currency';
 import { authApi, setAuthToken } from '@/lib/api-client';
 
 interface RestaurantData {
@@ -164,8 +165,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
     }
   }, [restaurant, restaurantId, setRestaurant]);
 
+  // Global currency
+  const { formatCurrency } = useCurrencySafe();
+
   const formatPrice = (price: number) => {
-    return formatCurrency(price, restaurant?.currency || 'GNF');
+    return formatCurrency(price);
   };
 
   const subtotal = getSubtotal();

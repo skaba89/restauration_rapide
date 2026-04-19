@@ -22,6 +22,7 @@ import {
   History,
   HelpCircle
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   VoiceIndicator,
   VoiceIndicatorState,
@@ -72,6 +73,8 @@ export function VoiceOrdering() {
   // Refs
   const recognitionRef = useRef<ReturnType<typeof createSpeechRecognition> | null>(null);
   
+  const { formatCurrency } = useCurrencySafe();
+
   // Calculate cart total
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -393,7 +396,7 @@ export function VoiceOrdering() {
                       <div className="flex-1">
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {(item.price * item.quantity).toLocaleString('fr-FR')} FCFA
+                          {formatCurrency(item.price * item.quantity)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -437,7 +440,7 @@ export function VoiceOrdering() {
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-bold">Total</span>
                   <span className="font-bold text-xl text-primary">
-                    {cartTotal.toLocaleString('fr-FR')} FCFA
+                    {formatCurrency(cartTotal)}
                   </span>
                 </div>
                 <Button className="w-full gap-2" onClick={submitOrder}>
@@ -471,7 +474,7 @@ export function VoiceOrdering() {
                   <p className="text-xs text-muted-foreground mb-2">{item.category}</p>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-primary">
-                      {item.price.toLocaleString('fr-FR')} FCFA
+                      {formatCurrency(item.price)}
                     </span>
                     <Button size="sm" variant="ghost">
                       <Plus className="h-4 w-4" />
@@ -518,7 +521,7 @@ export function VoiceOrdering() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">{order.total.toLocaleString('fr-FR')} FCFA</p>
+                        <p className="font-bold">{formatCurrency(order.total)}</p>
                         <Badge variant={order.status === 'pending' ? 'outline' : 'default'}>
                           {order.status}
                         </Badge>
@@ -542,7 +545,7 @@ export function VoiceOrdering() {
                   <p className="text-xs text-muted-foreground mb-2">{item.category}</p>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-primary">
-                      {item.price.toLocaleString('fr-FR')} FCFA
+                      {formatCurrency(item.price)}
                     </span>
                     <Button 
                       size="sm"

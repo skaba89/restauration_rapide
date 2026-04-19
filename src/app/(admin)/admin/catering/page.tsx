@@ -24,15 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Calendar, Plus, Users, Phone, MapPin, RefreshCw, Check, X, Edit, Trash2, Eye } from 'lucide-react';
-
-// Simple currency formatter for GNF (Guinean Franc)
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('fr-GN', {
-    style: 'decimal',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount) + ' GNF';
-};
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface CateringOrder {
   id: string;
@@ -126,11 +118,11 @@ function CateringOrderForm({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Montant total (GNF)</Label>
+          <Label>Montant total</Label>
           <Input type="number" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))} />
         </div>
         <div className="space-y-2">
-          <Label>Accompte (GNF)</Label>
+          <Label>Accompte</Label>
           <Input type="number" value={formData.deposit} onChange={(e) => setFormData(prev => ({ ...prev, deposit: e.target.value }))} />
         </div>
       </div>
@@ -159,6 +151,7 @@ const initialFormData = {
 };
 
 export default function CateringPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [orders, setOrders] = useState<CateringOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');

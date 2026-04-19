@@ -56,6 +56,7 @@ import {
   AlertCircle,
   TrendingUp,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Invoice {
   id: string;
@@ -79,10 +80,10 @@ const statusColors: Record<string, string> = {
   CANCELLED: 'bg-gray-100 text-gray-500',
 };
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR');
 
 export default function AdminInvoicesPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

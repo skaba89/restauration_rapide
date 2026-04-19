@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   Building,
   Store,
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react';
 
 export default function BranchesPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [currentBranch, setCurrentBranch] = useState('branch-001');
 
   return (
@@ -113,7 +115,7 @@ export default function BranchesPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Revenus/jour</p>
-                  <p className="text-lg font-bold text-green-600">8.85M GNF</p>
+                  <p className="text-lg font-bold text-green-600">{formatCurrency(8850000)}</p>
                 </div>
               </div>
             </CardContent>

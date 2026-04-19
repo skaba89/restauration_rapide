@@ -57,6 +57,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface StaffMember {
@@ -93,9 +94,6 @@ const STATUS_CONFIG = {
   inactive: { label: 'Inactif', color: 'bg-gray-100 text-gray-700' },
 };
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
-
 // Get initials
 const getInitials = (firstName: string, lastName: string) => 
   `${firstName[0]}${lastName[0]}`.toUpperCase();
@@ -109,6 +107,7 @@ interface StaffManagerProps {
 }
 
 export function StaffManager({ onScheduleView, onTimeEntriesView }: StaffManagerProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
@@ -348,11 +347,11 @@ export function StaffManager({ onScheduleView, onTimeEntriesView }: StaffManager
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="hourlyRate">Taux horaire (GNF) *</Label>
+                      <Label htmlFor="hourlyRate">Taux horaire *</Label>
                       <Input id="hourlyRate" type="number" value={formData.hourlyRate} onChange={e => setFormData({...formData, hourlyRate: parseInt(e.target.value) || 0})} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="salary">Salaire mensuel (GNF)</Label>
+                      <Label htmlFor="salary">Salaire mensuel</Label>
                       <Input id="salary" type="number" value={formData.salary} onChange={e => setFormData({...formData, salary: parseInt(e.target.value) || 0})} />
                     </div>
                   </div>
@@ -636,11 +635,11 @@ export function StaffManager({ onScheduleView, onTimeEntriesView }: StaffManager
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-hourlyRate">Taux horaire (GNF) *</Label>
+                <Label htmlFor="edit-hourlyRate">Taux horaire *</Label>
                 <Input id="edit-hourlyRate" type="number" value={formData.hourlyRate} onChange={e => setFormData({...formData, hourlyRate: parseInt(e.target.value) || 0})} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-salary">Salaire mensuel (GNF)</Label>
+                <Label htmlFor="edit-salary">Salaire mensuel</Label>
                 <Input id="edit-salary" type="number" value={formData.salary} onChange={e => setFormData({...formData, salary: parseInt(e.target.value) || 0})} />
               </div>
             </div>

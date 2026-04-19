@@ -23,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner, DashboardSkeleton } from '@/components/loading-states';
 import { analyticsService, Period, DashboardMetrics } from '@/lib/analytics';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // ============================================
 // Analytics Dashboard Component
@@ -35,6 +36,7 @@ interface AnalyticsDashboardProps {
 export function AnalyticsDashboard({ restaurantId }: AnalyticsDashboardProps) {
   const [period, setPeriod] = useState<Period>('week');
   const [activeTab, setActiveTab] = useState('overview');
+  const { formatCurrency } = useCurrencySafe();
 
   // Fetch analytics data
   const { data: metrics, isLoading, refetch } = useQuery({
@@ -86,7 +88,7 @@ export function AnalyticsDashboard({ restaurantId }: AnalyticsDashboardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
           title="Chiffre d'affaires"
-          value={`${(metrics?.revenue.total || 0).toLocaleString()} FCFA`}
+          value={formatCurrency(metrics?.revenue.total || 0)}
           change={metrics?.revenue.changePercent || 0}
           icon={<DollarSign className="w-5 h-5" />}
           color="text-green-600"
@@ -264,6 +266,7 @@ interface RevenueChartProps {
 }
 
 function RevenueChart({ data }: RevenueChartProps) {
+  const { formatCurrency } = useCurrencySafe();
   if (data.length === 0) return <div className="h-[200px] flex items-center justify-center text-muted-foreground">Aucune donnée</div>;
 
   const maxAmount = Math.max(...data.map(d => d.amount));
@@ -278,7 +281,7 @@ function RevenueChart({ data }: RevenueChartProps) {
             style={{ height: `${(item.amount / maxAmount) * 100}%` }}
           >
             <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              {(item.amount / 1000).toFixed(0)}K FCFA
+              {formatCurrency(item.amount)}
             </div>
           </div>
         ))}
@@ -362,6 +365,7 @@ function OrderTypeDistribution({ data }: { data: Record<string, number> }) {
 // ============================================
 
 function PaymentMethodChart({ data }: { data: Record<string, { count: number; amount: number }> }) {
+  const { formatCurrency } = useCurrencySafe();
   const total = Object.values(data).reduce((a, b) => a + b.amount, 0);
   const methods = [
     { key: 'ORANGE_MONEY', label: 'Orange Money', color: 'bg-orange-500' },
@@ -384,7 +388,7 @@ function PaymentMethodChart({ data }: { data: Record<string, { count: number; am
             <div className="flex-1">
               <div className="flex justify-between text-sm">
                 <span>{method.label}</span>
-                <span>{(item.amount / 1000).toFixed(0)}K FCFA</span>
+                <span>{formatCurrency(item.amount)}</span>
               </div>
             </div>
             <span className="text-xs text-muted-foreground w-12 text-right">{percent.toFixed(1)}%</span>
@@ -410,6 +414,7 @@ interface ProductAnalytics {
 }
 
 function TopProductsTable({ products }: { products: ProductAnalytics[] }) {
+  const { formatCurrency } = useCurrencySafe();
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -436,7 +441,7 @@ function TopProductsTable({ products }: { products: ProductAnalytics[] }) {
               <td className="py-3 px-2 font-medium">{product.productName}</td>
               <td className="py-3 px-2 text-muted-foreground">{product.category}</td>
               <td className="py-3 px-2 text-right">{product.quantitySold}</td>
-              <td className="py-3 px-2 text-right">{(product.revenue / 1000).toFixed(0)}K FCFA</td>
+              <td className="py-3 px-2 text-right">{formatCurrency(product.revenue)}</td>
               <td className="py-3 px-2 text-center">
                 {product.trend === 'up' && <TrendingUp className="w-4 h-4 text-green-500 inline" />}
                 {product.trend === 'down' && <TrendingDown className="w-4 h-4 text-red-500 inline" />}
@@ -455,6 +460,7 @@ function TopProductsTable({ products }: { products: ProductAnalytics[] }) {
 // ============================================
 
 function RevenueTab({ revenue }: { revenue?: any }) {
+  const { formatCurrency } = useCurrencySafe();
   if (!revenue) return null;
   
   return (
@@ -466,16 +472,16 @@ function RevenueTab({ revenue }: { revenue?: any }) {
         <CardContent className="space-y-4">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Total période</span>
-            <span className="font-bold">{revenue.total.toLocaleString()} FCFA</span>
+            <span className="font-bold">{formatCurrency(revenue.total)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Période précédente</span>
-            <span>{revenue.previousPeriod.toLocaleString()} FCFA</span>
+            <span>{formatCurrency(revenue.previousPeriod)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Variation</span>
             <span className={revenue.change >= 0 ? 'text-green-500' : 'text-red-500'}>
-              {revenue.change >= 0 ? '+' : ''}{revenue.change.toLocaleString()} FCFA
+              {revenue.change >= 0 ? '+' : ''}{formatCurrency(revenue.change)}
             </span>
           </div>
           <div className="flex justify-between">
@@ -504,6 +510,7 @@ function RevenueTab({ revenue }: { revenue?: any }) {
 }
 
 function OrdersTab({ orders }: { orders?: any }) {
+  const { formatCurrency } = useCurrencySafe();
   if (!orders) return null;
   
   return (
@@ -531,7 +538,7 @@ function OrdersTab({ orders }: { orders?: any }) {
         <CardContent className="space-y-4">
           <div className="flex justify-between">
             <span>Valeur moyenne</span>
-            <span className="font-medium">{orders.averageValue.toLocaleString()} FCFA</span>
+            <span className="font-medium">{formatCurrency(orders.averageValue)}</span>
           </div>
           <div className="flex justify-between">
             <span>Articles moyens</span>
@@ -544,6 +551,7 @@ function OrdersTab({ orders }: { orders?: any }) {
 }
 
 function CustomersTab({ customers }: { customers?: any }) {
+  const { formatCurrency } = useCurrencySafe();
   if (!customers) return null;
   
   return (
@@ -580,7 +588,7 @@ function CustomersTab({ customers }: { customers?: any }) {
                   <div className="text-xs text-muted-foreground">{customer.totalOrders} commandes</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-medium">{(customer.totalSpent / 1000).toFixed(0)}K FCFA</div>
+                  <div className="font-medium">{formatCurrency(customer.totalSpent)}</div>
                 </div>
               </div>
             ))}

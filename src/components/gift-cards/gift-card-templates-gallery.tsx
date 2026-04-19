@@ -36,9 +36,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Occasion icons
 const OCCASION_ICONS: Record<string, React.ElementType> = {
@@ -88,6 +86,7 @@ interface GiftCardTemplatesGalleryProps {
 }
 
 export function GiftCardTemplatesGallery({ onSelect, selectedTemplateId }: GiftCardTemplatesGalleryProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [templates, setTemplates] = useState<GiftCardTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -293,7 +292,7 @@ export function GiftCardTemplatesGallery({ onSelect, selectedTemplateId }: GiftC
                   <p className="text-sm opacity-80 mb-4">Carte Cadeau</p>
                   <div className="bg-white/10 rounded-lg p-4 mb-4">
                     <p className="text-xs opacity-60 mb-1">Montant</p>
-                    <p className="font-bold text-3xl">50 000 GNF</p>
+                    <p className="font-bold text-3xl">{formatCurrency(50000)}</p>
                   </div>
                   <p className="text-xs opacity-60">Valable jusqu'au 31/12/2025</p>
                 </div>

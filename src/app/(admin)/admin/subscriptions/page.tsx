@@ -37,6 +37,7 @@ import {
   ArrowDownRight,
   Wallet,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Dynamic imports for recharts to avoid SSR issues with React 19
 const AreaChart = dynamic(
@@ -83,7 +84,6 @@ const Cell = dynamic(
 // Plan type definition (to avoid client-side Prisma import)
 type Plan = 'STARTER' | 'PRO' | 'BUSINESS' | 'ENTERPRISE';
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 const formatDate = (date: Date | string) => {
   return new Date(date).toLocaleDateString('fr-FR', {
     day: '2-digit',
@@ -115,6 +115,7 @@ const getPaymentMethodLabel = (method: string) => {
 };
 
 export default function SubscriptionsPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptionStats, setSubscriptionStats] = useState([]);
   const [revenueData, setRevenueData] = useState([]);
@@ -229,7 +230,7 @@ export default function SubscriptionsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Avg Revenue/Account</p>
-                  <p className="text-2xl font-bold">{formatCurrency(Math.round(totalMRR / totalSubscriptions))}</p>
+                  <p className="text-2xl font-bold">{formatCurrency(Math.round(totalSubscriptions > 0 ? totalMRR / totalSubscriptions : 0))}</p>
                   <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
                     <ArrowUpRight className="h-4 w-4" />
                     <span>+5.2%</span>
@@ -323,7 +324,7 @@ export default function SubscriptionsPage() {
                       </div>
                     </div>
                     <Progress 
-                      value={(stat.count / totalSubscriptions) * 100} 
+                      value={totalSubscriptions > 0 ? (stat.count / totalSubscriptions) * 100 : 0} 
                       className="h-2"
                     />
                     {stat.revenue > 0 && (

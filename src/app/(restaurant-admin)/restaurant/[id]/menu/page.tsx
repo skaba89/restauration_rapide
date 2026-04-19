@@ -32,6 +32,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface MenuItem {
   id: string;
@@ -96,6 +97,7 @@ export default function MenuManagementPage() {
   const [itemPrepTime, setItemPrepTime] = useState('');
   const [itemIsVegetarian, setItemIsVegetarian] = useState(false);
   const [itemIsSpicy, setItemIsSpicy] = useState(false);
+  const { formatCurrency } = useCurrencySafe();
 
   // Fetch menu data
   useEffect(() => {
@@ -374,10 +376,6 @@ export default function MenuManagementPage() {
     setShowItemDialog(true);
   };
 
-  const formatPrice = (price: number) => {
-    return `${price.toLocaleString()} GNF`;
-  };
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -600,7 +598,7 @@ export default function MenuManagementPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="font-bold text-orange-600">
-                              {formatPrice(item.price)}
+                              {formatCurrency(item.price)}
                             </p>
                             {item.prepTime && (
                               <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -732,7 +730,7 @@ export default function MenuManagementPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="itemPrice">Prix (GNF) *</Label>
+                <Label htmlFor="itemPrice">Prix *</Label>
                 <Input
                   id="itemPrice"
                   type="number"

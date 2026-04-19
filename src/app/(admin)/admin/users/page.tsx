@@ -909,7 +909,7 @@ export default function UsersManagementPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Taux horaire (GNF)</Label>
+                  <Label>Taux horaire</Label>
                   <Input 
                     type="number" 
                     placeholder="Ex: 5000"

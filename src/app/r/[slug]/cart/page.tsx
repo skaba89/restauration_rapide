@@ -20,7 +20,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useRestaurantCartStore } from '@/lib/restaurant-cart-store';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrencySafe } from '@/lib/currency-context';
+import { formatCurrency as formatCurrencyUtil } from '@/lib/currency';
 
 interface RestaurantData {
   id: string;
@@ -81,8 +82,11 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
     }
   }, [restaurant, restaurantId, setRestaurant]);
 
+  // Global currency
+  const { formatCurrency } = useCurrencySafe();
+
   const formatPrice = (price: number) => {
-    return formatCurrency(price, restaurant?.currency || 'GNF');
+    return formatCurrency(price);
   };
 
   const subtotal = getSubtotal();

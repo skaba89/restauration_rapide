@@ -17,17 +17,15 @@ import {
 import { GiftCardDesign } from './gift-card-design';
 import { Gift, CreditCard, Mail, Phone, Printer, User, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Preset amounts
 const PRESET_AMOUNTS = [
-  { value: 10000, label: '10 000 GNF' },
-  { value: 25000, label: '25 000 GNF' },
-  { value: 50000, label: '50 000 GNF' },
-  { value: 75000, label: '75 000 GNF' },
-  { value: 100000, label: '100 000 GNF' },
+  { value: 10000, label: '10 000' },
+  { value: 25000, label: '25 000' },
+  { value: 50000, label: '50 000' },
+  { value: 75000, label: '75 000' },
+  { value: 100000, label: '100 000' },
 ];
 
 interface GiftCardPurchaseProps {
@@ -36,6 +34,7 @@ interface GiftCardPurchaseProps {
 }
 
 export function GiftCardPurchase({ onSuccess, onCancel }: GiftCardPurchaseProps) {
+  const { formatCurrency, currencySymbol } = useCurrencySafe();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   
@@ -189,6 +188,7 @@ export function GiftCardPurchase({ onSuccess, onCancel }: GiftCardPurchaseProps)
                     className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-orange-500 [&:has([data-state=checked])]:border-orange-500 cursor-pointer"
                   >
                     <span className="font-bold">{formatCurrency(amt.value)}</span>
+                    <span className="text-xs text-muted-foreground">{currencySymbol}</span>
                   </Label>
                 </div>
               ))}
@@ -209,7 +209,7 @@ export function GiftCardPurchase({ onSuccess, onCancel }: GiftCardPurchaseProps)
 
             {useCustomAmount && (
               <div className="space-y-2">
-                <Label>Montant personnalisé (GNF)</Label>
+                <Label>Montant personnalisé</Label>
                 <Input
                   type="number"
                   value={customAmount}

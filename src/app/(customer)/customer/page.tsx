@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCurrencySafe } from '@/lib/currency-context';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -19,6 +20,8 @@ import {
 } from 'lucide-react';
 
 export default function CustomerHomePage() {
+  const { formatCurrency } = useCurrencySafe();
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -120,9 +123,9 @@ export default function CustomerHomePage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { name: 'Attieké Poisson Grillé', price: '3 500', image: '🐟', rating: 4.8 },
-            { name: 'Kedjenou de Poulet', price: '4 500', image: '🍗', rating: 4.9 },
-            { name: 'Thiéboudienne', price: '4 000', image: '🍚', rating: 4.7 },
+            { name: 'Attieké Poisson Grillé', price: 3500, image: '🐟', rating: 4.8 },
+            { name: 'Kedjenou de Poulet', price: 4500, image: '🍗', rating: 4.9 },
+            { name: 'Thiéboudienne', price: 4000, image: '🍚', rating: 4.7 },
           ].map((item, idx) => (
             <Card key={idx} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="h-32 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center text-5xl">
@@ -132,7 +135,7 @@ export default function CustomerHomePage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-medium">{item.name}</p>
-                    <p className="text-orange-600 font-bold">{item.price} FCFA</p>
+                    <p className="text-orange-600 font-bold">{formatCurrency(item.price)}</p>
                   </div>
                   <Badge variant="secondary" className="flex items-center gap-1">
                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />

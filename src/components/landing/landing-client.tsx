@@ -6,6 +6,7 @@
 // ============================================
 
 import { useSyncExternalStore, useState } from 'react';
+import { useCurrencySafe } from '@/lib/currency-context';
 import Link from 'next/link';
 import {
   Smartphone,
@@ -177,6 +178,7 @@ export default function LandingPageClient() {
     () => true,
     () => false
   );
+  const { formatCurrency } = useCurrencySafe();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const toggleFaq = (index: number) => {
@@ -285,7 +287,7 @@ export default function LandingPageClient() {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-gray-400 text-sm">Ventes du jour</p>
-                        <p className="text-white text-2xl font-bold">1,250,000 FCFA</p>
+                        <p className="text-white text-2xl font-bold">{formatCurrency(1250000)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-green-400 text-sm">+23.5%</p>

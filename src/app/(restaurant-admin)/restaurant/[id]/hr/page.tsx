@@ -18,6 +18,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { apiGet } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Employee {
   id: string;
@@ -38,6 +39,7 @@ export default function RestaurantHRPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     loadEmployees();
@@ -130,8 +132,8 @@ export default function RestaurantHRPage() {
                 <DollarSign className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{(totalSalaries / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground">FCFA/mois</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalSalaries)}</p>
+                <p className="text-sm text-muted-foreground">/mois</p>
               </div>
             </div>
           </CardContent>
@@ -192,7 +194,7 @@ export default function RestaurantHRPage() {
                         {emp.status === 'ACTIVE' ? 'Actif' : emp.status === 'ON_LEAVE' ? 'En congé' : 'Inactif'}
                       </Badge>
                     </td>
-                    <td className="py-3 px-2">{emp.salary.toLocaleString()} FCFA</td>
+                    <td className="py-3 px-2">{formatCurrency(emp.salary)}</td>
                     <td className="py-3 px-2">
                       <Button variant="outline" size="sm">Voir</Button>
                     </td>

@@ -48,6 +48,7 @@ import {
   TrendingUp,
   AlertCircle,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Delivery {
   id: string;
@@ -82,10 +83,10 @@ const statusColors: Record<string, string> = {
   CANCELLED: 'bg-gray-100 text-gray-700',
 };
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 export default function AdminDeliveriesPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

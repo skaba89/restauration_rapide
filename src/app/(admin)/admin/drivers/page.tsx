@@ -35,16 +35,8 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencySafe } from '@/lib/currency-context';
 import { apiGet } from '@/lib/api-client';
-
-// Simple currency formatter for GNF (Guinean Franc)
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('fr-GN', {
-    style: 'decimal',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount) + ' GNF';
-};
 
 interface Driver {
   id: string;
@@ -69,6 +61,7 @@ export default function DriversPage() {
     phone: '',
   });
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     fetchDrivers();

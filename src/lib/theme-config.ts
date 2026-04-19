@@ -118,14 +118,14 @@ export type FontOption = (typeof FONT_OPTIONS)[number];
 // --- Default Config ---
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  preset: 'classique-orange',
-  primaryColor: '#f97316',
-  secondaryColor: '#fed7aa',
-  accentColor: '#ea580c',
+  preset: 'bleu-ocean',
+  primaryColor: '#0ea5e9',
+  secondaryColor: '#bae6fd',
+  accentColor: '#0284c7',
   fontHeading: 'Inter',
   fontBody: 'Inter',
-  borderRadius: 0.625,
-  sidebarStyle: 'light',
+  borderRadius: 0.75,
+  sidebarStyle: 'dark',
   sidebarColor: '#1c1917',
   targetPages: ['admin', 'pos', 'kitchen', 'driver', 'public', 'organisateur'],
 };

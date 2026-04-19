@@ -29,23 +29,21 @@ import {
   Shield
 } from 'lucide-react';
 import type { ProfitLossData } from '@/lib/accounting-export';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface ProfitLossProps {
   data?: ProfitLossData | null;
   loading?: boolean;
 }
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
-
-// Calculate percentage change
-const calculateChange = (current: number, previous?: number) => {
-  if (!previous || previous === 0) return 0;
-  return ((current - previous) / previous) * 100;
-};
-
 export function ProfitLoss({ data, loading }: ProfitLossProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [viewMode, setViewMode] = useState<'detail' | 'summary'>('detail');
+
+  const calculateChange = (current: number, previous?: number) => {
+    if (!previous || previous === 0) return 0;
+    return ((current - previous) / previous) * 100;
+  };
 
   if (loading) {
     return (
@@ -75,8 +73,8 @@ export function ProfitLoss({ data, loading }: ProfitLossProps) {
 
   const revenueChange = calculateChange(data.revenue.totalRevenue, data.previousPeriod?.revenue.totalRevenue);
   const profitChange = calculateChange(data.netProfit, data.previousPeriod?.netProfit);
-  const grossMargin = (data.grossProfit / data.revenue.totalRevenue) * 100;
-  const netMargin = (data.netProfit / data.revenue.totalRevenue) * 100;
+  const grossMargin = data.revenue.totalRevenue > 0 ? (data.grossProfit / data.revenue.totalRevenue) * 100 : 0;
+  const netMargin = data.revenue.totalRevenue > 0 ? (data.netProfit / data.revenue.totalRevenue) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -238,9 +236,11 @@ export function ProfitLoss({ data, loading }: ProfitLossProps) {
               </div>
               <div className="text-right">
                 <span className="font-medium text-red-600">{formatCurrency(data.costOfGoodsSold.foodCost)}</span>
-                <p className="text-xs text-muted-foreground">
-                  {((data.costOfGoodsSold.foodCost / data.revenue.foodSales) * 100).toFixed(1)}% du prix de vente
-                </p>
+                {data.revenue.foodSales > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {((data.costOfGoodsSold.foodCost / data.revenue.foodSales) * 100).toFixed(1)}% du prix de vente
+                  </p>
+                )}
               </div>
             </div>
 
@@ -251,9 +251,11 @@ export function ProfitLoss({ data, loading }: ProfitLossProps) {
               </div>
               <div className="text-right">
                 <span className="font-medium text-red-600">{formatCurrency(data.costOfGoodsSold.beverageCost)}</span>
-                <p className="text-xs text-muted-foreground">
-                  {((data.costOfGoodsSold.beverageCost / data.revenue.beverageSales) * 100).toFixed(1)}% du prix de vente
-                </p>
+                {data.revenue.beverageSales > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {((data.costOfGoodsSold.beverageCost / data.revenue.beverageSales) * 100).toFixed(1)}% du prix de vente
+                  </p>
+                )}
               </div>
             </div>
 
@@ -330,6 +332,7 @@ export function ProfitLoss({ data, loading }: ProfitLossProps) {
           </div>
           
           {/* Profit Margin Visualization */}
+          {data.revenue.totalRevenue > 0 && (
           <div className="mt-6 space-y-2">
             <div className="flex justify-between text-sm">
               <span>COGS</span>
@@ -354,6 +357,7 @@ export function ProfitLoss({ data, loading }: ProfitLossProps) {
               <span>Bénéfice: {netMargin.toFixed(1)}%</span>
             </div>
           </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -374,7 +378,8 @@ function RevenueLineItem({
   total: number;
   color: string;
 }) {
-  const percentage = (amount / total) * 100;
+  const { formatCurrency } = useCurrencySafe();
+  const percentage = total > 0 ? (amount / total) * 100 : 0;
   
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
@@ -407,6 +412,7 @@ function ExpenseLineItem({
   label: string; 
   amount: number;
 }) {
+  const { formatCurrency } = useCurrencySafe();
   return (
     <div className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
       <div className="flex items-center gap-3">

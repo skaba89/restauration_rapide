@@ -80,13 +80,13 @@ const TOP_ITEMS = [
   { name: 'Riz Gras', orders: 98, revenue: 490000 },
 ];
 
-const formatCurrency = (amount: number) => `${(amount / 1000000).toFixed(1)}M`;
+const formatMillions = (amount: number) => `${(amount / 1000000).toFixed(1)}M`;
 
 export default function AnalyticsPage() {
   const { formatCurrency: formatCurrencyBase } = useCurrencySafe();
   
   // Format for chart values (in millions)
-  const formatMillions = (amount: number) => `${(amount / 1000000).toFixed(1)}M`;
+  const formatMillionsChart = (amount: number) => `${(amount / 1000000).toFixed(1)}M`;
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">CA Total</p>
-                <p className="text-2xl font-bold">{formatCurrency(30800000)}</p>
+                <p className="text-2xl font-bold">{formatMillions(30800000)}</p>
                 <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
                   <TrendingUp className="h-4 w-4" />
                   <span>+18.5%</span>
@@ -202,7 +202,7 @@ export default function AnalyticsPage() {
                   <XAxis dataKey="name" className="text-xs" />
                   <YAxis className="text-xs" tickFormatter={(v) => `${v / 1000000}M`} />
                   <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: number) => formatMillionsChart(value)}
                     contentStyle={{
                       backgroundColor: 'hsl(var(--background))',
                       border: '1px solid hsl(var(--border))',
@@ -305,7 +305,7 @@ export default function AnalyticsPage() {
                   <p className="font-medium">{item.name}</p>
                   <p className="text-sm text-muted-foreground">{item.orders} commandes</p>
                 </div>
-                <p className="font-semibold text-green-600">{(item.revenue / 1000).toFixed(0)}K FCFA</p>
+                <p className="font-semibold text-green-600">{formatCurrencyBase(item.revenue)}</p>
               </div>
             ))}
           </div>

@@ -46,11 +46,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 import SubscriptionPlans from './subscription-plans';
 import SubscriptionDetail from './subscription-detail';
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
 
 // Status configuration
 const STATUS_CONFIG = {
@@ -109,6 +107,7 @@ interface SubscriptionPlan {
 }
 
 export function SubscriptionManager() {
+  const { formatCurrency } = useCurrencySafe();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [stats, setStats] = useState<SubscriptionStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);

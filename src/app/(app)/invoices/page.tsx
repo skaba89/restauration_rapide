@@ -59,6 +59,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Types
 interface Invoice {
@@ -112,12 +113,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// Format currency
-const formatCurrency = (amount: number, currency: string = 'GNF') => {
-  return `${amount.toLocaleString('fr-FR')} ${currency}`;
-};
-
-// Status badge colors and labels
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'draft':
@@ -136,6 +131,7 @@ const getStatusConfig = (status: string) => {
 };
 
 export default function InvoicesPage() {
+  const { formatCurrency, currencyCode } = useCurrencySafe();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -259,7 +255,7 @@ export default function InvoicesPage() {
       tax: 0,
       discount: 0,
       total: calculateTotal(),
-      currency: 'GNF',
+      currency: currencyCode,
       notes: formData.notes,
       createdAt: new Date().toISOString(),
     };

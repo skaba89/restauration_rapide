@@ -17,7 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { formatCurrency } from '@/lib/currency';
+import { formatCurrency as formatCurrencyUtil } from '@/lib/currency';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface OrderData {
   id: string;
@@ -70,8 +71,11 @@ export default function OrderSuccessPage({ params }: { params: Promise<{ slug: s
     enabled: !!orderId,
   });
 
+  // Global currency
+  const { formatCurrency } = useCurrencySafe();
+
   const formatPrice = (price: number) => {
-    return formatCurrency(price, 'GNF');
+    return formatCurrency(price);
   };
 
   const getStatusInfo = (status: string) => {

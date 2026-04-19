@@ -80,6 +80,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export function TimeClock() {
+  const { formatCurrency } = useCurrencySafe();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedStaffId, setSelectedStaffId] = useState<string>('');
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
@@ -318,7 +319,7 @@ export function TimeClock() {
                         <div>
                           <p className="font-medium">Non pointé</p>
                           <p className="text-sm text-muted-foreground">
-                            {staff?.roleLabel} - {staff?.hourlyRate.toLocaleString()} GNF/h
+                            {staff?.hourlyRate.toLocaleString()} GNF/h
                           </p>
                         </div>
                       </div>

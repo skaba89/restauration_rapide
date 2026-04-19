@@ -34,7 +34,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useRestaurantCartStore, CartMenuItem } from '@/lib/restaurant-cart-store';
-import { formatCurrency, CURRENCIES } from '@/lib/currency';
+import { useCurrencySafe } from '@/lib/currency-context';
+import { formatCurrency as formatCurrencyUtil, CURRENCIES } from '@/lib/currency';
 
 // Types
 interface MenuItem {
@@ -192,6 +193,9 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
     setRestaurant
   } = useRestaurantCartStore();
 
+  // Global currency
+  const { formatCurrency } = useCurrencySafe();
+
   // Fetch restaurant data
   const { data: restaurant, isLoading, error } = useQuery({
     queryKey: ['restaurant', slug],
@@ -217,13 +221,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
     ),
   })).filter(category => category.items.length > 0);
 
-  // Currency formatting
-  const formatPrice = (price: number) => {
-    const currencyCode = typeof restaurant?.currency === 'string' 
-      ? restaurant.currency 
-      : restaurant?.currency?.code || 'GNF';
-    return formatCurrency(price, currencyCode);
-  };
+
 
   // Handle add to cart
   const handleAddToCart = () => {
@@ -379,7 +377,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                 </SheetHeader>
                 <CartContent
                   cartItems={cartItems}
-                  formatPrice={formatPrice}
+                  formatCurrency={formatCurrency}
                   updateQuantity={updateQuantity}
                   removeItem={removeItem}
                   clearCart={clearCart}
@@ -454,7 +452,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
           )}
           {restaurant.minOrderAmount > 0 && (
             <p className="mt-2 text-sm text-orange-600">
-              Minimum de commande: {formatPrice(restaurant.minOrderAmount)}
+              Minimum de commande: {formatCurrency(restaurant.minOrderAmount)}
             </p>
           )}
         </div>
@@ -595,15 +593,15 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                               {item.discountPrice ? (
                                 <>
                                   <span className="font-bold text-orange-600">
-                                    {formatPrice(item.discountPrice)}
+                                    {formatCurrency(item.discountPrice)}
                                   </span>
                                   <span className="text-sm text-gray-400 line-through">
-                                    {formatPrice(item.price)}
+                                    {formatCurrency(item.price)}
                                   </span>
                                 </>
                               ) : (
                                 <span className="font-bold text-orange-600">
-                                  {formatPrice(item.price)}
+                                  {formatCurrency(item.price)}
                                 </span>
                               )}
                             </div>
@@ -733,7 +731,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                         </div>
                         <span className="font-medium">
                           {variant.price > selectedItem.price && '+'}
-                          {formatPrice(variant.price)}
+                          {formatCurrency(variant.price)}
                         </span>
                       </div>
                     ))}
@@ -812,7 +810,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                           </div>
                           {value.price > 0 && (
                             <span className="text-sm text-gray-500">
-                              +{formatPrice(value.price)}
+                              +{formatCurrency(value.price)}
                             </span>
                           )}
                         </div>
@@ -858,7 +856,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                   className="flex-1 bg-orange-500 hover:bg-orange-600"
                   onClick={handleAddToCart}
                 >
-                  Ajouter • {formatPrice(calculateItemTotal())}
+                  Ajouter • {formatCurrency(calculateItemTotal())}
                 </Button>
               </div>
             </>
@@ -872,7 +870,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
           <Link href={`/r/${slug}/cart`}>
             <Button className="w-full bg-orange-500 hover:bg-orange-600 h-14 text-lg active:bg-orange-700">
               <ShoppingCart className="h-5 w-5 mr-2" />
-              Voir le panier • {getTotalItems()} articles • {formatPrice(getSubtotal())}
+              Voir le panier • {getTotalItems()} articles • {formatCurrency(getSubtotal())}
             </Button>
           </Link>
         </div>
@@ -884,7 +882,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
 // Cart Content Component
 function CartContent({
   cartItems,
-  formatPrice,
+  formatCurrency,
   updateQuantity,
   removeItem,
   clearCart,
@@ -894,7 +892,7 @@ function CartContent({
   onClose,
 }: {
   cartItems: any[];
-  formatPrice: (price: number) => string;
+  formatCurrency: (price: number) => string;
   updateQuantity: (id: string, quantity: number) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
@@ -950,7 +948,7 @@ function CartContent({
                 )}
                 <div className="flex items-center justify-between mt-2">
                   <span className="font-medium text-orange-600">
-                    {formatPrice(item.price * item.quantity)}
+                    {formatCurrency(item.price * item.quantity)}
                   </span>
                   <div className="flex items-center gap-2">
                     <Button
@@ -983,20 +981,20 @@ function CartContent({
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span>Sous-total</span>
-          <span>{formatPrice(subtotal)}</span>
+          <span>{formatCurrency(subtotal)}</span>
         </div>
         <div className="flex justify-between text-gray-500">
           <span>Livraison</span>
-          <span>{deliveryFee > 0 ? formatPrice(deliveryFee) : 'Gratuit'}</span>
+          <span>{deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Gratuit'}</span>
         </div>
         <Separator />
         <div className="flex justify-between font-bold text-lg">
           <span>Total</span>
-          <span>{formatPrice(total)}</span>
+          <span>{formatCurrency(total)}</span>
         </div>
         {!minOrderMet && (
           <p className="text-orange-600 text-xs">
-            Minimum de commande: {formatPrice(restaurant.minOrderAmount)}
+            Minimum de commande: {formatCurrency(restaurant.minOrderAmount)}
           </p>
         )}
       </div>
@@ -1007,7 +1005,7 @@ function CartContent({
             className="w-full bg-orange-500 hover:bg-orange-600"
             disabled={!minOrderMet}
           >
-            Commander • {formatPrice(total)}
+            Commander • {formatCurrency(total)}
           </Button>
         </Link>
         <Button variant="outline" className="w-full" onClick={clearCart}>

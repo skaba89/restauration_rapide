@@ -31,6 +31,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface MenuItem {
   id: string;
@@ -82,6 +83,7 @@ export default function AdminPOSPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
 
   // Fetch menu data - uses unified /api/public/menu endpoint (same as /menu and POS)
   useEffect(() => {
@@ -312,7 +314,7 @@ export default function AdminPOSPage() {
                     <p className="font-medium text-sm line-clamp-2">{item.name}</p>
                     {item.isPopular && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
                   </div>
-                  <p className="text-orange-600 font-semibold mt-1">{item.price.toLocaleString()} GNF</p>
+                  <p className="text-orange-600 font-semibold mt-1">{formatCurrency(item.price)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -353,7 +355,7 @@ export default function AdminPOSPage() {
                 <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-900">
                   <div className="flex-1">
                     <p className="font-medium text-sm">{item.name}</p>
-                    <p className="text-sm text-orange-600">{item.price.toLocaleString()} GNF</p>
+                    <p className="text-sm text-orange-600">{formatCurrency(item.price)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}><Minus className="h-3 w-3" /></Button>
@@ -370,7 +372,7 @@ export default function AdminPOSPage() {
         <div className="p-4 border-t space-y-4">
           <div className="flex justify-between font-bold text-lg">
             <span>Total</span>
-            <span className="text-orange-600">{total.toLocaleString()} GNF</span>
+            <span className="text-orange-600">{formatCurrency(total)}</span>
           </div>
 
           <Button size="lg" className="w-full bg-orange-500 hover:bg-orange-600" disabled={cart.length === 0} onClick={openPaymentModal}>
@@ -388,7 +390,7 @@ export default function AdminPOSPage() {
               <DialogHeader>
                 <DialogTitle>Paiement</DialogTitle>
                 <DialogDescription>
-                  Total à payer: <span className="font-bold text-orange-600">{total.toLocaleString()} GNF</span>
+                  Total à payer: <span className="font-bold text-orange-600">{formatCurrency(total)}</span>
                 </DialogDescription>
               </DialogHeader>
 
@@ -398,7 +400,7 @@ export default function AdminPOSPage() {
                   {cart.map((item) => (
                     <div key={item.id} className="flex justify-between text-sm">
                       <span>{item.quantity}x {item.name}</span>
-                      <span>{(item.price * item.quantity).toLocaleString()} GNF</span>
+                      <span>{formatCurrency(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
@@ -424,7 +426,7 @@ export default function AdminPOSPage() {
                 {selectedPayment === 'cash' && (
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm font-medium mb-2">Montant reçu (GNF)</p>
+                      <p className="text-sm font-medium mb-2">Montant reçu</p>
                       <Input
                         type="number"
                         placeholder="Entrez le montant reçu"
@@ -437,7 +439,7 @@ export default function AdminPOSPage() {
                       <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
                         <div className="flex justify-between items-center">
                           <span className="text-green-700 dark:text-green-400 font-medium">Monnaie à rendre</span>
-                          <span className="text-2xl font-bold text-green-600">{change.toLocaleString()} GNF</span>
+                          <span className="text-2xl font-bold text-green-600">{formatCurrency(change)}</span>
                         </div>
                       </div>
                     )}
@@ -500,7 +502,7 @@ export default function AdminPOSPage() {
                   {cart.map((item) => (
                     <div key={item.id} className="flex justify-between text-sm">
                       <span>{item.quantity}x {item.name}</span>
-                      <span>{(item.price * item.quantity).toLocaleString()}</span>
+                      <span>{formatCurrency(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
@@ -508,17 +510,17 @@ export default function AdminPOSPage() {
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>{total.toLocaleString()} GNF</span>
+                    <span>{formatCurrency(total)}</span>
                   </div>
                   {selectedPayment === 'cash' && parseFloat(cashReceived) > total && (
                     <>
                       <div className="flex justify-between">
                         <span>Reçu</span>
-                        <span>{parseFloat(cashReceived).toLocaleString()} GNF</span>
+                        <span>{formatCurrency(parseFloat(cashReceived))}</span>
                       </div>
                       <div className="flex justify-between text-green-600 font-bold">
                         <span>Monnaie rendue</span>
-                        <span>{change.toLocaleString()} GNF</span>
+                        <span>{formatCurrency(change)}</span>
                       </div>
                     </>
                   )}

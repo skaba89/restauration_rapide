@@ -16,6 +16,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { apiGet } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Subscription {
   id: string;
@@ -35,6 +36,7 @@ export default function RestaurantSubscriptionsPage() {
   const restaurantId = params.id as string;
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     loadSubscriptions();
@@ -96,8 +98,8 @@ export default function RestaurantSubscriptionsPage() {
                 <DollarSign className="h-5 w-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{activeRevenue.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">FCFA/mois</p>
+                <p className="text-2xl font-bold">{formatCurrency(activeRevenue)}</p>
+                <p className="text-sm text-muted-foreground">/mois</p>
               </div>
             </div>
           </CardContent>
@@ -122,8 +124,8 @@ export default function RestaurantSubscriptionsPage() {
                 <DollarSign className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalRevenue.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">FCFA total</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalRevenue)}</p>
+                <p className="text-sm text-muted-foreground">total</p>
               </div>
             </div>
           </CardContent>
@@ -157,12 +159,12 @@ export default function RestaurantSubscriptionsPage() {
                   <div className="w-32 h-2 bg-gray-200 rounded-full mt-2">
                     <div
                       className="h-2 bg-orange-500 rounded-full"
-                      style={{ width: `${(sub.visitsUsed / sub.visitsTotal) * 100}%` }}
+                      style={{ width: `${sub.visitsTotal > 0 ? (sub.visitsUsed / sub.visitsTotal) * 100 : 0}%` }}
                     />
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-orange-600">{sub.price.toLocaleString()} FCFA</p>
+                  <p className="text-xl font-bold text-orange-600">{formatCurrency(sub.price)}</p>
                   <p className="text-sm text-muted-foreground">
                     Expire le {new Date(sub.endDate).toLocaleDateString('fr-FR')}
                   </p>

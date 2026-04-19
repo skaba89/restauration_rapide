@@ -6,13 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
+import {
   DollarSign, 
   Users, 
   Settings, 
   TrendingUp,
   RefreshCw
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 import { TipsManager } from '@/components/tips/tips-manager';
 import { TipsDistribution } from '@/components/tips/tips-distribution';
@@ -20,6 +21,7 @@ import { TipsByEmployee } from '@/components/tips/tips-by-employee';
 import { TipsSettings } from '@/components/tips/tips-settings';
 
 export default function TipsPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [activeTab, setActiveTab] = useState('tips');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -91,7 +93,7 @@ export default function TipsPage() {
                   <Skeleton className="h-7 w-24" />
                 ) : (
                   <p className="text-xl font-bold text-green-600">
-                    {(stats.total / 1000).toFixed(0)}K GNF
+                    {formatCurrency(stats.total)}
                   </p>
                 )}
               </div>
@@ -109,7 +111,7 @@ export default function TipsPage() {
                   <Skeleton className="h-7 w-24" />
                 ) : (
                   <p className="text-xl font-bold text-orange-600">
-                    {(stats.pending / 1000).toFixed(0)}K GNF
+                    {formatCurrency(stats.pending)}
                   </p>
                 )}
               </div>
@@ -127,7 +129,7 @@ export default function TipsPage() {
                   <Skeleton className="h-7 w-24" />
                 ) : (
                   <p className="text-xl font-bold text-blue-600">
-                    {(stats.distributed / 1000).toFixed(0)}K GNF
+                    {formatCurrency(stats.distributed)}
                   </p>
                 )}
               </div>

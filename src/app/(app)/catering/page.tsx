@@ -25,6 +25,7 @@ import CateringManager from '@/components/catering/catering-manager';
 import EventCalendar from '@/components/events/event-calendar';
 import QuoteBuilder from '@/components/events/quote-builder';
 import { toast } from 'sonner';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Stats Card Component
 function StatsCard({ 
@@ -331,6 +332,7 @@ function CustomerPortalTab() {
 }
 
 export default function CateringPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [showNewEvent, setShowNewEvent] = useState(false);
 
   return (
@@ -376,7 +378,7 @@ export default function CateringPage() {
         />
         <StatsCard
           title="Revenus prévus"
-          value="67.1M GNF"
+          value={formatCurrency(67100000)}
           icon={DollarSign}
           trend="+15% vs mois dernier"
           color="green"

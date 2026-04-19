@@ -24,6 +24,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   Truck,
   Search,
@@ -46,8 +47,6 @@ const AVAILABLE_DRIVERS = [
   { id: '3', name: 'Bamba Seydou', phone: '01 44 45 46 47', rating: 4.9, status: 'online', currentLocation: 'Treichville', vehicleType: 'bicycle' },
   { id: '4', name: 'Traoré Aïssata', phone: '07 55 56 57 58', rating: 4.7, status: 'online', currentLocation: 'Yopougon', vehicleType: 'motorcycle' },
 ];
-
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
 
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
@@ -77,6 +76,7 @@ const getStatusLabel = (status: string) => {
 
 export default function DeliveriesPage() {
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
   const [deliveries, setDeliveries] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');

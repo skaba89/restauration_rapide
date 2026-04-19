@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface OrderItem {
   id: string;
@@ -114,6 +115,7 @@ export default function OrdersManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [updating, setUpdating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const { formatCurrency } = useCurrencySafe();
 
   // Fetch orders
   const fetchOrders = useCallback(async () => {
@@ -200,10 +202,6 @@ export default function OrdersManagementPage() {
     other: filteredOrders.filter(
       (o) => !['PENDING', 'CONFIRMED', 'PREPARING', 'READY'].includes(o.status)
     ),
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `${amount.toLocaleString()} GNF`;
   };
 
   const formatTime = (dateString: string) => {

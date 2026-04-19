@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/cart-store';
+import { useCurrencySafe } from '@/lib/currency-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -78,6 +79,7 @@ export default function CheckoutPage() {
   const [orderNotes, setOrderNotes] = useState('');
 
   const { items, getTotal, getItemCount, clearCart } = useCartStore();
+  const { formatCurrency } = useCurrencySafe();
   const cartTotal = getTotal();
   const cartCount = getItemCount();
 
@@ -120,9 +122,7 @@ export default function CheckoutPage() {
 
   const total = cartTotal + deliveryFee;
 
-  const formatPrice = (price: number) => {
-    return `${price.toLocaleString()} ${restaurant?.currency?.code || 'GNF'}`;
-  };
+
 
   const handleSubmit = async () => {
     // Validation
@@ -382,7 +382,7 @@ export default function CheckoutPage() {
                     <SelectContent>
                       {restaurant.deliveryZones.map((zone) => (
                         <SelectItem key={zone.id} value={zone.id}>
-                          {zone.name} ({formatPrice(zone.baseFee)})
+                          {zone.name} ({formatCurrency(zone.baseFee)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -495,23 +495,23 @@ export default function CheckoutPage() {
                   <span>
                     {item.quantity}x {item.name}
                   </span>
-                  <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+                  <span className="font-medium">{formatCurrency(item.price * item.quantity)}</span>
                 </div>
               ))}
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between text-sm">
                   <span>Sous-total</span>
-                  <span>{formatPrice(cartTotal)}</span>
+                  <span>{formatCurrency(cartTotal)}</span>
                 </div>
                 {orderType === 'delivery' && (
                   <div className="flex justify-between text-sm mt-1">
                     <span>Livraison</span>
-                    <span>{formatPrice(deliveryFee)}</span>
+                    <span>{formatCurrency(deliveryFee)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg mt-2">
                   <span>Total</span>
-                  <span className="text-orange-600">{formatPrice(total)}</span>
+                  <span className="text-orange-600">{formatCurrency(total)}</span>
                 </div>
               </div>
             </div>
@@ -557,7 +557,7 @@ export default function CheckoutPage() {
             </>
           ) : (
             <>
-              Confirmer la commande • {formatPrice(total)}
+              Confirmer la commande • {formatCurrency(total)}
             </>
           )}
         </button>

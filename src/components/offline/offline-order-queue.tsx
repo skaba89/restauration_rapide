@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { offlineOrders, OfflineOrder } from '@/lib/offline-db';
 import { useOfflineStatus, useBackgroundSync } from '@/hooks/use-pwa';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // ============================================
 // Order Item Card Component
@@ -47,6 +48,7 @@ interface OfflineOrderCardProps {
 }
 
 function OfflineOrderCard({ order, onRetry, onDelete, onView }: OfflineOrderCardProps) {
+  const { formatCurrency } = useCurrencySafe();
   const syncStatusColor = {
     pending: 'bg-yellow-100 text-yellow-700 border-yellow-300',
     synced: 'bg-green-100 text-green-700 border-green-300',
@@ -70,9 +72,6 @@ function OfflineOrderCard({ order, onRetry, onDelete, onView }: OfflineOrderCard
     return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatCurrency = (amount: number) => {
-    return `${amount.toLocaleString('fr-FR')} FCFA`;
-  };
 
   return (
     <Card className={cn(
@@ -208,11 +207,8 @@ interface OrderDetailDialogProps {
 }
 
 function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDialogProps) {
+  const { formatCurrency } = useCurrencySafe();
   if (!order) return null;
-
-  const formatCurrency = (amount: number) => {
-    return `${amount.toLocaleString('fr-FR')} FCFA`;
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

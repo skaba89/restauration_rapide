@@ -56,6 +56,7 @@ import {
   TrendingUp,
   AlertCircle,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Order {
   id: string;
@@ -89,10 +90,10 @@ const paymentStatusColors: Record<string, string> = {
   REFUNDED: 'bg-gray-100 text-gray-700',
 };
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 export default function AdminOrdersPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);

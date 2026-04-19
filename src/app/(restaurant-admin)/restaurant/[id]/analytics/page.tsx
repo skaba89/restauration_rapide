@@ -28,6 +28,7 @@ import {
   ChefHat,
   Clock,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface AnalyticsData {
   period: string;
@@ -63,6 +64,7 @@ export default function AnalyticsPage() {
   const [topItems, setTopItems] = useState<TopItem[]>([]);
   const [hourlyData, setHourlyData] = useState<HourlyData[]>([]);
   const [recentTrends, setRecentTrends] = useState<Array<{ date: string; revenue: number; orders: number }>>([]);
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -90,10 +92,6 @@ export default function AnalyticsPage() {
     }
   }, [restaurantId, period]);
 
-  const formatCurrency = (amount: number) => {
-    return `${amount?.toLocaleString() || 0} GNF`;
-  };
-
   const getTrendIcon = (change: number) => {
     if (change >= 0) {
       return <ArrowUpRight className="w-4 h-4 text-green-500" />;
@@ -107,7 +105,8 @@ export default function AnalyticsPage() {
 
   // Simple bar chart component
   const SimpleBarChart = ({ data, valueKey, labelKey }: { data: any[]; valueKey: string; labelKey: string }) => {
-    const maxValue = Math.max(...data.map((d) => d[valueKey]));
+    const maxValue = data.length > 0 ? Math.max(...data.map((d) => d[valueKey])) : 1;
+    const safeMax = Math.max(maxValue, 1);
     
     return (
       <div className="space-y-2">
@@ -117,7 +116,7 @@ export default function AnalyticsPage() {
             <div className="flex-1 h-6 bg-gray-100 rounded overflow-hidden">
               <div
                 className="h-full bg-orange-500 rounded transition-all"
-                style={{ width: `${(item[valueKey] / maxValue) * 100}%` }}
+                style={{ width: `${(item[valueKey] / safeMax) * 100}%` }}
               />
             </div>
             <span className="w-20 text-sm font-medium text-right">
@@ -131,7 +130,8 @@ export default function AnalyticsPage() {
 
   // Hourly chart
   const HourlyChart = ({ data }: { data: HourlyData[] }) => {
-    const maxValue = Math.max(...data.map((d) => d.orders));
+    const maxValue = data.length > 0 ? Math.max(...data.map((d) => d.orders)) : 1;
+    const safeMax = Math.max(maxValue, 1);
 
     return (
       <div className="flex items-end gap-1 h-40">
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
           >
             <div
               className="w-full bg-orange-200 hover:bg-orange-400 rounded-t transition-colors cursor-pointer"
-              style={{ height: `${(item.orders / maxValue) * 100}%` }}
+              style={{ height: `${(item.orders / safeMax) * 100}%` }}
               title={`${item.hour}h: ${item.orders} commandes`}
             />
             {i % 4 === 0 && (
@@ -367,7 +367,9 @@ export default function AnalyticsPage() {
             </div>
           ) : (
             <div className="h-64 flex items-end gap-2">
-              {recentTrends.map((trend, i) => (
+              {(() => {
+                const maxTrendRevenue = Math.max(...recentTrends.map(t => t.revenue), 1);
+                return recentTrends.map((trend, i) => (
                 <div
                   key={i}
                   className="flex-1 flex flex-col items-center group"
@@ -375,7 +377,7 @@ export default function AnalyticsPage() {
                   <div
                     className="w-full bg-gradient-to-t from-orange-500 to-orange-300 rounded-t transition-all hover:from-orange-600 hover:to-orange-400 cursor-pointer"
                     style={{
-                      height: `${(trend.revenue / Math.max(...recentTrends.map(t => t.revenue))) * 100}%`,
+                      height: `${(trend.revenue / maxTrendRevenue) * 100}%`,
                       minHeight: '4px',
                     }}
                   >
@@ -387,7 +389,8 @@ export default function AnalyticsPage() {
                     {trend.date}
                   </span>
                 </div>
-              ))}
+              ));
+              })()}
             </div>
           )}
         </CardContent>

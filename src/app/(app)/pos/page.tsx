@@ -2,18 +2,12 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Polling interval: refresh menu data every 30 seconds
 const POLL_INTERVAL_MS = 30_000;
 
-function ProductCard({ product, currency, onAdd }: { product: any; currency: any; onAdd: (p: any) => void }) {
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat('fr-GN', {
-      style: 'currency',
-      currency: currency?.code || 'GNF',
-      maximumFractionDigits: 0,
-    }).format(price);
-
+function ProductCard({ product, formatCurrency, onAdd }: { product: any; formatCurrency: (amount: number) => string; onAdd: (p: any) => void }) {
   return (
     <button
       onClick={() => onAdd(product)}
@@ -32,9 +26,9 @@ function ProductCard({ product, currency, onAdd }: { product: any; currency: any
       </div>
       <h3 className="font-bold text-gray-800 line-clamp-2 text-sm md:text-base">{product.name}</h3>
       {product.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2 flex-1">{product.description}</p>}
-      <div className="mt-2 font-bold text-green-600 text-base md:text-lg">{formatPrice(product.price)}</div>
+      <div className="mt-2 font-bold text-green-600 text-base md:text-lg">{formatCurrency(product.price)}</div>
       {product.discountPrice && product.discountPrice < product.price && (
-        <div className="text-xs text-gray-400 line-through">{formatPrice(product.price)}</div>
+        <div className="text-xs text-gray-400 line-through">{formatCurrency(product.price)}</div>
       )}
     </button>
   );
@@ -42,6 +36,7 @@ function ProductCard({ product, currency, onAdd }: { product: any; currency: any
 
 export default function POSPage() {
   const searchParams = useSearchParams();
+  const { formatCurrency, currencyCode } = useCurrencySafe();
   const [menuData, setMenuData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -175,7 +170,7 @@ export default function POSPage() {
     );
   }
 
-  const currency = menuData.restaurant?.currency || { code: 'GNF', symbol: 'GNF' };
+  const currency = menuData.restaurant?.currency || { code: currencyCode, symbol: currencyCode };
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -196,7 +191,7 @@ export default function POSPage() {
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <div className="text-xs text-gray-500">Devise</div>
-              <div className="font-bold text-gray-900">{currency.code || 'GNF'}</div>
+              <div className="font-bold text-gray-900">{currencyCode}</div>
             </div>
             {/* Manual refresh button */}
             <button
@@ -223,7 +218,7 @@ export default function POSPage() {
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                 {(category.items || category.products || []).map((product: any) => (
-                  <ProductCard key={product.id} product={product} currency={currency} onAdd={handleAddToCart} />
+                  <ProductCard key={product.id} product={product} formatCurrency={formatCurrency} onAdd={handleAddToCart} />
                 ))}
               </div>
             </div>

@@ -38,6 +38,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencySafe } from '@/lib/currency-context';
 import { apiFetch } from '@/lib/api-client';
 import {
   Package,
@@ -87,11 +88,11 @@ const statusColors: Record<string, string> = {
   OVERSTOCKED: 'bg-blue-100 text-blue-700',
 };
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} GNF`;
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR');
 
 export default function AdminInventoryPage() {
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -544,7 +545,7 @@ export default function AdminInventoryPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Prix unitaire (GNF)</Label>
+                <Label>Prix unitaire</Label>
                 <Input 
                   type="number" 
                   placeholder="0" 

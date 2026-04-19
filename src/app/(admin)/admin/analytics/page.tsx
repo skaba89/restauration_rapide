@@ -29,6 +29,7 @@ import {
   Calendar,
   Star,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Dynamic imports for recharts to avoid SSR issues with React 19
 const AreaChart = dynamic(
@@ -94,10 +95,10 @@ const Legend = dynamic(
 
 const COLORS = ['#8b5cf6', '#6366f1', '#4f46e5', '#a78bfa', '#c4b5fd'];
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 const formatNumber = (num: number) => num?.toLocaleString('fr-FR') || '0';
 
 export default function AnalyticsPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [isLoading, setIsLoading] = useState(true);
   const [growthData, setGrowthData] = useState([]);
   const [featureUsage, setFeatureUsage] = useState([]);

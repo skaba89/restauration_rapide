@@ -24,6 +24,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   Users,
   Search,
@@ -50,11 +51,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
 const formatDate = (date: Date) => new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 
 export default function CustomersPage() {
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
   const [customers, setCustomers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVip, setFilterVip] = useState<string>('all');
@@ -101,7 +102,8 @@ export default function CustomersPage() {
   const totalCustomers = customers.length;
   const vipCustomers = customers.filter(c => c.isVip).length;
   const totalRevenue = customers.reduce((sum, c) => sum + c.totalSpent, 0);
-  const avgOrderValue = totalRevenue / customers.reduce((sum, c) => sum + c.totalOrders, 0);
+  const totalOrders = customers.reduce((sum, c) => sum + c.totalOrders, 0);
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   // Add new customer
   const addCustomer = () => {

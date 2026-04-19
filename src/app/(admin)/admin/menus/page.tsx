@@ -82,6 +82,7 @@ import {
   Store,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCurrencySafe } from '@/lib/currency-context';
 import Image from 'next/image';
 import { fetchWithAuth } from '@/lib/api-client';
 
@@ -212,6 +213,7 @@ export default function AdminMenusPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
   // Form data
+  const { formatCurrency } = useCurrencySafe();
   const [menuForm, setMenuForm] = useState<MenuForm>(DEFAULT_MENU_FORM);
   const [categoryForm, setCategoryForm] = useState<CategoryForm>(DEFAULT_CATEGORY_FORM);
   const [itemForm, setItemForm] = useState<MenuItemForm>(DEFAULT_ITEM_FORM);
@@ -405,13 +407,7 @@ export default function AdminMenusPage() {
     }
   };
 
-  // Format price
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-GN', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-    }).format(price) + ' GNF';
-  };
+
 
   if (loading) {
     return (
@@ -635,11 +631,11 @@ export default function AdminMenusPage() {
                                       <div>
                                         {item.discountPrice ? (
                                           <>
-                                            <p className="font-medium text-orange-600">{formatPrice(item.discountPrice)}</p>
-                                            <p className="text-sm text-muted-foreground line-through">{formatPrice(item.price)}</p>
+                                            <p className="font-medium text-orange-600">{formatCurrency(item.discountPrice)}</p>
+                                            <p className="text-sm text-muted-foreground line-through">{formatCurrency(item.price)}</p>
                                           </>
                                         ) : (
-                                          <p className="font-medium">{formatPrice(item.price)}</p>
+                                          <p className="font-medium">{formatCurrency(item.price)}</p>
                                         )}
                                       </div>
                                     </TableCell>
@@ -840,7 +836,7 @@ export default function AdminMenusPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Prix (GNF) *</label>
+                <label className="text-sm font-medium">Prix *</label>
                 <Input
                   type="number"
                   value={itemForm.price}
@@ -849,7 +845,7 @@ export default function AdminMenusPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Prix promo (GNF)</label>
+                <label className="text-sm font-medium">Prix promo</label>
                 <Input
                   type="number"
                   value={itemForm.discountPrice}

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Gift, Plus, CreditCard, Users } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 const giftCards = [
   { id: 1, code: 'KFM-2026-001', value: 50000, balance: 50000, purchaser: 'Amadou Diallo', status: 'active' },
@@ -12,6 +13,8 @@ const giftCards = [
 ];
 
 export default function GiftCardsPage() {
+  const { formatCurrency } = useCurrencySafe();
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -60,7 +63,7 @@ export default function GiftCardsPage() {
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-orange-600">
-                {giftCards.reduce((sum, g) => sum + g.balance, 0).toLocaleString()} GNF
+                {formatCurrency(giftCards.reduce((sum, g) => sum + g.balance, 0))}
               </p>
               <p className="text-xs text-gray-500">Solde total</p>
             </div>
@@ -70,7 +73,7 @@ export default function GiftCardsPage() {
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold">
-                {giftCards.reduce((sum, g) => sum + g.value, 0).toLocaleString()} GNF
+                {formatCurrency(giftCards.reduce((sum, g) => sum + g.value, 0))}
               </p>
               <p className="text-xs text-gray-500">Valeur émise</p>
             </div>
@@ -99,11 +102,11 @@ export default function GiftCardsPage() {
                 <div className="flex items-center gap-6">
                   <div className="text-center">
                     <p className="text-sm text-gray-500">Valeur</p>
-                    <p className="font-medium">{card.value.toLocaleString()} GNF</p>
+                    <p className="font-medium">{formatCurrency(card.value)}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-500">Solde</p>
-                    <p className="font-bold text-green-600">{card.balance.toLocaleString()} GNF</p>
+                    <p className="font-bold text-green-600">{formatCurrency(card.balance)}</p>
                   </div>
                   <Badge
                     variant={card.status === 'active' ? 'default' : 'secondary'}

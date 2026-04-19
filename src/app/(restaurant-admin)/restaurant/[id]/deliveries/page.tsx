@@ -19,6 +19,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { apiGet } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Delivery {
   id: string;
@@ -40,6 +41,7 @@ export default function RestaurantDeliveriesPage() {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     loadDeliveries();
@@ -196,7 +198,7 @@ export default function RestaurantDeliveriesPage() {
                     </div>
                     <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
                       <span>{delivery.customerName}</span>
-                      <span className="font-medium text-orange-600">{delivery.total.toLocaleString()} FCFA</span>
+                      <span className="font-medium text-orange-600">{formatCurrency(delivery.total)}</span>
                     </div>
                     <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
                       <MapPin className="h-3 w-3" />

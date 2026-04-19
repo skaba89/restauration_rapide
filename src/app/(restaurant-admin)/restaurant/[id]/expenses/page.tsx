@@ -17,6 +17,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { apiGet } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Expense {
   id: string;
@@ -37,6 +38,7 @@ export default function RestaurantExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     loadExpenses();
@@ -90,8 +92,8 @@ export default function RestaurantExpensesPage() {
                 <TrendingDown className="h-5 w-5 text-red-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{(totalExpenses / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground">FCFA total</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalExpenses)}</p>
+                <p className="text-sm text-muted-foreground">total</p>
               </div>
             </div>
           </CardContent>
@@ -103,8 +105,8 @@ export default function RestaurantExpensesPage() {
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{(paidExpenses / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground">FCFA payés</p>
+                <p className="text-2xl font-bold">{formatCurrency(paidExpenses)}</p>
+                <p className="text-sm text-muted-foreground">payés</p>
               </div>
             </div>
           </CardContent>
@@ -116,8 +118,8 @@ export default function RestaurantExpensesPage() {
                 <Clock className="h-5 w-5 text-yellow-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{(pendingExpenses / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground">FCFA en attente</p>
+                <p className="text-2xl font-bold">{formatCurrency(pendingExpenses)}</p>
+                <p className="text-sm text-muted-foreground">en attente</p>
               </div>
             </div>
           </CardContent>
@@ -173,7 +175,7 @@ export default function RestaurantExpensesPage() {
                       {new Date(expense.date).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="py-3 px-2 font-medium">
-                      {expense.amount.toLocaleString()} FCFA
+                      {formatCurrency(expense.amount)}
                     </td>
                     <td className="py-3 px-2">
                       <Badge className={

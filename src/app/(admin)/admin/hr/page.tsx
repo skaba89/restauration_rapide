@@ -65,6 +65,7 @@ import {
   Briefcase,
   Truck,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Employee {
   id: string;
@@ -107,10 +108,10 @@ const roleColors: Record<string, string> = {
   DELIVERY: 'bg-indigo-100 text-indigo-700',
 };
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR');
 
 export default function AdminHRPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
@@ -772,7 +773,7 @@ export default function AdminHRPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Salaire mensuel (FCFA)</Label>
+              <Label>Salaire mensuel</Label>
               <Input 
                 type="number"
                 placeholder="0" 

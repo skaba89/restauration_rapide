@@ -43,6 +43,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface StaffTipEarnings {
   staffId: string;
@@ -60,9 +61,6 @@ interface TipsByEmployeeProps {
   loading?: boolean;
   onExport?: () => void;
 }
-
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
 
 // Role badge colors
 const ROLE_COLORS: Record<string, string> = {
@@ -84,6 +82,7 @@ export function TipsByEmployee({
   earnings = loading,
   onExport 
 }: TipsByEmployeeProps) {
+  const { formatCurrency, currencySymbol } = useCurrencySafe();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'earned' | 'perHour'>('earned');
@@ -181,7 +180,7 @@ export function TipsByEmployee({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Moyenne/H</p>
-                <p className="text-xl font-bold">{avgPerHour.toFixed(0)} GNF</p>
+                <p className="text-xl font-bold">{avgPerHour.toFixed(0)} {currencySymbol}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-purple-600 opacity-50" />
             </div>
@@ -367,7 +366,7 @@ function EmployeeCard({
             </span>
             <span className="flex items-center gap-1">
               <DollarSign className="h-3 w-3" />
-              {employee.tipsPerHour} GNF/h
+              {employee.tipsPerHour} {currencySymbol}/h
             </span>
           </div>
           <Progress value={percentage} className="h-1.5 mt-2" />

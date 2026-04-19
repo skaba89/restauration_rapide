@@ -18,6 +18,7 @@ import {
   Sparkles,
   Zap,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface LoyaltyData {
   points: number;
@@ -54,6 +55,7 @@ const TIERS = [
 ];
 
 export function LoyaltyProgram() {
+  const { formatCurrency } = useCurrencySafe();
   const [loyaltyData, setLoyaltyData] = useState<LoyaltyData>({
     points: 750,
     level: 2,
@@ -257,7 +259,7 @@ export function LoyaltyProgram() {
         <CardContent className="space-y-3 text-sm">
           <div className="flex items-start gap-3">
             <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold">1</div>
-            <p>Commandez chez KFM DELICE et gagnez 1 point pour chaque 1 000 GNF dépensé</p>
+            <p>Commandez chez KFM DELICE et gagnez 1 point pour chaque {formatCurrency(1000)} dépensé</p>
           </div>
           <div className="flex items-start gap-3">
             <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold">2</div>

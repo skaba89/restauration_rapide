@@ -16,6 +16,7 @@ import {
   Edit,
 } from 'lucide-react';
 import { apiGet } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface InventoryItem {
   id: string;
@@ -35,6 +36,7 @@ export default function RestaurantInventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     loadInventory();
@@ -128,8 +130,8 @@ export default function RestaurantInventoryPage() {
                 <Package className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{(totalValue / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground">FCFA valeur</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalValue)}</p>
+                <p className="text-sm text-muted-foreground">valeur stock</p>
               </div>
             </div>
           </CardContent>
@@ -175,7 +177,7 @@ export default function RestaurantInventoryPage() {
                     <td className="py-3 px-2">
                       {item.quantity} {item.unit}
                     </td>
-                    <td className="py-3 px-2">{item.unitPrice.toLocaleString()} FCFA</td>
+                    <td className="py-3 px-2">{formatCurrency(item.unitPrice)}</td>
                     <td className="py-3 px-2">
                       <Badge className={
                         item.status === 'IN_STOCK' ? 'bg-green-100 text-green-700' :

@@ -34,6 +34,7 @@ import {
   PieChart as PieChartIcon,
   Activity,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Dynamic imports for recharts
 const AreaChart = dynamic(() => import('recharts').then((mod) => mod.AreaChart), { ssr: false });
@@ -52,7 +53,7 @@ const Legend = dynamic(() => import('recharts').then((mod) => mod.Legend), { ssr
 const LineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
 const Line = dynamic(() => import('recharts').then((mod) => mod.Line), { ssr: false });
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
+
 
 // Demo data
 const monthlyRevenueData = [
@@ -81,6 +82,7 @@ const restaurantPerformance = [
 const COLORS = ['#8b5cf6', '#6366f1', '#4f46e5', '#a78bfa', '#c4b5fd'];
 
 export default function AdminReportsPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('month');
   const [activeReport, setActiveReport] = useState('overview');

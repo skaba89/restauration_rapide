@@ -17,6 +17,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { apiGet } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface GiftCard {
   id: string;
@@ -36,6 +37,7 @@ export default function RestaurantGiftCardsPage() {
   const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     loadGiftCards();
@@ -102,8 +104,8 @@ export default function RestaurantGiftCardsPage() {
                 <DollarSign className="h-5 w-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalBalance.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">FCFA balance</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalBalance)}</p>
+                <p className="text-sm text-muted-foreground">balance</p>
               </div>
             </div>
           </CardContent>
@@ -115,8 +117,8 @@ export default function RestaurantGiftCardsPage() {
                 <Gift className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalSold.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">FCFA vendus</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalSold)}</p>
+                <p className="text-sm text-muted-foreground">vendus</p>
               </div>
             </div>
           </CardContent>
@@ -183,9 +185,9 @@ export default function RestaurantGiftCardsPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-orange-600">{card.balance.toLocaleString()} FCFA</p>
+                  <p className="text-xl font-bold text-orange-600">{formatCurrency(card.balance)}</p>
                   <p className="text-sm text-muted-foreground">
-                    sur {card.initialAmount.toLocaleString()} FCFA
+                    sur {formatCurrency(card.initialAmount)}
                   </p>
                 </div>
               </div>

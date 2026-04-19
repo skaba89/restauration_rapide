@@ -19,6 +19,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { apiGet } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface Invoice {
   id: string;
@@ -38,6 +39,7 @@ export default function RestaurantInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const { formatCurrency } = useCurrencySafe();
 
   useEffect(() => {
     loadInvoices();
@@ -80,7 +82,7 @@ export default function RestaurantInvoicesPage() {
 
   const handleSendWhatsApp = (invoice: Invoice) => {
     if (!invoice.customerPhone) return;
-    const message = `Bonjour, voici votre facture ${invoice.invoiceNumber} de ${invoice.amount.toLocaleString()} FCFA. Merci de régler avant le ${new Date(invoice.dueDate).toLocaleDateString('fr-FR')}.`;
+    const message = `Bonjour, voici votre facture ${invoice.invoiceNumber} de ${formatCurrency(invoice.amount)}. Merci de régler avant le ${new Date(invoice.dueDate).toLocaleDateString('fr-FR')}.`;
     const url = `https://wa.me/${invoice.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
@@ -111,8 +113,8 @@ export default function RestaurantInvoicesPage() {
                 <DollarSign className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{(totalAmount / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground">FCFA total</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalAmount)}</p>
+                <p className="text-sm text-muted-foreground">total</p>
               </div>
             </div>
           </CardContent>
@@ -124,8 +126,8 @@ export default function RestaurantInvoicesPage() {
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{(paidAmount / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground">FCFA payées</p>
+                <p className="text-2xl font-bold">{formatCurrency(paidAmount)}</p>
+                <p className="text-sm text-muted-foreground">payées</p>
               </div>
             </div>
           </CardContent>
@@ -137,8 +139,8 @@ export default function RestaurantInvoicesPage() {
                 <Clock className="h-5 w-5 text-yellow-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{(pendingAmount / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground">FCFA en attente</p>
+                <p className="text-2xl font-bold">{formatCurrency(pendingAmount)}</p>
+                <p className="text-sm text-muted-foreground">en attente</p>
               </div>
             </div>
           </CardContent>
@@ -189,7 +191,7 @@ export default function RestaurantInvoicesPage() {
                     </td>
                     <td className="py-3 px-2">{new Date(invoice.date).toLocaleDateString('fr-FR')}</td>
                     <td className="py-3 px-2">{new Date(invoice.dueDate).toLocaleDateString('fr-FR')}</td>
-                    <td className="py-3 px-2 font-medium">{invoice.amount.toLocaleString()} FCFA</td>
+                    <td className="py-3 px-2 font-medium">{formatCurrency(invoice.amount)}</td>
                     <td className="py-3 px-2">{getStatusBadge(invoice.status)}</td>
                     <td className="py-3 px-2">
                       <div className="flex gap-1">

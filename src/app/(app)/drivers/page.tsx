@@ -25,6 +25,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   Bike,
   Search,
@@ -53,7 +54,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} FCFA`;
 const formatDate = (date: Date) => new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 
 const getStatusColor = (status: string) => {
@@ -68,6 +68,7 @@ const getStatusColor = (status: string) => {
 
 export default function DriversPage() {
   const { toast } = useToast();
+  const { formatCurrency } = useCurrencySafe();
   const [drivers, setDrivers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');

@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { TrendingDown, TrendingUp, CheckCircle, Clock, Calendar, DollarSign, PieChart, BarChart3, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface ExpenseStatsData {
   today: number;
@@ -29,26 +30,6 @@ interface ExpenseStatsProps {
   isLoading?: boolean;
 }
 
-// Format GNF currency
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('fr-GN', {
-    style: 'decimal',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount) + ' GNF';
-};
-
-// Format compact currency
-const formatCompactCurrency = (amount: number) => {
-  if (amount >= 1000000) {
-    return (amount / 1000000).toFixed(1) + 'M GNF';
-  }
-  if (amount >= 1000) {
-    return (amount / 1000).toFixed(0) + 'K GNF';
-  }
-  return amount + ' GNF';
-};
-
 // Category colors and labels
 const CATEGORY_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
   supplies: { label: 'Fournitures', color: 'bg-blue-500', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
@@ -61,6 +42,18 @@ const CATEGORY_CONFIG: Record<string, { label: string; color: string; bgColor: s
 };
 
 export function ExpenseStats({ stats, isLoading }: ExpenseStatsProps) {
+  const { formatCurrency, currencySymbol } = useCurrencySafe();
+
+  const formatCompactCurrency = (amount: number) => {
+    if (amount >= 1000000) {
+      return (amount / 1000000).toFixed(1) + 'M ' + currencySymbol;
+    }
+    if (amount >= 1000) {
+      return (amount / 1000).toFixed(0) + 'K ' + currencySymbol;
+    }
+    return formatCurrency(amount);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">

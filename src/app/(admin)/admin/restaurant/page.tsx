@@ -374,7 +374,7 @@ export default function RestaurantSettingsPage() {
             <Separator />
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="deliveryFee">Frais de livraison (GNF)</Label>
+                <Label htmlFor="deliveryFee">Frais de livraison</Label>
                 <Input
                   id="deliveryFee"
                   type="number"
@@ -383,7 +383,7 @@ export default function RestaurantSettingsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="minOrderAmount">Minimum commande (GNF)</Label>
+                <Label htmlFor="minOrderAmount">Minimum commande</Label>
                 <Input
                   id="minOrderAmount"
                   type="number"

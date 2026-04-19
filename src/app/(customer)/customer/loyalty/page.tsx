@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useCurrencySafe } from '@/lib/currency-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,10 +28,10 @@ const USER_LOYALTY_DATA = {
 };
 
 const LEVELS_DATA = [
-  { name: 'Bronze', minPoints: 0, color: 'bg-amber-700', perks: ['1 point par 100 FCFA'] },
-  { name: 'Silver', minPoints: 500, color: 'bg-gray-400', perks: ['1.5 points par 100 FCFA', 'Anniversaire offert'] },
-  { name: 'Gold', minPoints: 1000, color: 'bg-yellow-500', perks: ['2 points par 100 FCFA', 'Anniversaire offert', 'Accès VIP'] },
-  { name: 'Platinum', minPoints: 2500, color: 'bg-gradient-to-r from-purple-500 to-pink-500', perks: ['3 points par 100 FCFA', 'Repas mensuel offert', 'Livraison prioritaire', 'Support dédié'] },
+  { name: 'Bronze', minPoints: 0, color: 'bg-amber-700', perks: ['1 point par 100'] },
+  { name: 'Silver', minPoints: 500, color: 'bg-gray-400', perks: ['1.5 points par 100', 'Anniversaire offert'] },
+  { name: 'Gold', minPoints: 1000, color: 'bg-yellow-500', perks: ['2 points par 100', 'Anniversaire offert', 'Accès VIP'] },
+  { name: 'Platinum', minPoints: 2500, color: 'bg-gradient-to-r from-purple-500 to-pink-500', perks: ['3 points par 100', 'Repas mensuel offert', 'Livraison prioritaire', 'Support dédié'] },
 ];
 
 const REWARDS_DATA = [
@@ -50,6 +51,7 @@ const TRANSACTIONS_DATA = [
 ];
 
 export default function CustomerLoyaltyPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [userLoyalty, setUserLoyalty] = useState(USER_LOYALTY_DATA);
   const [rewards, setRewards] = useState(REWARDS_DATA);
   const [transactions, setTransactions] = useState(TRANSACTIONS_DATA);
@@ -157,8 +159,8 @@ export default function CustomerLoyaltyPage() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-blue-600">{userLoyalty.totalSpent.toLocaleString()}</p>
-            <p className="text-sm text-muted-foreground">FCFA dépensés</p>
+            <p className="text-2xl font-bold text-blue-600">{formatCurrency(userLoyalty.totalSpent)}</p>
+            <p className="text-sm text-muted-foreground">dépensés</p>
           </CardContent>
         </Card>
       </div>

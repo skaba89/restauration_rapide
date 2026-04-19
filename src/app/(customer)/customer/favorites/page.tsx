@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useCurrencySafe } from '@/lib/currency-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,7 @@ const FAVORITES_DATA = [
 ];
 
 export default function CustomerFavoritesPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [favorites, setFavorites] = useState(FAVORITES_DATA);
   const [cartItems, setCartItems] = useState<{ [key: string]: number }>({});
   const { addItem, increaseQuantity, decreaseQuantity, items } = useCartStore();
@@ -116,7 +118,7 @@ export default function CustomerFavoritesPage() {
                         </Button>
                       </div>
                       <div className="flex items-center justify-between mt-3">
-                        <p className="font-bold text-orange-600">{item.price.toLocaleString()} FCFA</p>
+                        <p className="font-bold text-orange-600">{formatCurrency(item.price)}</p>
                         {quantity > 0 ? (
                           <div className="flex items-center gap-2">
                             <Button 

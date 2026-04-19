@@ -18,6 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { fetchWithAuth } from '@/lib/api-client';
+import { useCurrencySafe } from '@/lib/currency-context';
 import {
   Settings,
   Store,
@@ -45,18 +46,19 @@ const MOBILE_MONEY_PROVIDERS = ['Orange Money', 'MTN MoMo', 'Cellcom'];
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { currencyCode, currencyName } = useCurrencySafe();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const logoInputRef = useRef<HTMLInputElement>(null);
   
-  // Restaurant settings - fixed to GNF currency
+  // Restaurant settings
   const [restaurantSettings, setRestaurantSettings] = useState({
     name: 'KFM DELICE',
     phone: '+224 62 00 00 00',
     email: 'contact@kfm-delice.com',
     address: 'Kaloum, Conakry',
     city: 'Conakry',
-    currency: 'GNF',
+    currency: currencyCode,
     country: 'GN',
     logo: null as string | null,
   });
@@ -465,7 +467,7 @@ export default function SettingsPage() {
                   <DollarSign className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-medium text-lg">GNF - Franc Guinéen</p>
+                  <p className="font-medium text-lg">{currencyCode} - {currencyName}</p>
                   <p className="text-sm text-muted-foreground">Guinée (GN)</p>
                 </div>
               </div>
@@ -576,7 +578,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Minimum de commande (GNF)</Label>
+                  <Label>Minimum de commande ({currencyCode})</Label>
                   <Input
                     type="number"
                     value={orderSettings.minOrder}
@@ -681,7 +683,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Frais de livraison (GNF)</Label>
+                  <Label>Frais de livraison ({currencyCode})</Label>
                   <Input
                     type="number"
                     value={orderSettings.deliveryFee}

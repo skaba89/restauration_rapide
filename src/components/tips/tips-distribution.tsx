@@ -46,6 +46,7 @@ import {
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 interface TipDistribution {
   id: string;
@@ -83,14 +84,12 @@ interface TipsDistributionProps {
   loading?: boolean;
 }
 
-// Format GNF currency
-const formatCurrency = (amount: number) => `${amount.toLocaleString('fr-FR')} GNF`;
-
 export function TipsDistribution({ 
   pendingAmount = 63500, 
   staff = onDistribute,
   loading 
 }: TipsDistributionProps) {
+  const { formatCurrency } = useCurrencySafe();
   const [method, setMethod] = useState<DistributionRule['method']>('hours');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewDistributions, setPreviewDistributions] = useState<TipDistribution[]>([]);

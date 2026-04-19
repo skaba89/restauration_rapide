@@ -55,6 +55,7 @@ import {
   Zap,
   Users,
 } from 'lucide-react';
+import { useCurrencySafe } from '@/lib/currency-context';
 
 // Dynamic imports for recharts
 const PieChart = dynamic(() => import('recharts').then((mod) => mod.PieChart), { ssr: false });
@@ -106,10 +107,10 @@ const categoryIcons: Record<string, any> = {
   OTHER: Wallet,
 };
 
-const formatCurrency = (amount: number) => `${amount?.toLocaleString('fr-FR') || 0} FCFA`;
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR');
 
 export default function AdminExpensesPage() {
+  const { formatCurrency } = useCurrencySafe();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -545,7 +546,7 @@ export default function AdminExpensesPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Montant (FCFA)</Label>
+              <Label>Montant</Label>
               <Input
                 type="number"
                 value={newExpense.amount}

@@ -44,7 +44,9 @@ import {
   TrendingUp,
   Users,
   ShoppingCart,
+  Plus,
 } from 'lucide-react';
+import CreateRestaurantDialog from '@/components/admin/create-restaurant-dialog';
 
 // Plan type definition
 type Plan = 'STARTER' | 'PRO' | 'BUSINESS' | 'ENTERPRISE';
@@ -91,21 +93,21 @@ export default function RestaurantsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
-  useEffect(() => {
-    async function fetchRestaurants() {
-      try {
-        const response = await fetchWithAuth('/api/admin/restaurants?limit=50');
-        if (!response.ok) {
-          throw new Error('Failed to fetch restaurants');
-        }
-        const data = await response.json();
-        setRestaurants(data.data || []);
-        setTotalRestaurants(data.total || 0);
-      } catch (error) {
-        console.error('Error fetching restaurants:', error);
-        // Demo data fallback - consistent with dashboard
-        const demoRestaurants: Restaurant[] = [
+  const fetchRestaurants = async () => {
+    try {
+      const response = await fetchWithAuth('/api/admin/restaurants?limit=50');
+      if (!response.ok) {
+        throw new Error('Failed to fetch restaurants');
+      }
+      const data = await response.json();
+      setRestaurants(data.data || []);
+      setTotalRestaurants(data.total || 0);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+      // Demo data fallback - consistent with dashboard
+      const demoRestaurants: Restaurant[] = [
           {
             id: '1',
             name: 'Le Savana',
@@ -224,8 +226,9 @@ export default function RestaurantsPage() {
       } finally {
         setIsLoading(false);
       }
-    }
-    
+  };
+
+  useEffect(() => {
     fetchRestaurants();
   }, []);
 
@@ -264,7 +267,21 @@ export default function RestaurantsPage() {
           <h1 className="text-2xl font-bold">Restaurants</h1>
           <p className="text-muted-foreground">Manage all restaurants on the platform ({totalRestaurants} total)</p>
         </div>
+        <Button
+          className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+          onClick={() => setCreateDialogOpen(true)}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Nouveau Restaurant
+        </Button>
       </div>
+
+      {/* Create Restaurant Dialog */}
+      <CreateRestaurantDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={fetchRestaurants}
+      />
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">

@@ -54,6 +54,7 @@ model User {
   organizationUsers OrganizationUser[]
   otpCodes          OtpCode[]
   refreshTokens     RefreshToken[]
+  restaurantAdmins  RestaurantAdmin[]
   sessions          Session[]
   staffProfiles     StaffProfile[]
 
@@ -104,6 +105,32 @@ model OtpCode {
 
   @@index([phone, type])
   @@index([email, type])
+}
+
+// ============================================
+// RESTAURANT ADMIN - Junction User <-> Restaurant
+// ============================================
+
+model RestaurantAdmin {
+  id             String     @id @default(cuid())
+  restaurantId   String
+  userId         String
+  role           String     @default("admin")
+  permissions    String?    @default("all")
+  isDefault      Boolean    @default(false)
+  isActive       Boolean    @default(true)
+  invitedBy      String?
+  invitedAt      DateTime?
+  acceptedAt     DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, userId])
+  @@index([userId])
+  @@index([restaurantId])
 }
 
 // ============================================
@@ -266,6 +293,7 @@ model Restaurant {
   hours               RestaurantHour[]
   settings            RestaurantSettings?
   specialHours        RestaurantSpecialHour[]
+  restaurantAdmins    RestaurantAdmin[]
   reviews             Review[]
   staffProfiles       StaffProfile[]
   tables              Table[]

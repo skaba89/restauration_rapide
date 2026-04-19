@@ -30,6 +30,7 @@ import {
   Wallet,
   Package,
   AlertTriangle,
+  UserCog,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ const navigation = [
   { name: 'Restaurants', href: '/admin/restaurants', icon: Store },
   { name: 'Menus', href: '/admin/menus', icon: Menu },
   { name: 'Utilisateurs', href: '/admin/users', icon: Users },
+  { name: 'Gestion Equipe', href: '/admin/restaurant-users', icon: UserCog },
   { name: 'RH', href: '/admin/hr', icon: Users2 },
   { name: 'Factures', href: '/admin/invoices', icon: FileText },
   { name: 'Dépenses', href: '/admin/expenses', icon: Wallet },

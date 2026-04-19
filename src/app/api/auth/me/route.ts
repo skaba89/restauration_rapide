@@ -16,35 +16,66 @@ export async function GET(request: NextRequest) {
 
     const user = authResult.user;
 
-    // Get organization restaurants from DB
     let restaurants: any[] = [];
     try {
       const { db } = await import('@/lib/db');
-      if (db && user.organizations.length > 0) {
-        const orgIds = user.organizations.map(org => org.id);
-        
-        // Get restaurants from the user's organizations
-        const orgRestaurants = await db.restaurant.findMany({
-          where: {
-            organizationId: { in: orgIds },
-            isActive: true,
-          },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            logo: true,
-            subdomain: true,
-            domain: true,
-            primaryColor: true,
-            organizationId: true,
+      if (db) {
+        // Method 1: Restaurants from organization membership
+        if (user.organizations.length > 0) {
+          const orgIds = user.organizations.map(org => org.id);
+          const orgRestaurants = await db.restaurant.findMany({
+            where: {
+              organizationId: { in: orgIds },
+              isActive: true,
+            },
+            select: {
+              id: true, name: true, slug: true, logo: true,
+              subdomain: true, domain: true, primaryColor: true,
+              organizationId: true, city: true, phone: true, address: true,
+              isActive: true, isOpen: true,
+            },
+          });
+          restaurants = orgRestaurants.map(r => ({
+            ...r,
+            role: user.organizations.find(o => o.id === r.organizationId)?.role || 'STAFF',
+          }));
+        }
+
+        // Method 2: Restaurants from RestaurantAdmin junction (more specific)
+        const adminLinks = await db.restaurantAdmin.findMany({
+          where: { userId: user.id, isActive: true },
+          include: {
+            restaurant: {
+              select: {
+                id: true, name: true, slug: true, logo: true,
+                subdomain: true, domain: true, primaryColor: true,
+                organizationId: true, city: true, phone: true, address: true,
+                isActive: true, isOpen: true,
+              },
+            },
           },
         });
 
-        restaurants = orgRestaurants.map(r => ({
-          ...r,
-          role: user.organizations.find(o => o.id === r.organizationId)?.role || 'STAFF',
-        }));
+        if (adminLinks.length > 0) {
+          const existingIds = new Set(restaurants.map(r => r.id));
+          for (const link of adminLinks) {
+            if (!existingIds.has(link.restaurant.id)) {
+              restaurants.push({
+                ...link.restaurant,
+                role: link.role,
+                isDefault: link.isDefault,
+                adminId: link.id,
+              });
+            } else {
+              // Update existing entry with admin-specific data
+              const existing = restaurants.find(r => r.id === link.restaurant.id);
+              if (existing && link.isDefault) {
+                existing.isDefault = true;
+                existing.adminId = link.id;
+              }
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('[AUTH/ME] Error fetching restaurants:', error);

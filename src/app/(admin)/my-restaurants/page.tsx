@@ -76,12 +76,11 @@ export default function MyRestaurantsPage() {
 
   // Get current user ID from session
   const [userId, setUserId] = useState<string | null>(null);
+  const [userOrgs, setUserOrgs] = useState<any[]>([]);
 
   useEffect(() => {
     // Fetch current user
-    fetch('/api/auth/me', {
-      credentials: 'include', // Include cookies
-    })
+    fetchWithAuth('/api/auth/me')
       .then(res => {
         if (!res.ok) {
           // Redirect to login if not authenticated
@@ -93,6 +92,9 @@ export default function MyRestaurantsPage() {
       .then(data => {
         if (data?.user?.id) {
           setUserId(data.user.id);
+          if (data?.user?.organizations) {
+            setUserOrgs(data.user.organizations);
+          }
           // If user has restaurants, pre-populate the list
           const userRestaurants = Array.isArray(data.user.restaurants) ? data.user.restaurants : [];
           if (userRestaurants.length > 0) {
@@ -160,7 +162,7 @@ export default function MyRestaurantsPage() {
           restaurantPhone: newPhone,
           restaurantAddress: newAddress,
           restaurantCity: newCity || 'Conakry',
-          organizationId: 'default', // Will be created or use default
+          organizationId: userOrgs.length > 0 ? userOrgs[0].id : undefined,
           userId,
         }),
       });
@@ -418,7 +420,7 @@ export default function MyRestaurantsPage() {
                     <Button
                       variant="outline"
                       className="flex-1"
-                      onClick={() => router.push(`/admin/restaurants/${restaurant.id}`)}
+                      onClick={() => router.push(`/restaurant/${restaurant.id}/dashboard`)}
                     >
                       <Settings className="w-4 h-4 mr-1" />
                       Gérer

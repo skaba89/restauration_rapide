@@ -268,7 +268,7 @@ export default function AdminMenusPage() {
       const url = menuForm.id ? `/api/admin/menus/${menuForm.id}` : '/api/admin/menus';
       const method = menuForm.id ? 'PUT' : 'POST';
       
-      const response = await fetch(url, {
+      const response = await fetchWithAuth(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -302,7 +302,7 @@ export default function AdminMenusPage() {
       const url = categoryForm.id ? `/api/admin/categories/${categoryForm.id}` : '/api/admin/categories';
       const method = categoryForm.id ? 'PUT' : 'POST';
       
-      const response = await fetch(url, {
+      const response = await fetchWithAuth(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -340,7 +340,7 @@ export default function AdminMenusPage() {
       const url = itemForm.id ? `/api/admin/items/${itemForm.id}` : '/api/admin/items';
       const method = itemForm.id ? 'PUT' : 'POST';
       
-      const response = await fetch(url, {
+      const response = await fetchWithAuth(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

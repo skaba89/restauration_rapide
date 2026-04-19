@@ -243,8 +243,31 @@ export async function canAccessRestaurant(
   // Super admin can access all
   if (user.role === 'SUPER_ADMIN') return true;
   
-  // Check if user's organization owns the restaurant
-  return user.organizations.length > 0;
+  // Check RestaurantAdmin junction table
+  try {
+    const adminAccess = await db.restaurantAdmin.findFirst({
+      where: {
+        restaurantId,
+        userId: user.id,
+        isActive: true,
+      },
+    });
+    return !!adminAccess;
+  } catch (error) {
+    console.error('[AUTH] Error checking restaurant access:', error);
+    // Fallback: check if user belongs to the restaurant's organization
+    if (user.organizations.length === 0) return false;
+    try {
+      const restaurant = await db.restaurant.findUnique({
+        where: { id: restaurantId },
+        select: { organizationId: true },
+      });
+      if (!restaurant) return false;
+      return user.organizations.some(org => org.id === restaurant.organizationId);
+    } catch {
+      return false;
+    }
+  }
 }
 
 /**

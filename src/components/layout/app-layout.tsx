@@ -212,22 +212,22 @@ function NavCategoryItem({
     <Collapsible open={isOpen || isChildActive} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
         <button
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
             isChildActive
-              ? 'bg-primary/10 text-primary dark:bg-primary/20'
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              ? 'bg-sidebar-accent text-sidebar-primary font-medium shadow-sm'
+              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
           }`}
         >
-          <category.icon className="h-4 w-4" />
-          <span className="text-sm font-medium flex-1 text-left">{category.title}</span>
-          {isOpen || isChildActive ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
+          <category.icon className="h-[18px] w-[18px]" />
+          <span className="text-[13px] font-medium flex-1 text-left">{category.title}</span>
+          <ChevronDown
+            className={`h-4 w-4 transition-transform duration-200 ${
+              isOpen || isChildActive ? 'rotate-0' : '-rotate-90'
+            }`}
+          />
         </button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pl-4 pt-1 space-y-1">
+      <CollapsibleContent className="pl-3 pt-1 pb-1 space-y-0.5">
         {category.items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
 
@@ -236,16 +236,16 @@ function NavCategoryItem({
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150 ${
                 isActive
-                  ? 'bg-primary/10 text-primary dark:bg-primary/20'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm'
+                  : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground'
               }`}
             >
               <item.icon className="h-4 w-4" />
-              <span className="text-sm">{item.title}</span>
+              <span className="text-[13px]">{item.title}</span>
               {item.badge && (
-                <span className="ml-auto bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+                <span className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-medium">
                   {item.badge}
                 </span>
               )}
@@ -262,19 +262,19 @@ function NavContent({ pathname, onNavigate, categories = NAV_CATEGORIES }: { pat
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-6 border-b">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-          <ChefHat className="h-6 w-6 text-primary-foreground" />
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-sidebar-border">
+        <div className="w-9 h-9 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-sm">
+          <ChefHat className="h-5 w-5 text-sidebar-primary-foreground" />
         </div>
         <div>
-          <h1 className="font-bold text-lg">KFM DELICE</h1>
-          <p className="text-xs text-muted-foreground">Africa-First</p>
+          <h1 className="font-bold text-[15px] text-sidebar-foreground">KFM DELICE</h1>
+          <p className="text-[11px] text-sidebar-foreground/50">Africa-First</p>
         </div>
       </div>
 
       {/* Navigation with collapsible categories */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-1">
+      <ScrollArea className="flex-1 px-3 py-3">
+        <nav className="space-y-0.5">
           {categories.map((category) => (
             <NavCategoryItem
               key={category.title}
@@ -287,13 +287,13 @@ function NavContent({ pathname, onNavigate, categories = NAV_CATEGORIES }: { pat
       </ScrollArea>
 
       {/* Restaurant Info */}
-      <div className="p-4 border-t">
-        <div className="p-3 rounded-lg bg-primary/5">
-          <p className="font-semibold text-sm">KFM DELICE</p>
-          <p className="text-xs text-muted-foreground">Conakry, Guinée</p>
+      <div className="p-4 border-t border-sidebar-border">
+        <div className="p-3 rounded-lg bg-sidebar-accent/50">
+          <p className="font-semibold text-[12px] text-sidebar-foreground">KFM DELICE</p>
+          <p className="text-[11px] text-sidebar-foreground/50">Conakry, Guinée</p>
           <div className="flex items-center gap-1 mt-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs text-green-600">Ouvert</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Ouvert</span>
           </div>
         </div>
       </div>

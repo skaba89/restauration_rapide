@@ -54,25 +54,25 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-6 border-b">
-        <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center">
-          <Bike className="h-6 w-6 text-white" />
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-sidebar-border">
+        <div className="w-9 h-9 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-sm">
+          <Bike className="h-5 w-5 text-sidebar-primary-foreground" />
         </div>
         <div>
-          <h1 className="font-bold text-lg">Driver App</h1>
+          <h1 className="font-bold text-[15px] text-sidebar-foreground">Driver App</h1>
           <button 
             onClick={() => setIsOnline(!isOnline)}
-            className={`flex items-center gap-1 text-xs ${isOnline ? 'text-green-600' : 'text-gray-500'}`}
+            className={`flex items-center gap-1 text-[11px] ${isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-sidebar-foreground/40'}`}
           >
-            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-sidebar-foreground/30'}`} />
             {isOnline ? 'En ligne' : 'Hors ligne'}
           </button>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 px-3 py-4">
-        <nav className="space-y-1">
+      <div className="flex-1 px-3 py-3">
+        <nav className="space-y-0.5">
           {DRIVER_NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
@@ -80,16 +80,16 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
                   isActive
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground font-medium shadow-sm'
+                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                 }`}
               >
-                <item.icon className="h-5 w-5" />
-                <span className="font-medium">{item.title}</span>
+                <item.icon className="h-[18px] w-[18px]" />
+                <span className="text-[13px] font-medium">{item.title}</span>
                 {item.badge && (
-                  <span className="ml-auto bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+                  <span className="ml-auto bg-sidebar-primary text-sidebar-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-medium">
                     {item.badge}
                   </span>
                 )}
@@ -100,9 +100,9 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
       </div>
 
       {/* Online/Offline Toggle */}
-      <div className="p-4 border-t">
+      <div className="p-4 border-t border-sidebar-border">
         <Button 
-          className={`w-full ${isOnline ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+          className={`w-full ${isOnline ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/80'}`}
           onClick={() => setIsOnline(!isOnline)}
         >
           <Power className="h-4 w-4 mr-2" />

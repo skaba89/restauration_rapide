@@ -96,9 +96,9 @@ export default function AdminLayout({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">Admin</p>
-                <p className="text-xs text-sidebar-foreground/60 truncate">admin@restaurant-os.com</p>
+                <p className="text-xs text-sidebar-foreground/50 truncate">admin@restaurant-os.com</p>
               </div>
-              <Button variant="ghost" size="icon" className="text-sidebar-foreground/60 hover:text-sidebar-foreground">
+              <Button variant="ghost" size="icon" className="text-sidebar-foreground/50 hover:text-sidebar-foreground">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>

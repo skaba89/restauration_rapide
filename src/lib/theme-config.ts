@@ -133,8 +133,8 @@ export const DEFAULT_THEME_CONFIG: ThemeConfig = {
   fontHeading: 'Inter',
   fontBody: 'Inter',
   borderRadius: 0.625,
-  sidebarStyle: 'dark',
-  sidebarColor: '#064e3b',
+  sidebarStyle: 'light',
+  sidebarColor: '#f8fafc',
   targetPages: ['admin', 'pos', 'kitchen', 'driver', 'public', 'organisateur'],
 };
 
@@ -343,12 +343,12 @@ export function applyTheme(config: ThemeConfig): void {
       break;
     case 'light':
     default:
-      sidebarBg = hexToOkLCH('#f5f5f4');
-      sidebarFg = hexToOkLCH('#1c1917');
-      sidebarPrimary = primaryOkLCH;
-      sidebarPrimaryFg = primaryFg;
-      sidebarAccent = hexToOkLCH('#e7e5e4');
-      sidebarAccentFg = hexToOkLCH('#1c1917');
+      sidebarBg = hexToOkLCH(config.sidebarColor || '#f8fafc');
+      sidebarFg = hexToOkLCH('#1e293b');
+      sidebarPrimary = hexToOkLCH(lightenHex(config.primaryColor, 0.08));
+      sidebarPrimaryFg = hexToOkLCH('#ffffff');
+      sidebarAccent = hexToOkLCH(lightenHex(config.secondaryColor, 0.1));
+      sidebarAccentFg = hexToOkLCH('#1e293b');
       break;
   }
 

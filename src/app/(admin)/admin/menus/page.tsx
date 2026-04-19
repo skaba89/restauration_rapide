@@ -83,6 +83,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Types
 interface MenuItem {
@@ -224,7 +225,7 @@ export default function AdminMenusPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/menus');
+      const response = await fetchWithAuth('/api/admin/menus');
       if (!response.ok) throw new Error('Failed to fetch menus');
       const data = await response.json();
       setRestaurants(data.restaurants || []);
@@ -371,7 +372,7 @@ export default function AdminMenusPage() {
     try {
       setSaving(true);
       const endpoint = deleteType === 'menu' ? 'menus' : deleteType === 'category' ? 'categories' : 'items';
-      const response = await fetch(`/api/admin/${endpoint}/${deleteId}`, {
+      const response = await fetchWithAuth(`/api/admin/${endpoint}/${deleteId}`, {
         method: 'DELETE',
       });
       
@@ -392,7 +393,7 @@ export default function AdminMenusPage() {
   // Toggle availability
   const handleToggleItem = async (itemId: string, isAvailable: boolean) => {
     try {
-      await fetch(`/api/admin/items/${itemId}`, {
+      await fetchWithAuth(`/api/admin/items/${itemId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isAvailable }),

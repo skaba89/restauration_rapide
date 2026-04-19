@@ -42,6 +42,21 @@ export function setAuthToken(token: string | null): void {
   }
 }
 
+// Drop-in replacement for native fetch() that adds auth headers automatically
+// Use this in page components instead of raw fetch() for authenticated endpoints
+export async function fetchWithAuth(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
+  };
+
+  return fetch(url, { ...options, headers });
+}
+
 // Generic fetcher with auth
 export async function apiFetch<T>(
   endpoint: string,

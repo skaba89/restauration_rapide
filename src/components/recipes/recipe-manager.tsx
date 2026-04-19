@@ -159,7 +159,7 @@ export function RecipeManager() {
   const fetchRecipes = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/recipes&search=${searchTerm}&category=${categoryFilter === 'all' ? '' : categoryFilter}`);
+      const response = await fetch(`/api/recipes?search=${searchTerm}&category=${categoryFilter === 'all' ? '' : categoryFilter}`);
       if (response.ok) {
         const data = await response.json();
         setRecipes(data.data || []);

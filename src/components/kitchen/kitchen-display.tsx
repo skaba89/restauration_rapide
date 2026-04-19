@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useKitchenSync } from '@/hooks/use-order-sync';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface KitchenOrderItem {
   id: string;
@@ -153,7 +154,7 @@ export function KitchenDisplay() {
   // Fetch orders from API
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders?status=PENDING,CONFIRMED,PREPARING,READY&limit=200');
+      const response = await fetchWithAuth('/api/orders?status=PENDING,CONFIRMED,PREPARING,READY&limit=200');
       const data = await response.json();
 
       if (data.success && data.data && Array.isArray(data.data.data)) {
@@ -247,7 +248,7 @@ export function KitchenDisplay() {
     setActionInProgress(orderId);
 
     try {
-      const response = await fetch('/api/orders', {
+      const response = await fetchWithAuth('/api/orders', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: orderId, status: newStatus }),
@@ -294,7 +295,7 @@ export function KitchenDisplay() {
     if (actionInProgress === orderId) return;
     setActionInProgress(orderId);
     try {
-      const response = await fetch(`/api/orders?id=${orderId}&reason=Cancelled from kitchen`, { method: 'DELETE' });
+      const response = await fetchWithAuth(`/api/orders?id=${orderId}&reason=Cancelled from kitchen`, { method: 'DELETE' });
       if (response.ok) {
         setOrders(prev => prev.filter(o => o.id !== orderId));
         toast.success('Commande annulée');

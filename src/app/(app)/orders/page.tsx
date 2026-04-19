@@ -32,6 +32,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useOrderSync } from '@/hooks/use-order-sync';
 import { useCurrencySafe } from '@/lib/currency-context';
+import { fetchWithAuth } from '@/lib/api-client';
 import {
   ShoppingCart,
   Search,
@@ -156,7 +157,7 @@ export default function OrdersPage() {
   // Fetch orders from shared API (same source as kitchen display)
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders?limit=50');
+      const response = await fetchWithAuth('/api/orders?limit=50');
       const result = await response.json();
       if (result.success && result.data?.data && Array.isArray(result.data.data)) {
         const apiOrders = result.data.data.map((o: any) => ({
@@ -237,7 +238,7 @@ export default function OrdersPage() {
   const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
       // Call the shared API - this triggers Pusher events to ALL roles
-      const response = await fetch('/api/orders', {
+      const response = await fetchWithAuth('/api/orders', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: orderId, status: newStatus }),
@@ -311,7 +312,7 @@ export default function OrdersPage() {
 
     try {
       // Create via API - triggers Pusher broadcast to ALL roles (admin, kitchen, client)
-      const response = await fetch('/api/orders', {
+      const response = await fetchWithAuth('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

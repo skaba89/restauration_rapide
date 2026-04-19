@@ -126,7 +126,17 @@ function StatCard({
 
 export function DarkKitchenDashboard() {
   const [isLoading, setIsLoading] = useState(true);
-  const [metrics, setMetrics] = useState([]);
+  const [metrics, setMetrics] = useState<any>({
+    todayOrders: 0,
+    avgPrepTime: 0,
+    targetPrepTime: 30,
+    deliveryEfficiency: 0,
+    activeDrivers: 0,
+    orderTypeSplit: [],
+    kitchenUtilization: 0,
+    partnerPerformance: [],
+    recentOrders: [],
+  });
 
   useEffect(() => {
     // Simulate loading

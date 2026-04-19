@@ -32,6 +32,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrencySafe } from '@/lib/currency-context';
+import { fetchWithAuth } from '@/lib/api-client';
 import {
   Search,
   Plus,
@@ -130,7 +131,7 @@ export default function MenuPage() {
       if (showLoader) setIsLoading(true);
       // Cache-busting: same approach as POS page
       const cacheBuster = `_t=${Date.now()}`;
-      const response = await fetch(`/api/admin/menu?${cacheBuster}`, {
+      const response = await fetchWithAuth(`/api/admin/menu?${cacheBuster}`, {
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' },
       });
@@ -193,7 +194,7 @@ export default function MenuPage() {
     if (!item) return;
 
     try {
-      const response = await fetch('/api/admin/menu', {
+      const response = await fetchWithAuth('/api/admin/menu', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: itemId, isAvailable: !item.isAvailable }),
@@ -263,7 +264,7 @@ export default function MenuPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/menu', {
+      const response = await fetchWithAuth('/api/admin/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -310,7 +311,7 @@ export default function MenuPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/menu', {
+      const response = await fetchWithAuth('/api/admin/menu', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingItem),
@@ -350,7 +351,7 @@ export default function MenuPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/menu?id=${itemId}`, {
+      const response = await fetchWithAuth(`/api/admin/menu?id=${itemId}`, {
         method: 'DELETE',
       });
       const result = await response.json();
@@ -380,7 +381,7 @@ export default function MenuPage() {
     if (!item) return;
 
     try {
-      const response = await fetch('/api/admin/menu', {
+      const response = await fetchWithAuth('/api/admin/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

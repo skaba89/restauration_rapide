@@ -42,6 +42,7 @@ import {
   Timer,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface OrderItem {
   id: string;
@@ -123,7 +124,7 @@ export default function OrdersManagementPage() {
         queryParams.set('status', filter);
       }
 
-      const res = await fetch(`/api/orders?${queryParams}`);
+      const res = await fetchWithAuth(`/api/orders?${queryParams}`);
       if (res.ok) {
         const data = await res.json();
         setOrders(data.data || data.orders || []);

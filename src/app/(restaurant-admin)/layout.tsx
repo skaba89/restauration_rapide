@@ -21,6 +21,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Restaurant {
   id: string;
@@ -108,7 +109,7 @@ export default function RestaurantAdminLayout({
       .catch(console.error);
 
     // Fetch pending orders count
-    fetch(`/api/orders?restaurantId=${restaurantId}&status=PENDING`)
+    fetchWithAuth(`/api/orders?restaurantId=${restaurantId}&status=PENDING`)
       .then(res => res.json())
       .then(data => {
         setPendingOrders(data.total || 0);

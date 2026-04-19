@@ -104,7 +104,13 @@ export default function AnalyticsPage() {
   const [geographicData, setGeographicData] = useState([]);
   const [hourlyOrders, setHourlyOrders] = useState([]);
   const [topOrganizations, setTopOrganizations] = useState([]);
-  const [platformMetrics, setPlatformMetrics] = useState([]);
+  const [platformMetrics, setPlatformMetrics] = useState<any>({
+    totalOrders: 0,
+    avgDeliveryTime: 0,
+    customerSatisfaction: 0,
+    totalRevenue: 0,
+    activeUsers: 0,
+  });
   const [selectedMetric, setSelectedMetric] = useState<'revenue' | 'orders' | 'users'>('revenue');
 
   useEffect(() => {

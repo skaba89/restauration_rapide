@@ -37,6 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useCurrencySafe } from '@/lib/currency-context';
 import { useOrderSync } from '@/hooks/use-order-sync';
+import { fetchWithAuth } from '@/lib/api-client';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   PENDING: { label: 'En attente', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
@@ -87,7 +88,7 @@ export default function CustomerOrdersPage() {
   // Fetch orders from shared API (same data as admin and kitchen)
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders?limit=50');
+      const response = await fetchWithAuth('/api/orders?limit=50');
       const result = await response.json();
       if (result.success && result.data?.data && Array.isArray(result.data.data)) {
         const apiOrders: Order[] = result.data.data.map((o: any) => ({

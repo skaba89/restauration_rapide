@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package, Truck, CheckCircle, Clock, MapPin, Phone, Loader2 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 
 const statusSteps = [
   { key: 'PENDING', label: 'En attente', icon: Clock },
@@ -26,7 +27,7 @@ export function OrderTracking({ orderId }: { orderId: string }) {
 
     let cancelled = false;
 
-    fetch(`/api/orders?id=${orderId}`)
+    fetchWithAuth(`/api/orders?id=${orderId}`)
       .then(res => res.json())
       .then(data => {
         if (cancelled) return;

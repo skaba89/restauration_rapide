@@ -175,7 +175,7 @@ export function PreOrderManager() {
     if (!confirm('Êtes-vous sûr de vouloir annuler cette pré-commande ?')) return;
     
     try {
-      const response = await fetch(`/api/pre-orders&id=${id}`, {
+      const response = await fetch(`/api/pre-orders?id=${id}`, {
         method: 'DELETE'
       });
       

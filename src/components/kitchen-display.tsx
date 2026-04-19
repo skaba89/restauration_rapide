@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/loading-states';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // ============================================
 // Kitchen Display Types
@@ -64,7 +65,7 @@ export function KitchenDisplay({ restaurantId, onOrderStatusChange }: KitchenDis
   const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ['kitchen-orders', restaurantId],
     queryFn: async () => {
-      const response = await fetch(`/api/orders?restaurantId=${restaurantId}&status=PENDING,CONFIRMED,PREPARING,READY`);
+      const response = await fetchWithAuth(`/api/orders?restaurantId=${restaurantId}&status=PENDING,CONFIRMED,PREPARING,READY`);
       if (!response.ok) throw new Error('Failed to fetch orders');
       return response.json();
     },
@@ -74,7 +75,7 @@ export function KitchenDisplay({ restaurantId, onOrderStatusChange }: KitchenDis
   // Update order status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const response = await fetch(`/api/orders/${orderId}/status`, {
+      const response = await fetchWithAuth(`/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),

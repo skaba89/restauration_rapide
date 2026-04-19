@@ -20,6 +20,7 @@ import {
   ArrowDownRight,
   AlertCircle,
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api-client';
 
 // Types
 interface AdminStats {
@@ -45,7 +46,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch('/api/admin/stats');
+        const response = await fetchWithAuth('/api/admin/stats');
         if (!response.ok) {
           throw new Error('Failed to fetch stats');
         }

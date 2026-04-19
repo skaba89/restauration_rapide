@@ -34,6 +34,7 @@ import {
 import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, RefreshCw, Save, X, Loader2 } from 'lucide-react';
 import { useCurrencySafe } from '@/lib/currency-context';
 import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface MenuItem {
   id: string;
@@ -84,7 +85,7 @@ export default function MenuPage() {
   const fetchMenuItems = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/menu');
+      const response = await fetchWithAuth('/api/admin/menu');
       const result = await response.json();
       
       if (result.success && result.data) {
@@ -170,7 +171,7 @@ export default function MenuPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/menu', {
+      const response = await fetchWithAuth('/api/admin/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -212,7 +213,7 @@ export default function MenuPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/menu', {
+      const response = await fetchWithAuth('/api/admin/menu', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: editingItem.id, ...formData }),
@@ -248,7 +249,7 @@ export default function MenuPage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/admin/menu?id=${editingItem.id}`, {
+      const response = await fetchWithAuth(`/api/admin/menu?id=${editingItem.id}`, {
         method: 'DELETE',
       });
       const result = await response.json();
@@ -277,7 +278,7 @@ export default function MenuPage() {
 
   const toggleAvailability = async (item: MenuItem) => {
     try {
-      const response = await fetch('/api/admin/menu', {
+      const response = await fetchWithAuth('/api/admin/menu', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: item.id, isAvailable: !item.isAvailable }),

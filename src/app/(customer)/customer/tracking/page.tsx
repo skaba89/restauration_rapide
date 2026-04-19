@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useOrderTracking } from '@/hooks/use-order-sync';
+import { fetchWithAuth } from '@/lib/api-client';
 
 const RealMap = dynamic(() => import('@/components/maps/real-map'), {
   ssr: false,
@@ -71,7 +72,7 @@ function TrackingContent() {
       return;
     }
     try {
-      const response = await fetch(`/api/orders`);
+      const response = await fetchWithAuth(`/api/orders`);
       const result = await response.json();
       if (result.success && result.data?.data) {
         const found = result.data.data.find((o: any) => o.id === orderId);

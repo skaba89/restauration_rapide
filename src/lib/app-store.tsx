@@ -8,6 +8,7 @@
 import React, { createContext, useContext, useCallback, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCartStore, CartItem } from './cart-store';
+import { fetchWithAuth } from './api-client';
 
 // ============================================
 // Types
@@ -274,9 +275,9 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         if (data.success && data.data?.length > 0) {
           return data.data[0];
         }
-        throw error;
+        throw new Error('Restaurant not found');
       } catch {
-        throw error;
+        return null;
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -290,7 +291,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch('/api/menu-categories');
         if (!res.ok) {
           console.warn('Categories API returned', res.status);
-          throw error;
+          return [];
         }
         const data = await res.json();
         // Handle various response formats
@@ -308,12 +309,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         }
         if (data.error || data.success === false) {
           console.warn('Categories API error:', data.error || data.message);
-          throw error;
+          return [];
         }
-        throw error;
-      } catch (error) {
-        console.warn('Categories fetch error:', error);
-        throw error;
+        return [];
+      } catch (err) {
+        console.warn('Categories fetch error:', err);
+        return [];
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -327,7 +328,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch('/api/menu-items');
         if (!res.ok) {
           console.warn('Menu items API returned', res.status);
-          throw error;
+          return [];
         }
         const data = await res.json();
         // Handle various response formats
@@ -345,12 +346,12 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
         }
         if (data.error || data.success === false) {
           console.warn('Menu items API error:', data.error || data.message);
-          throw error;
+          return [];
         }
-        throw error;
-      } catch (error) {
-        console.warn('Menu items fetch error:', error);
-        throw error;
+        return [];
+      } catch (err) {
+        console.warn('Menu items fetch error:', err);
+        return [];
       }
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -361,7 +362,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     queryKey: ['orders'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/orders');
+        const res = await fetchWithAuth('/api/orders');
         if (!res.ok) {
           console.warn('Orders API returned', res.status);
           return [];

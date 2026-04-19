@@ -23,6 +23,7 @@ import {
   Package,
 } from 'lucide-react';
 import Link from 'next/link';
+import { fetchWithAuth } from '@/lib/api-client';
 
 interface Order {
   id: string;
@@ -76,7 +77,7 @@ export default function RestaurantDashboardPage() {
         }
 
         // Fetch recent orders
-        const ordersRes = await fetch(`/api/orders?restaurantId=${restaurantId}&limit=10`);
+        const ordersRes = await fetchWithAuth(`/api/orders?restaurantId=${restaurantId}&limit=10`);
         if (ordersRes.ok) {
           const data = await ordersRes.json();
           setRecentOrders(data.data || data.orders || []);

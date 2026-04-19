@@ -298,16 +298,27 @@ export const POST = withAuth(async (request: NextRequest, user) => {
       }
     }
 
-    // Decrement stock for menu items
+    // Decrement stock for menu items (only if trackInventory is enabled)
     for (const item of items) {
       if (item.menuItemId) {
-        await db.menuItem.update({
-          where: { id: item.menuItemId },
-          data: {
-            quantity: { decrement: item.quantity },
-            orderCount: { increment: 1 },
-          },
-        });
+        try {
+          const menuItem = await db.menuItem.findUnique({
+            where: { id: item.menuItemId },
+            select: { trackInventory: true },
+          });
+          if (menuItem?.trackInventory) {
+            await db.menuItem.update({
+              where: { id: item.menuItemId },
+              data: {
+                quantity: { decrement: item.quantity },
+                orderCount: { increment: 1 },
+              },
+            });
+          }
+        } catch (stockErr) {
+          console.error(`[ORDER] Stock update failed for item ${item.menuItemId}:`, stockErr);
+          // Don't fail the order creation for stock tracking issues
+        }
       }
     }
 
@@ -493,7 +504,7 @@ export const DELETE = withAdminAuth(async (request: NextRequest, user) => {
 
     const order = await db.order.findUnique({
       where: { id },
-      include: { items: true },
+      include: { items: true, delivery: true },
     });
 
     if (!order) {

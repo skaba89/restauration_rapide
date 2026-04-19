@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -137,7 +137,7 @@ export default function SetupPage() {
   const [checking, setChecking] = useState(true);
   const [alreadySetup, setAlreadySetup] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     fetch('/api/setup')
       .then(r => r.json())
       .then(data => {
@@ -148,7 +148,7 @@ export default function SetupPage() {
       })
       .catch(() => {})
       .finally(() => setChecking(false));
-  });
+  }, []);
 
   if (checking) {
     return (

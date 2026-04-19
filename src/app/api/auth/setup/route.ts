@@ -101,6 +101,36 @@ export async function POST(request: Request) {
       },
     });
 
+    // Create or find Currency (Guinean Franc)
+    let currency = await db.currency.findFirst({ where: { code: 'GNF' } });
+    if (!currency) {
+      currency = await db.currency.create({
+        data: {
+          name: 'Franc Guinéen',
+          code: 'GNF',
+          symbol: 'GNF',
+          decimalPlaces: 0,
+          isActive: true,
+        },
+      });
+    }
+
+    // Create or find Country (Guinea)
+    let country = await db.country.findFirst({ where: { code: 'gn' } });
+    if (!country) {
+      country = await db.country.create({
+        data: {
+          name: 'Guinée',
+          code: 'gn',
+          dialCode: '+224',
+          currencyId: currency.id,
+          defaultLanguage: 'fr',
+          timezone: 'Africa/Conakry',
+          isActive: true,
+        },
+      });
+    }
+
     // Create a default organization for the super admin
     const organization = await db.organization.create({
       data: {
@@ -109,8 +139,8 @@ export async function POST(request: Request) {
         email: email.toLowerCase(),
         phone: phone || '+224 000 000 000',
         city: 'Conakry',
-        countryId: 'GN',
-        currencyId: 'XOF',
+        countryId: country.id,
+        currencyId: currency.id,
         description: 'Organisation principale KFM DELICE',
         isActive: true,
         settings: {

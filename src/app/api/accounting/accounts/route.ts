@@ -163,7 +163,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         { status: 400 }
       );
     }
-    throw error;
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Server error' }, { status: 500 });
   }
 });
 

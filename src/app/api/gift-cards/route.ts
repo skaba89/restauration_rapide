@@ -51,7 +51,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const search = searchParams.get('search') || '';
   const code = searchParams.get('code') || '';
 
-  let giftCards;;
+  let filteredCards = [...giftCards];
 
   // Check balance by code
   if (code) {

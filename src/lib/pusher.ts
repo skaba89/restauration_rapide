@@ -136,7 +136,7 @@ export const pusher = {
       return auth;
     } catch (error) {
       console.error('Pusher auth error:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Pusher error');
     }
   },
 };

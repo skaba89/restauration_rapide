@@ -97,7 +97,7 @@ export class StaffService {
       }));
     } catch (error) {
       console.error('Error fetching staff:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Erreur récupération staff');
     }
   }
 
@@ -119,7 +119,7 @@ export class StaffService {
       }));
     } catch (error) {
       console.error('Error fetching shifts:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Erreur récupération shifts');
     }
   }
 
@@ -143,7 +143,7 @@ export class StaffService {
       }));
     } catch (error) {
       console.error('Error fetching time entries:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Erreur récupération time entries');
     }
   }
 
@@ -165,16 +165,12 @@ export class StaffService {
       }));
     } catch (error) {
       console.error('Error fetching leave requests:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Erreur récupération congés');
     }
   }
 
   // Clock in
   static async clockIn(staffId: string, location?: string): Promise<any> {
-    if (demo) {
-      return { success: true, message: 'Clock in recorded' };
-    }
-
     try {
       const entry = await db.timeEntry.create({
         data: {
@@ -186,16 +182,12 @@ export class StaffService {
       return { success: true, entry };
     } catch (error) {
       console.error('Error clocking in:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Erreur clock in');
     }
   }
 
   // Clock out
   static async clockOut(staffId: string, location?: string): Promise<any> {
-    if (demo) {
-      return { success: true, message: 'Clock out recorded' };
-    }
-
     try {
       const activeEntry = await db.timeEntry.findFirst({
         where: { staffId, clockOut: null },
@@ -217,7 +209,7 @@ export class StaffService {
       return { success: true, entry };
     } catch (error) {
       console.error('Error clocking out:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Erreur clock out');
     }
   }
 
@@ -229,10 +221,6 @@ export class StaffService {
     endDate: Date,
     reason?: string
   ): Promise<any> {
-    if (demo) {
-      return { success: true, message: 'Leave request created' };
-    }
-
     try {
       const request = await db.leaveRequest.create({
         data: {
@@ -247,14 +235,14 @@ export class StaffService {
       return { success: true, request };
     } catch (error) {
       console.error('Error creating leave request:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Erreur création congé');
     }
   }
 
   // Get staff statistics
   static async getStaffStats(organizationId: string): Promise<any> {
-    const staff = await this.getStaff(organizationId, demo);
-    const timeEntries = await this.getTimeEntries(organizationId, demo);
+    const staff = await this.getStaff(organizationId);
+    const timeEntries = await this.getTimeEntries(organizationId);
 
     return {
       totalStaff: staff.length,

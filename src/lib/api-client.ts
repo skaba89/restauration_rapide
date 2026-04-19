@@ -78,11 +78,10 @@ export async function apiFetch<T>(
   const data = await response.json();
 
   if (!response.ok) {
-    const error: ApiError = {
-      message: data.error || 'Une erreur est survenue',
-      status: response.status,
-      details: data.details,
-    };
+    const errorMessage = data.error || 'Une erreur est survenue';
+    const error = new Error(errorMessage);
+    (error as any).status = response.status;
+    (error as any).details = data.details;
     throw error;
   }
 

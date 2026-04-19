@@ -64,7 +64,7 @@ export class InventoryService {
       }));
     } catch (error) {
       console.error('Error fetching inventory:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Unknown error');
     }
   }
 
@@ -85,7 +85,7 @@ export class InventoryService {
       }));
     } catch (error) {
       console.error('Error fetching stock movements:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Unknown error');
     }
   }
 
@@ -164,7 +164,7 @@ export class InventoryService {
       return { success: true, message: 'Movement recorded' };
     } catch (error) {
       console.error('Error adding stock movement:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Unknown error');
     }
   }
 

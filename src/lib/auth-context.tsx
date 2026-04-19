@@ -180,6 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push('/driver');
         break;
       case 'SUPER_ADMIN':
+      case 'ADMIN':
         router.push('/admin');
         break;
       default:

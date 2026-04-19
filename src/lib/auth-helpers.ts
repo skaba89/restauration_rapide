@@ -212,15 +212,16 @@ export async function getUserByEmailOrPhone(identifier: string) {
 export function hasPermission(userRole: string, requiredRoles: string[]): boolean {
   const roleHierarchy: Record<string, number> = {
     SUPER_ADMIN: 100,
+    ADMIN: 90,
     ORG_ADMIN: 80,
     ORG_MANAGER: 70,
     RESTAURANT_ADMIN: 60,
     RESTAURANT_MANAGER: 50,
+    SUPPORT: 40,
     STAFF: 30,
     KITCHEN: 30,
     DRIVER: 20,
     CUSTOMER: 10,
-    SUPPORT: 40,
   };
 
   const userLevel = roleHierarchy[userRole] || 0;

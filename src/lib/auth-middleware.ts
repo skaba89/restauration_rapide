@@ -266,7 +266,7 @@ export function getRateLimitKey(request: NextRequest, user: AuthenticatedUser | 
  * Admin-only middleware
  */
 export const withAdminAuth = (handler: Parameters<typeof withAuth>[0]) =>
-  withRole(['SUPER_ADMIN', 'ORG_ADMIN', 'RESTAURANT_ADMIN'], handler);
+  withRole(['SUPER_ADMIN', 'ADMIN', 'ORG_ADMIN', 'RESTAURANT_ADMIN'], handler);
 
 /**
  * Manager-only middleware

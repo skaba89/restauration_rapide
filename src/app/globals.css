@@ -45,102 +45,86 @@
 }
 
 /* ============================================
-   LIGHT MODE — Menthe Vive
-   Teal frais + Jaune vif + Vert foncé
-   Restaurant moderne, frais et dynamique
+   LIGHT MODE — Indigo Commercial
+   Professional, modern, marketable palette
+   Primary: Indigo #4F46E5
+   Accent: Orange #F97316
    ============================================ */
 :root {
   --radius: 0.625rem;
-  /* Background — blanc menthe très léger */
-  --background: oklch(0.9839 1.39 185.97);
-  --foreground: oklch(0.3861 5.90 188.42);
-  /* Cards & Popovers */
+  --background: oklch(0.985 0.30 274);
+  --foreground: oklch(0.17 0.02 260);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.3861 5.90 188.42);
+  --card-foreground: oklch(0.17 0.02 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.3861 5.90 188.42);
-  /* Primary — teal menthe frais */
-  --primary: oklch(0.6904 12.43 181.16);
+  --popover-foreground: oklch(0.17 0.02 260);
+  --primary: oklch(0.5106 23.01 276.97);
   --primary-foreground: oklch(1 0 0);
-  /* Secondary — menthe clair */
-  --secondary: oklch(0.9665 1.73 183.54);
-  --secondary-foreground: oklch(0.3861 5.90 188.42);
-  /* Muted — surface menthe ultra léger */
-  --muted: oklch(0.9836 1.42 180.72);
-  --muted-foreground: oklch(0.5109 8.61 186.39);
-  /* Accent — jaune vif */
-  --accent: oklch(0.9097 14.40 95.11);
-  --accent-foreground: oklch(0.2264 0.00 89.88);
-  /* Destructive & UI */
-  --destructive: oklch(0.6368 20.78 25.33);
-  --border: oklch(0.9527 4.98 180.80);
-  --input: oklch(0.9527 4.98 180.80);
-  --ring: oklch(0.6904 12.43 181.16);
+  --secondary: oklch(0.9619 1.79 272.31);
+  --secondary-foreground: oklch(0.30 0.04 277);
+  --muted: oklch(0.965 0.30 274);
+  --muted-foreground: oklch(0.48 0.02 260);
+  --accent: oklch(0.95 0.80 274);
+  --accent-foreground: oklch(0.30 0.04 277);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.915 0.80 274);
+  --input: oklch(0.915 0.80 274);
+  --ring: oklch(0.5106 23.01 276.97);
+  --chart-1: oklch(0.5106 23.01 276.97);
+  --chart-2: oklch(0.6239 17.52 282.69);
+  --chart-3: oklch(0.7049 18.67 47.60);
+  --chart-4: oklch(0.7148 12.57 215.22);
+  --chart-5: oklch(0.6056 21.89 292.72);
 
-  /* Charts — 5 couleurs harmonisées menthe */
-  --chart-1: oklch(0.6904 12.43 181.16); /* Teal menthe */
-  --chart-2: oklch(0.9097 14.40 95.11);  /* Jaune vif */
-  --chart-3: oklch(0.7067 12.32 212.10); /* Cyan */
-  --chart-4: oklch(0.4763 7.96 175.07);   /* Vert foncé */
-  --chart-5: oklch(0.9113 6.00 63.70);    /* Pêche */
-
-  /* Sidebar — vert foncé premium */
-  --sidebar: oklch(0.3689 6.22 175.79);
-  --sidebar-foreground: oklch(0.9665 1.73 183.54);
-  --sidebar-primary: oklch(0.9097 14.40 95.11);
-  --sidebar-primary-foreground: oklch(0.2264 0.00 89.88);
-  --sidebar-accent: oklch(0.3977 6.27 179.54);
-  --sidebar-accent-foreground: oklch(0.9665 1.73 183.54);
-  --sidebar-border: oklch(0.4764 7.92 177.36);
-  --sidebar-ring: oklch(0.9097 14.40 95.11);
+  /* Sidebar lumineux — fond blanc cassé, texte foncé */
+  --sidebar: oklch(0.9885 0.54 274.97);
+  --sidebar-foreground: oklch(0.2795 3.68 260.03);
+  --sidebar-primary: oklch(0.5106 23.01 276.97);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9654 1.64 274.82);
+  --sidebar-accent-foreground: oklch(0.2795 3.68 260.03);
+  --sidebar-border: oklch(0.9231 1.65 274.81);
+  --sidebar-ring: oklch(0.5106 23.01 276.97);
 }
 
 /* ============================================
-   DARK MODE — Nuit Menthe
-   Fond sombre teal + menthe lumineuse + jaune doré
+   DARK MODE — Deep Indigo
+   Professional dark theme with saturated accents
    ============================================ */
 .dark {
-  /* Background — teal très sombre */
-  --background: oklch(0.2773 4.47 192.52);
-  --foreground: oklch(0.9527 4.98 180.80);
-  /* Cards */
-  --card: oklch(0.3272 5.15 189.04);
-  --card-foreground: oklch(0.9527 4.98 180.80);
-  --popover: oklch(0.3272 5.15 189.04);
-  --popover-foreground: oklch(0.9527 4.98 180.80);
-  /* Primary — teal lumineux */
-  --primary: oklch(0.7845 13.25 181.91);
-  --primary-foreground: oklch(1 0 0);
-  /* Secondary — teal moyen */
-  --secondary: oklch(0.3861 5.90 188.42);
-  --secondary-foreground: oklch(0.9527 4.98 180.80);
-  /* Muted */
-  --muted: oklch(0.3286 4.89 188.84);
-  --muted-foreground: oklch(0.8549 12.51 181.07);
-  /* Accent — jaune doré */
-  --accent: oklch(0.8790 15.34 91.61);
-  --accent-foreground: oklch(0.2264 0.00 89.88);
-  /* Destructive & UI */
-  --destructive: oklch(0.65 18.00 25.00);
-  --border: oklch(0.3757 5.17 189.51);
-  --input: oklch(0.3757 5.17 189.51);
-  --ring: oklch(0.7845 13.25 181.91);
-  /* Charts */
-  --chart-1: oklch(0.7845 13.25 181.91); /* Teal lumineux */
-  --chart-2: oklch(0.8790 15.34 91.61);  /* Jaune doré */
-  --chart-3: oklch(0.8549 12.51 181.07); /* Menthe clair */
-  --chart-4: oklch(0.5109 8.61 186.39);  /* Teal moyen */
-  --chart-5: oklch(0.9113 6.00 63.70);   /* Pêche */
+  --background: oklch(0.155 0.02 260);
+  --foreground: oklch(0.96 0.30 274);
+  --card: oklch(0.205 0.02 274);
+  --card-foreground: oklch(0.96 0.30 274);
+  --popover: oklch(0.205 0.02 274);
+  --popover-foreground: oklch(0.96 0.30 274);
+  --primary: oklch(0.5768 19.75 280.55);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.27 0.02 274);
+  --secondary-foreground: oklch(0.96 0.30 274);
+  --muted: oklch(0.27 0.02 260);
+  --muted-foreground: oklch(0.65 0.02 260);
+  --accent: oklch(0.27 0.02 274);
+  --accent-foreground: oklch(0.96 0.30 274);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(0.30 0.02 274);
+  --input: oklch(0.30 0.02 274);
+  --ring: oklch(0.5768 19.75 280.55);
+  --chart-1: oklch(0.5768 19.75 280.55);
+  --chart-2: oklch(0.65 17.00 283);
+  --chart-3: oklch(0.7049 18.67 47.60);
+  --chart-4: oklch(0.7148 12.57 215.22);
+  --chart-5: oklch(0.6056 21.89 292.72);
 
-  /* Sidebar — teal très profond */
-  --sidebar: oklch(0.2221 3.46 194.95);
-  --sidebar-foreground: oklch(0.9527 4.98 180.80);
-  --sidebar-primary: oklch(0.7845 13.25 181.91);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.3272 5.15 189.04);
-  --sidebar-accent-foreground: oklch(0.9527 4.98 180.80);
-  --sidebar-border: oklch(0.3757 5.17 189.51);
-  --sidebar-ring: oklch(0.7845 13.25 181.91);
+  /* Sidebar sombre — fond profond indigo */
+  --sidebar: oklch(0.16 0.03 274);
+  --sidebar-foreground: oklch(0.92 0.50 274);
+  --sidebar-primary: oklch(0.5768 19.75 280.55);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.22 0.03 274);
+  --sidebar-accent-foreground: oklch(0.92 0.50 274);
+  --sidebar-border: oklch(0.28 0.03 274);
+  --sidebar-ring: oklch(0.5768 19.75 280.55);
 }
 
 @layer base {
@@ -172,14 +156,14 @@
    Glassmorphism utility classes
    ============================================ */
 .glass-card {
-  background: oklch(0.9839 1.39 185.97 / 70%);
+  background: oklch(0.985 0.30 274 / 70%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid oklch(0.9527 4.98 180.80 / 30%);
+  border: 1px solid oklch(0.915 0.80 274 / 30%);
 }
 .dark .glass-card {
-  background: oklch(0.3272 5.15 189.04 / 70%);
-  border: 1px solid oklch(0.3757 5.17 189.51 / 30%);
+  background: oklch(0.205 0.02 274 / 70%);
+  border: 1px solid oklch(0.30 0.02 274 / 30%);
 }
 
 /* ============================================
@@ -198,28 +182,28 @@
 .animate-delay-400 { animation-delay: 0.4s; opacity: 0; }
 
 /* ============================================
-   Gradient CTA button — Teal → Jaune
+   Gradient CTA button — Indigo + Orange
    ============================================ */
 .btn-gradient {
-  background: linear-gradient(135deg, oklch(0.6904 12.43 181.16), oklch(0.9097 14.40 95.11));
+  background: linear-gradient(135deg, oklch(0.5106 23.01 276.97), oklch(0.7049 18.67 47.60));
   color: white;
   transition: all 0.2s ease;
 }
 .btn-gradient:hover {
-  background: linear-gradient(135deg, oklch(0.75 13.00 181), oklch(0.93 15.00 95));
-  box-shadow: 0 4px 16px oklch(0.6904 12.43 181.16 / 30%);
+  background: linear-gradient(135deg, oklch(0.58 24.00 277), oklch(0.76 19.00 48));
+  box-shadow: 0 4px 16px oklch(0.7049 18.67 47.60 / 30%);
 }
 
 /* ============================================
    Sidebar glassmorphism — premium blur + glow
    ============================================ */
 .sidebar-glow {
-  box-shadow: 2px 0 20px oklch(0.3689 6.22 175.79 / 20%);
+  box-shadow: 2px 0 20px oklch(0.16 0.03 274 / 15%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
 .dark .sidebar-glow {
-  box-shadow: 2px 0 24px oklch(0.2221 3.46 194.95 / 30%);
+  box-shadow: 2px 0 24px oklch(0.16 0.03 274 / 25%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }

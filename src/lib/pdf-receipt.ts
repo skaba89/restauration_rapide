@@ -321,7 +321,7 @@ class PDFReceiptService {
       margin-top: 15px;
       padding: 10px;
       background: #f9f9f9;
-      border-left: 3px solid #00B4A0;
+      border-left: 3px solid #f97316;
       font-size: 11px;
     }
     
@@ -361,7 +361,7 @@ class PDFReceiptService {
       width: 100%;
       margin-top: 20px;
       padding: 10px;
-      background: #00B4A0;
+      background: #f97316;
       color: white;
       border: none;
       border-radius: 4px;

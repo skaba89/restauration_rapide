@@ -20,7 +20,7 @@ export default async function Image() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #F0FDFA 0%, #FFFFFF 50%, #FEF9C3 100%)',
+          background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 50%, #FEF3C7 100%)',
           fontFamily: 'system-ui, sans-serif',
         }}
       >
@@ -33,7 +33,7 @@ export default async function Image() {
             right: 0,
             bottom: 0,
             background:
-              'radial-gradient(circle at 20% 80%, rgba(0, 180, 160, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(250, 204, 21, 0.1) 0%, transparent 50%)',
+              'radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(251, 191, 36, 0.1) 0%, transparent 50%)',
           }}
         />
 
@@ -52,12 +52,12 @@ export default async function Image() {
               width: 80,
               height: 80,
               borderRadius: 20,
-              background: 'linear-gradient(135deg, #00B4A0 0%, #1C6B5A 100%)',
+              background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginRight: 20,
-              boxShadow: '0 10px 40px rgba(0, 180, 160, 0.3)',
+              boxShadow: '0 10px 40px rgba(249, 115, 22, 0.3)',
             }}
           >
             <span
@@ -211,7 +211,7 @@ export default async function Image() {
                 style={{
                   fontSize: 36,
                   fontWeight: 'bold',
-                  color: '#00B4A0',
+                  color: '#F97316',
                 }}
               >
                 {stat.value}
@@ -243,11 +243,11 @@ export default async function Image() {
             style={{
               padding: '14px 32px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, #00B4A0 0%, #1C6B5A 100%)',
+              background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 20px rgba(0, 180, 160, 0.3)',
+              boxShadow: '0 4px 20px rgba(249, 115, 22, 0.3)',
             }}
           >
             <span

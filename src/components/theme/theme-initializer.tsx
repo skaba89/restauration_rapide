@@ -2,13 +2,14 @@
 
 // ============================================
 // Restaurant OS - Theme Initializer
-// Forces migration to Menthe Vive palette v6
+// Applies saved theme config from localStorage on app load
+// Forces migration to original Commercial Pro palette
 // ============================================
 
 import { useEffect } from 'react';
 import { loadThemeConfig, applyTheme, DEFAULT_THEME_CONFIG } from '@/lib/theme-config';
 
-const THEME_VERSION = 'restaurant-os-theme-v6';
+const THEME_VERSION = 'restaurant-os-theme-v7';
 
 export function ThemeInitializer() {
   useEffect(() => {

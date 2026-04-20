@@ -2,22 +2,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
   <defs>
     <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#00B4A0"/>
-      <stop offset="100%" style="stop-color:#1C6B5A"/>
+      <stop offset="0%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#ea580c"/>
     </linearGradient>
   </defs>
-
+  
   <!-- Background -->
   <rect width="32" height="32" rx="4.8" fill="url(#grad)"/>
-
+  
   <!-- Plate -->
   <ellipse cx="16" cy="17.6" rx="11.2" ry="8" fill="#ffffff" opacity="0.95"/>
-  <ellipse cx="16" cy="17.6" rx="8.96" ry="6.4" fill="#E8F8F5"/>
-
+  <ellipse cx="16" cy="17.6" rx="8.96" ry="6.4" fill="#fef3c7"/>
+  
   <!-- Food -->
-  <ellipse cx="16" cy="16.64" rx="5.76" ry="3.84" fill="#FFE066"/>
-  <ellipse cx="16" cy="16" rx="3.84" ry="2.56" fill="#FCD34D"/>
-
+  <ellipse cx="16" cy="16.64" rx="5.76" ry="3.84" fill="#fbbf24"/>
+  <ellipse cx="16" cy="16" rx="3.84" ry="2.56" fill="#f59e0b"/>
+  
   <!-- Steam -->
   <g stroke="#ffffff" stroke-width="0.48" fill="none" opacity="0.8">
     <path d="M12.16 11.2 Q13.44 8.96 12.16 6.4"/>

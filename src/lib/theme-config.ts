@@ -33,12 +33,12 @@ export interface ColorPreset {
 
 export const COLOR_PRESETS: ColorPreset[] = [
   {
-    name: 'savane-doree',
-    label: 'Savane Dorée',
-    primary: '#1E3A5F',
-    secondary: '#FFF7ED',
-    accent: '#D97706',
-    description: 'Bleu nuit + Ambre doré, premium restaurant Africa-First',
+    name: 'doux-chaleureux',
+    label: 'Doux & Chaleureux',
+    primary: '#1C3D5A',
+    secondary: '#F0C75E',
+    accent: '#8B1A1A',
+    description: 'Bleu marine + Ambre doré + Rouge profond, restaurant africain chaleureux',
   },
   {
     name: 'ocean-bleu',
@@ -124,15 +124,15 @@ export type FontOption = (typeof FONT_OPTIONS)[number];
 // --- Default Config ---
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  preset: 'savane-doree',
-  primaryColor: '#1E3A5F',
-  secondaryColor: '#FFF7ED',
-  accentColor: '#D97706',
+  preset: 'doux-chaleureux',
+  primaryColor: '#1C3D5A',
+  secondaryColor: '#F0C75E',
+  accentColor: '#8B1A1A',
   fontHeading: 'Plus Jakarta Sans',
   fontBody: 'Outfit',
   borderRadius: 0.625,
   sidebarStyle: 'dark',
-  sidebarColor: '#0F2740',
+  sidebarColor: '#152D42',
   targetPages: ['admin', 'pos', 'kitchen', 'driver', 'public', 'organisateur'],
 };
 

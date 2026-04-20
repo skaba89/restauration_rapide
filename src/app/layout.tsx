@@ -187,7 +187,7 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "msapplication-TileColor": "#1E3A5F",
+    "msapplication-TileColor": "#1C3D5A",
     "msapplication-config": "/browserconfig.xml",
   },
 };
@@ -195,8 +195,8 @@ export const metadata: Metadata = {
 // Viewport configuration
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#1E3A5F" },
-    { media: "(prefers-color-scheme: dark)", color: "#0B1426" },
+    { media: "(prefers-color-scheme: light)", color: "#1C3D5A" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F1E2D" },
   ],
   width: "device-width",
   initialScale: 1,

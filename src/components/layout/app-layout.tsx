@@ -288,7 +288,7 @@ function NavContent({ pathname, onNavigate, categories = NAV_CATEGORIES }: { pat
 
       {/* Restaurant Info */}
       <div className="p-4 border-t border-sidebar-border">
-        <div className="p-3 rounded-lg bg-sidebar-accent/50">
+        <div className="p-3 rounded-lg sidebar-glass-section border border-sidebar-border/30">
           <p className="font-semibold text-[12px] text-sidebar-foreground">KFM DELICE</p>
           <p className="text-[11px] text-sidebar-foreground/50">Conakry, Guinée</p>
           <div className="flex items-center gap-1 mt-2">

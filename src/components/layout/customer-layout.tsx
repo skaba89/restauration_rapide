@@ -108,7 +108,7 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
 
       {/* Loyalty Card */}
       <div className="p-4 border-t border-sidebar-border">
-        <div className="p-3 rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+        <div className="p-3 rounded-lg bg-sidebar-primary/90 text-sidebar-primary-foreground backdrop-blur-sm border border-sidebar-border/20">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] opacity-80">Points Fidélité</span>
             <Gift className="h-4 w-4" />

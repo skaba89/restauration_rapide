@@ -196,11 +196,26 @@
 }
 
 /* ============================================
-   Sidebar glow effect (premium feel)
+   Sidebar glassmorphism — premium blur + glow
    ============================================ */
 .sidebar-glow {
   box-shadow: 2px 0 20px oklch(0.2677 5.58 251 / 15%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .dark .sidebar-glow {
-  box-shadow: 2px 0 20px oklch(0.1765 3.46 267 / 25%);
+  box-shadow: 2px 0 24px oklch(0.1765 3.46 267 / 25%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Sidebar inner sections — subtle glass cards */
+.sidebar-glass-section {
+  background: oklch(1 0 0 / 4%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0.75rem;
+}
+.dark .sidebar-glass-section {
+  background: oklch(1 0 0 / 5%);
 }

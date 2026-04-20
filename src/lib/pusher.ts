@@ -42,35 +42,49 @@ async function getPusherInstance() {
   return _pusher;
 }
 
-// Channel names
+// Channel names (must match pusher-server.ts and use-pusher.ts conventions)
 export const CHANNELS = {
-  ORDERS: (organizationId: string) => `orders-${organizationId}`,
-  DELIVERIES: (organizationId: string) => `deliveries-${organizationId}`,
+  // Order updates
+  ORDERS: (restaurantId: string) => `restaurant-${restaurantId}-orders`,
+  ORDER_STATUS: (orderId: string) => `order-${orderId}-status`,
+
+  // Delivery tracking
+  DELIVERY: (deliveryId: string) => `delivery-${deliveryId}`,
+  DRIVER_LOCATION: (driverId: string) => `driver-${driverId}-location`,
+
+  // Kitchen display
   KITCHEN: (restaurantId: string) => `kitchen-${restaurantId}`,
-  DRIVER: (driverId: string) => `driver-${driverId}`,
-  NOTIFICATIONS: (userId: string) => `notifications-${userId}`,
+
+  // Reservations
+  RESERVATIONS: (restaurantId: string) => `restaurant-${restaurantId}-reservations`,
+
+  // Notifications
+  USER_NOTIFICATIONS: (userId: string) => `user-${userId}-notifications`,
 } as const;
 
-// Event names
+// Event names (must match pusher-server.ts and use-pusher.ts conventions)
 export const EVENTS = {
   // Orders
   ORDER_CREATED: 'order:created',
   ORDER_UPDATED: 'order:updated',
   ORDER_STATUS_CHANGED: 'order:status_changed',
   ORDER_CANCELLED: 'order:cancelled',
-  
-  // Deliveries
-  DELIVERY_ASSIGNED: 'delivery:assigned',
+
+  // Delivery
+  DRIVER_ASSIGNED: 'delivery:driver_assigned',
+  DRIVER_LOCATION_UPDATE: 'delivery:location_update',
   DELIVERY_STATUS_CHANGED: 'delivery:status_changed',
-  DRIVER_LOCATION_UPDATED: 'driver:location_updated',
-  
+
   // Kitchen
-  KITCHEN_ORDER_NEW: 'kitchen:order_new',
-  KITCHEN_ORDER_READY: 'kitchen:order_ready',
-  
+  NEW_ORDER_ITEM: 'kitchen:new_item',
+  ITEM_READY: 'kitchen:item_ready',
+
+  // Reservations
+  RESERVATION_CREATED: 'reservation:created',
+  RESERVATION_UPDATED: 'reservation:updated',
+
   // Notifications
   NOTIFICATION_NEW: 'notification:new',
-  NOTIFICATION_READ: 'notification:read',
 } as const;
 
 /**

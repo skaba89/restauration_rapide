@@ -245,7 +245,7 @@ export function AdminSidebarContent({ pathname, onNavigate }: AdminSidebarConten
 
       {/* Admin Info */}
       <div className="p-4 border-t border-sidebar-border">
-        <div className="p-3 rounded-lg bg-sidebar-accent/50">
+        <div className="p-3 rounded-lg sidebar-glass-section border border-sidebar-border/30">
           <div className="flex items-center gap-2">
             <Database className="h-4 w-4 text-sidebar-primary" />
             <span className="font-semibold text-[12px] text-sidebar-foreground">SaaS Multi-Tenant</span>

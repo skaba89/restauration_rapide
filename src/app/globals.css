@@ -45,102 +45,102 @@
 }
 
 /* ============================================
-   LIGHT MODE — Doux & Chaleureux
-   Bleu marine profond + Ambre doré + Rouge profond
-   Restaurant africain, chaleureux et apaisant
+   LIGHT MODE — Menthe Vive
+   Teal frais + Jaune vif + Vert foncé
+   Restaurant moderne, frais et dynamique
    ============================================ */
 :root {
   --radius: 0.625rem;
-  /* Background — crème chaud africain */
-  --background: oklch(0.9868 1.18 79.79);
-  --foreground: oklch(0.2178 0.00 89.88);
+  /* Background — blanc menthe très léger */
+  --background: oklch(0.9839 1.39 185.97);
+  --foreground: oklch(0.3861 5.90 188.42);
   /* Cards & Popovers */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2178 0.00 89.88);
+  --card-foreground: oklch(0.3861 5.90 188.42);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2178 0.00 89.88);
-  /* Primary — bleu marine profond */
-  --primary: oklch(0.3499 6.40 247.33);
+  --popover-foreground: oklch(0.3861 5.90 188.42);
+  /* Primary — teal menthe frais */
+  --primary: oklch(0.6904 12.43 181.16);
   --primary-foreground: oklch(1 0 0);
-  /* Secondary — ambre doré */
-  --secondary: oklch(0.8454 13.13 87.95);
-  --secondary-foreground: oklch(0.2178 0.00 89.88);
-  /* Muted — beige doux */
-  --muted: oklch(0.8808 4.51 79.27);
-  --muted-foreground: oklch(0.50 2.00 80.00);
-  /* Accent — rouge profond africain */
-  --accent: oklch(0.4158 14.84 26.59);
-  --accent-foreground: oklch(1 0 0);
+  /* Secondary — menthe clair */
+  --secondary: oklch(0.9665 1.73 183.54);
+  --secondary-foreground: oklch(0.3861 5.90 188.42);
+  /* Muted — surface menthe ultra léger */
+  --muted: oklch(0.9836 1.42 180.72);
+  --muted-foreground: oklch(0.5109 8.61 186.39);
+  /* Accent — jaune vif */
+  --accent: oklch(0.9097 14.40 95.11);
+  --accent-foreground: oklch(0.2264 0.00 89.88);
   /* Destructive & UI */
-  --destructive: oklch(0.5386 19.37 26.72);
-  --border: oklch(0.9278 2.75 83.54);
-  --input: oklch(0.9278 2.75 83.54);
-  --ring: oklch(0.3499 6.40 247.33);
+  --destructive: oklch(0.6368 20.78 25.33);
+  --border: oklch(0.9527 4.98 180.80);
+  --input: oklch(0.9527 4.98 180.80);
+  --ring: oklch(0.6904 12.43 181.16);
 
-  /* Charts — 5 couleurs harmonisées */
-  --chart-1: oklch(0.3499 6.40 247.33); /* Bleu marine */
-  --chart-2: oklch(0.8454 13.13 87.95); /* Ambre doré */
-  --chart-3: oklch(0.4158 14.84 26.59); /* Rouge profond */
-  --chart-4: oklch(0.5234 13.47 144.17); /* Vert forêt */
-  --chart-5: oklch(0.6770 7.69 295.75); /* Lavande */
+  /* Charts — 5 couleurs harmonisées menthe */
+  --chart-1: oklch(0.6904 12.43 181.16); /* Teal menthe */
+  --chart-2: oklch(0.9097 14.40 95.11);  /* Jaune vif */
+  --chart-3: oklch(0.7067 12.32 212.10); /* Cyan */
+  --chart-4: oklch(0.4763 7.96 175.07);   /* Vert foncé */
+  --chart-5: oklch(0.9113 6.00 63.70);    /* Pêche */
 
-  /* Sidebar — bleu marine foncé premium */
-  --sidebar: oklch(0.2887 4.90 246.88);
-  --sidebar-foreground: oklch(0.93 1.00 80.00);
-  --sidebar-primary: oklch(0.8454 13.13 87.95);
-  --sidebar-primary-foreground: oklch(0.15 2.00 247.00);
-  --sidebar-accent: oklch(0.3965 7.79 246.25);
-  --sidebar-accent-foreground: oklch(0.93 1.00 80.00);
-  --sidebar-border: oklch(0.3965 7.79 246.25);
-  --sidebar-ring: oklch(0.8454 13.13 87.95);
+  /* Sidebar — vert foncé premium */
+  --sidebar: oklch(0.3689 6.22 175.79);
+  --sidebar-foreground: oklch(0.9665 1.73 183.54);
+  --sidebar-primary: oklch(0.9097 14.40 95.11);
+  --sidebar-primary-foreground: oklch(0.2264 0.00 89.88);
+  --sidebar-accent: oklch(0.3977 6.27 179.54);
+  --sidebar-accent-foreground: oklch(0.9665 1.73 183.54);
+  --sidebar-border: oklch(0.4764 7.92 177.36);
+  --sidebar-ring: oklch(0.9097 14.40 95.11);
 }
 
 /* ============================================
-   DARK MODE — Nuit Chaleureuse Africaine
-   Fond sombre chaud + ambre + bleu marine clair
+   DARK MODE — Nuit Menthe
+   Fond sombre teal + menthe lumineuse + jaune doré
    ============================================ */
 .dark {
-  /* Background — brun foncé chaleureux */
-  --background: oklch(0.2070 2.26 305.22);
-  --foreground: oklch(0.93 1.50 80.00);
+  /* Background — teal très sombre */
+  --background: oklch(0.2773 4.47 192.52);
+  --foreground: oklch(0.9527 4.98 180.80);
   /* Cards */
-  --card: oklch(0.2430 2.72 300.76);
-  --card-foreground: oklch(0.93 1.50 80.00);
-  --popover: oklch(0.2430 2.72 300.76);
-  --popover-foreground: oklch(0.93 1.50 80.00);
-  /* Primary — bleu marine éclairé */
-  --primary: oklch(0.5092 7.84 242.30);
+  --card: oklch(0.3272 5.15 189.04);
+  --card-foreground: oklch(0.9527 4.98 180.80);
+  --popover: oklch(0.3272 5.15 189.04);
+  --popover-foreground: oklch(0.9527 4.98 180.80);
+  /* Primary — teal lumineux */
+  --primary: oklch(0.7845 13.25 181.91);
   --primary-foreground: oklch(1 0 0);
-  /* Secondary — ambre assombri */
-  --secondary: oklch(0.3190 3.25 72.03);
-  --secondary-foreground: oklch(0.93 1.50 80.00);
+  /* Secondary — teal moyen */
+  --secondary: oklch(0.3861 5.90 188.42);
+  --secondary-foreground: oklch(0.9527 4.98 180.80);
   /* Muted */
-  --muted: oklch(0.2682 1.18 67.29);
-  --muted-foreground: oklch(0.6575 2.60 79.67);
-  /* Accent — rouge atténué */
-  --accent: oklch(0.3405 7.84 22.12);
-  --accent-foreground: oklch(0.93 1.50 80.00);
+  --muted: oklch(0.3286 4.89 188.84);
+  --muted-foreground: oklch(0.8549 12.51 181.07);
+  /* Accent — jaune doré */
+  --accent: oklch(0.8790 15.34 91.61);
+  --accent-foreground: oklch(0.2264 0.00 89.88);
   /* Destructive & UI */
   --destructive: oklch(0.65 18.00 25.00);
-  --border: oklch(0.3324 1.12 67.43);
-  --input: oklch(0.3324 1.12 67.43);
-  --ring: oklch(0.5092 7.84 242.30);
+  --border: oklch(0.3757 5.17 189.51);
+  --input: oklch(0.3757 5.17 189.51);
+  --ring: oklch(0.7845 13.25 181.91);
   /* Charts */
-  --chart-1: oklch(0.5092 7.84 242.30);
-  --chart-2: oklch(0.75 12.00 88.00);
-  --chart-3: oklch(0.55 12.00 27.00);
-  --chart-4: oklch(0.55 11.00 145.00);
-  --chart-5: oklch(0.60 8.00 296.00);
+  --chart-1: oklch(0.7845 13.25 181.91); /* Teal lumineux */
+  --chart-2: oklch(0.8790 15.34 91.61);  /* Jaune doré */
+  --chart-3: oklch(0.8549 12.51 181.07); /* Menthe clair */
+  --chart-4: oklch(0.5109 8.61 186.39);  /* Teal moyen */
+  --chart-5: oklch(0.9113 6.00 63.70);   /* Pêche */
 
-  /* Sidebar — bleu nuit très profond */
-  --sidebar: oklch(0.2297 3.59 249.63);
-  --sidebar-foreground: oklch(0.90 1.20 80.00);
-  --sidebar-primary: oklch(0.85 13.00 88.00);
-  --sidebar-primary-foreground: oklch(0.18 3.00 247.00);
-  --sidebar-accent: oklch(0.30 4.00 248.00);
-  --sidebar-accent-foreground: oklch(0.90 1.20 80.00);
-  --sidebar-border: oklch(0.35 4.00 248.00);
-  --sidebar-ring: oklch(0.85 13.00 88.00);
+  /* Sidebar — teal très profond */
+  --sidebar: oklch(0.2221 3.46 194.95);
+  --sidebar-foreground: oklch(0.9527 4.98 180.80);
+  --sidebar-primary: oklch(0.7845 13.25 181.91);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.3272 5.15 189.04);
+  --sidebar-accent-foreground: oklch(0.9527 4.98 180.80);
+  --sidebar-border: oklch(0.3757 5.17 189.51);
+  --sidebar-ring: oklch(0.7845 13.25 181.91);
 }
 
 @layer base {
@@ -172,14 +172,14 @@
    Glassmorphism utility classes
    ============================================ */
 .glass-card {
-  background: oklch(0.9868 1.18 79.79 / 70%);
+  background: oklch(0.9839 1.39 185.97 / 70%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid oklch(0.9278 2.75 83.54 / 30%);
+  border: 1px solid oklch(0.9527 4.98 180.80 / 30%);
 }
 .dark .glass-card {
-  background: oklch(0.2430 2.72 300.76 / 70%);
-  border: 1px solid oklch(0.3324 1.12 67.43 / 30%);
+  background: oklch(0.3272 5.15 189.04 / 70%);
+  border: 1px solid oklch(0.3757 5.17 189.51 / 30%);
 }
 
 /* ============================================
@@ -198,28 +198,28 @@
 .animate-delay-400 { animation-delay: 0.4s; opacity: 0; }
 
 /* ============================================
-   Gradient CTA button
+   Gradient CTA button — Teal → Jaune
    ============================================ */
 .btn-gradient {
-  background: linear-gradient(135deg, oklch(0.3499 6.40 247.33), oklch(0.8454 13.13 87.95));
+  background: linear-gradient(135deg, oklch(0.6904 12.43 181.16), oklch(0.9097 14.40 95.11));
   color: white;
   transition: all 0.2s ease;
 }
 .btn-gradient:hover {
-  background: linear-gradient(135deg, oklch(0.42 7.50 247), oklch(0.88 14.00 88));
-  box-shadow: 0 4px 16px oklch(0.8454 13.13 87.95 / 30%);
+  background: linear-gradient(135deg, oklch(0.75 13.00 181), oklch(0.93 15.00 95));
+  box-shadow: 0 4px 16px oklch(0.6904 12.43 181.16 / 30%);
 }
 
 /* ============================================
    Sidebar glassmorphism — premium blur + glow
    ============================================ */
 .sidebar-glow {
-  box-shadow: 2px 0 20px oklch(0.2887 4.90 246.88 / 20%);
+  box-shadow: 2px 0 20px oklch(0.3689 6.22 175.79 / 20%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
 .dark .sidebar-glow {
-  box-shadow: 2px 0 24px oklch(0.2297 3.59 249.63 / 30%);
+  box-shadow: 2px 0 24px oklch(0.2221 3.46 194.95 / 30%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }

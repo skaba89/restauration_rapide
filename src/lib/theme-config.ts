@@ -33,12 +33,12 @@ export interface ColorPreset {
 
 export const COLOR_PRESETS: ColorPreset[] = [
   {
-    name: 'doux-chaleureux',
-    label: 'Doux & Chaleureux',
-    primary: '#1C3D5A',
-    secondary: '#F0C75E',
-    accent: '#8B1A1A',
-    description: 'Bleu marine + Ambre doré + Rouge profond, restaurant africain chaleureux',
+    name: 'menthe-vive',
+    label: 'Menthe Vive',
+    primary: '#00B4A0',
+    secondary: '#E8F8F5',
+    accent: '#FFE066',
+    description: 'Teal frais + Jaune vif + Vert foncé, restaurant moderne et dynamique',
   },
   {
     name: 'ocean-bleu',
@@ -124,15 +124,15 @@ export type FontOption = (typeof FONT_OPTIONS)[number];
 // --- Default Config ---
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  preset: 'doux-chaleureux',
-  primaryColor: '#1C3D5A',
-  secondaryColor: '#F0C75E',
-  accentColor: '#8B1A1A',
+  preset: 'menthe-vive',
+  primaryColor: '#00B4A0',
+  secondaryColor: '#E8F8F5',
+  accentColor: '#FFE066',
   fontHeading: 'Plus Jakarta Sans',
   fontBody: 'Outfit',
   borderRadius: 0.625,
   sidebarStyle: 'dark',
-  sidebarColor: '#152D42',
+  sidebarColor: '#0F4A3E',
   targetPages: ['admin', 'pos', 'kitchen', 'driver', 'public', 'organisateur'],
 };
 
@@ -324,12 +324,12 @@ export function applyTheme(config: ThemeConfig): void {
 
   switch (config.sidebarStyle) {
     case 'dark':
-      sidebarBg = hexToOkLCH(config.sidebarColor || '#0F2740');
-      sidebarFg = hexToOkLCH('#E2E8F0');
-      sidebarPrimary = hexToOkLCH(config.accentColor || '#D97706');
-      sidebarPrimaryFg = hexToOkLCH('#ffffff');
-      sidebarAccent = hexToOkLCH(lightenHex(config.sidebarColor || '#0F2740', 0.08));
-      sidebarAccentFg = hexToOkLCH('#E2E8F0');
+      sidebarBg = hexToOkLCH(config.sidebarColor || '#0F4A3E');
+      sidebarFg = hexToOkLCH('#E8F8F5');
+      sidebarPrimary = hexToOkLCH(config.accentColor || '#FFE066');
+      sidebarPrimaryFg = hexToOkLCH('#1C1C1C');
+      sidebarAccent = hexToOkLCH(lightenHex(config.sidebarColor || '#0F4A3E', 0.08));
+      sidebarAccentFg = hexToOkLCH('#E8F8F5');
       break;
     case 'colored':
       sidebarBg = hexToOkLCH(config.sidebarColor);
@@ -359,7 +359,7 @@ export function applyTheme(config: ThemeConfig): void {
 
   // Border colors for sidebar
   const sidebarBorder = config.sidebarStyle === 'dark'
-    ? hexToOkLCH(lightenHex(config.sidebarColor || '#0F2740', 0.08))
+    ? hexToOkLCH(lightenHex(config.sidebarColor || '#0F4A3E', 0.08))
     : config.sidebarStyle === 'colored'
     ? hexToOkLCH(lightenHex(config.sidebarColor, 0.15))
     : hexToOkLCH('#E2E8F0');

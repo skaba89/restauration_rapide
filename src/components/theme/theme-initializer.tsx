@@ -2,13 +2,13 @@
 
 // ============================================
 // Restaurant OS - Theme Initializer
-// Forces migration to Doux & Chaleureux palette v5
+// Forces migration to Menthe Vive palette v6
 // ============================================
 
 import { useEffect } from 'react';
 import { loadThemeConfig, applyTheme, DEFAULT_THEME_CONFIG } from '@/lib/theme-config';
 
-const THEME_VERSION = 'restaurant-os-theme-v5';
+const THEME_VERSION = 'restaurant-os-theme-v6';
 
 export function ThemeInitializer() {
   useEffect(() => {

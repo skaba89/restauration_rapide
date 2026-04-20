@@ -51,7 +51,7 @@ function SimpleBarChart({ data, height = 200 }: { data: number[]; height?: numbe
       {data.map((value, i) => (
         <div
           key={i}
-          className="flex-1 bg-orange-500 rounded-t transition-all hover:bg-orange-600"
+          className="flex-1 bg-teal-500 rounded-t transition-all hover:bg-teal-600"
           style={{ height: `${(value / max) * 100}%` }}
           title={`${value.toLocaleString('fr-FR')}`}
         />
@@ -203,7 +203,7 @@ export function AdvancedDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <RefreshCw className="w-8 h-8 animate-spin text-orange-500" />
+        <RefreshCw className="w-8 h-8 animate-spin text-teal-500" />
       </div>
     );
   }
@@ -356,7 +356,7 @@ export function AdvancedDashboard() {
                   {stats.products.top.map((product, i) => (
                     <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-sm font-medium text-orange-600">
+                        <span className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-sm font-medium text-teal-600">
                           {i + 1}
                         </span>
                         <span>{product.name}</span>
@@ -465,7 +465,7 @@ export function AdvancedDashboard() {
               <div className="space-y-4">
                 {stats.products.top.map((product, i) => (
                   <div key={i} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                    <span className="text-2xl font-bold text-orange-500">#{i + 1}</span>
+                    <span className="text-2xl font-bold text-teal-500">#{i + 1}</span>
                     <div className="flex-1">
                       <p className="font-medium">{product.name}</p>
                       <div className="flex gap-4 text-sm text-gray-500">
@@ -476,7 +476,7 @@ export function AdvancedDashboard() {
                     <div className="w-32">
                       <div className="h-2 bg-gray-200 rounded-full">
                         <div 
-                          className="h-2 bg-orange-500 rounded-full"
+                          className="h-2 bg-teal-500 rounded-full"
                           style={{ width: `${stats.products.top[0]?.revenue > 0 ? (product.revenue / stats.products.top[0].revenue) * 100 : 0}%` }}
                         />
                       </div>

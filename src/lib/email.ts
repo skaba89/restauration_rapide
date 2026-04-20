@@ -161,17 +161,17 @@ const emailTemplates = {
     .header {
       text-align: center;
       padding-bottom: 20px;
-      border-bottom: 2px solid #f97316;
+      border-bottom: 2px solid #00B4A0;
       margin-bottom: 20px;
     }
     .header h1 {
-      color: #f97316;
+      color: #00B4A0;
       margin: 0;
     }
     .logo {
       font-size: 24px;
       font-weight: bold;
-      color: #f97316;
+      color: #00B4A0;
     }
     .content {
       margin-bottom: 20px;
@@ -179,14 +179,14 @@ const emailTemplates = {
     .button {
       display: inline-block;
       padding: 12px 24px;
-      background-color: #f97316;
+      background-color: #00B4A0;
       color: #ffffff;
       text-decoration: none;
       border-radius: 4px;
       font-weight: bold;
     }
     .button:hover {
-      background-color: #ea580c;
+      background-color: #1C6B5A;
     }
     .footer {
       text-align: center;
@@ -215,7 +215,7 @@ const emailTemplates = {
       font-size: 18px;
     }
     .highlight {
-      background-color: #fff7ed;
+      background-color: #f0fdfa;
       padding: 15px;
       border-radius: 4px;
       margin: 15px 0;

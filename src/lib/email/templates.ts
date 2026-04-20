@@ -447,7 +447,7 @@ function baseTemplate(content: string, title: string, locale: Locale, trackingId
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
     .email-header {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      background: linear-gradient(135deg, #00B4A0 0%, #1C6B5A 100%);
       padding: 30px 40px;
       text-align: center;
     }
@@ -494,30 +494,30 @@ function baseTemplate(content: string, title: string, locale: Locale, trackingId
       margin: 0 0 15px;
     }
     a {
-      color: #f97316;
+      color: #00B4A0;
       text-decoration: underline;
     }
     a:hover {
-      color: #ea580c;
+      color: #1C6B5A;
     }
     .button {
       display: inline-block;
       padding: 14px 32px;
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      background: linear-gradient(135deg, #00B4A0 0%, #1C6B5A 100%);
       color: #ffffff !important;
       text-decoration: none !important;
       border-radius: 8px;
       font-weight: 600;
       font-size: 16px;
       text-align: center;
-      box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 180, 160, 0.4);
     }
     .button:hover {
-      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+      background: linear-gradient(135deg, #1C6B5A 0%, #145546 100%);
     }
     .highlight-box {
-      background-color: #fff7ed;
-      border-left: 4px solid #f97316;
+      background-color: #f0fdfa;
+      border-left: 4px solid #00B4A0;
       border-radius: 0 8px 8px 0;
       padding: 20px;
       margin: 20px 0;
@@ -566,7 +566,7 @@ function baseTemplate(content: string, title: string, locale: Locale, trackingId
     }
     .total-row td {
       font-size: 18px;
-      color: #f97316;
+      color: #00B4A0;
     }
     .badge {
       display: inline-block;
@@ -1036,9 +1036,9 @@ export const emailTemplates = {
           ` : ''}
         </table>
         
-        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #fed7aa; text-align: center;">
-          <p style="margin: 0; font-size: 14px; color: #9a3412;">${tr.reservation.confirmationCode}</p>
-          <p style="margin: 10px 0 0; font-size: 24px; font-weight: bold; color: #c2410c; letter-spacing: 2px;">${data.confirmationCode}</p>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #99f6e4; text-align: center;">
+          <p style="margin: 0; font-size: 14px; color: #0F4137;">${tr.reservation.confirmationCode}</p>
+          <p style="margin: 10px 0 0; font-size: 24px; font-weight: bold; color: #145546; letter-spacing: 2px;">${data.confirmationCode}</p>
         </div>
       </div>
       
@@ -1081,7 +1081,7 @@ export const emailTemplates = {
       
       <div class="highlight-box text-center">
         <p style="margin: 0;">${tr.passwordReset.clickButton}</p>
-        <p style="margin: 15px 0 0; color: #c2410c; font-weight: 600;">${tr.passwordReset.expiresIn} ${data.expiresIn}</p>
+        <p style="margin: 15px 0 0; color: #145546; font-weight: 600;">${tr.passwordReset.expiresIn} ${data.expiresIn}</p>
       </div>
       
       <div class="text-center mt-4">

@@ -168,7 +168,7 @@ export default function RestaurantAdminLayout({
 
       {/* Sidebar - z-50 above everything */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-sidebar border-r border-sidebar-border z-50 transform transition-transform duration-200 ease-in-out ${
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-sidebar border-r border-sidebar-border z-50 transform transition-transform duration-200 ease-in-out sidebar-glow ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >

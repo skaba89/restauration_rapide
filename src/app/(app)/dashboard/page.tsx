@@ -27,6 +27,7 @@ import {
 import { SalesChart } from '@/components/dashboard/sales-chart';
 import { dashboardApi } from '@/lib/api-client';
 import { useCurrencySafe } from '@/lib/currency-context';
+import { KPICard } from '@/components/dashboard/animated-counter';
 
 // Dashboard data type
 interface DashboardData {
@@ -182,115 +183,61 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards — Animated with variants */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Revenue */}
-        <Card className="relative overflow-hidden">
-          <CardContent className="p-6">
-            {isLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Chiffre d'affaires</p>
-                  <p className="text-2xl font-bold">{formatCurrency(dashboardData?.summary?.revenue || 0)}</p>
-                  <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>+12.5%</span>
+        {isLoading ? (
+          <>
+            {[1, 2, 3, 4].map(i => (
+              <Card key={i} className="relative overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-16" />
                   </div>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Orders */}
-        <Card>
-          <CardContent className="p-6">
-            {isLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-16" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Commandes</p>
-                  <p className="text-2xl font-bold">{dashboardData?.summary?.ordersCount || 0}</p>
-                  <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>+8.3%</span>
-                  </div>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                  <ShoppingCart className="h-6 w-6 text-orange-600" />
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Customers */}
-        <Card>
-          <CardContent className="p-6">
-            {isLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-16" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Clients</p>
-                  <p className="text-2xl font-bold">{dashboardData?.summary?.customersCount || 0}</p>
-                  <div className="flex items-center gap-1 mt-1 text-green-600 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>+5.2%</span>
-                  </div>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Average Order Value */}
-        <Card>
-          <CardContent className="p-6">
-            {isLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-24" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Panier moyen</p>
-                  <p className="text-2xl font-bold">{formatCurrency(dashboardData?.summary?.avgOrderValue || 0)}</p>
-                  <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
-                    <TrendingDown className="h-4 w-4" />
-                    <span>-2.1%</span>
-                  </div>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                  <CreditCard className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </>
+        ) : (
+          <>
+            <KPICard
+              title="Chiffre d'affaires"
+              value={dashboardData?.summary?.revenue || 0}
+              prefix={formatCurrency(0).replace(/[\d.,\s]/g, '').trim() || ''}
+              decimals={0}
+              icon={DollarSign}
+              trend={12.5}
+              description="vs période précédente"
+              variant="amber"
+            />
+            <KPICard
+              title="Commandes"
+              value={dashboardData?.summary?.ordersCount || 0}
+              icon={ShoppingCart}
+              trend={8.3}
+              description={`${dashboardData?.summary?.deliveriesCount || 0} livraisons`}
+              variant="blue"
+            />
+            <KPICard
+              title="Clients"
+              value={dashboardData?.summary?.customersCount || 0}
+              icon={Users}
+              trend={5.2}
+              description={`${dashboardData?.summary?.newCustomersCount || 0} nouveaux`}
+              variant="emerald"
+            />
+            <KPICard
+              title="Panier moyen"
+              value={dashboardData?.summary?.avgOrderValue || 0}
+              decimals={0}
+              icon={CreditCard}
+              trend={-2.1}
+              description="vs période précédente"
+              variant="rose"
+            />
+          </>
+        )}
       </div>
 
       {/* Order Status Cards */}

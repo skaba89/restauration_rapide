@@ -6,7 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-outfit);
+  --font-heading: var(--font-plus-jakarta);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -44,86 +45,87 @@
 }
 
 /* ============================================
-   LIGHT MODE — Indigo Commercial
-   Professional, modern, marketable palette
-   Primary: Indigo #4F46E5
-   Accent: Orange #F97316
+   LIGHT MODE — Savane Dorée
+   Bleu nuit profond + Ambre doré + Orange vif
+   Professional, warm, marketable restaurant palette
    ============================================ */
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.985 0.30 274);
+  --background: oklch(0.984 0.36 241);
   --foreground: oklch(0.17 0.02 260);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.17 0.02 260);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.17 0.02 260);
-  --primary: oklch(0.5106 23.01 276.97);
+  --primary: oklch(0.3462 7.36 255.90);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.9619 1.79 272.31);
-  --secondary-foreground: oklch(0.30 0.04 277);
-  --muted: oklch(0.965 0.30 274);
-  --muted-foreground: oklch(0.48 0.02 260);
-  --accent: oklch(0.95 0.80 274);
-  --accent-foreground: oklch(0.30 0.04 277);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.915 0.80 274);
-  --input: oklch(0.915 0.80 274);
-  --ring: oklch(0.5106 23.01 276.97);
-  --chart-1: oklch(0.5106 23.01 276.97);
-  --chart-2: oklch(0.6239 17.52 282.69);
-  --chart-3: oklch(0.7049 18.67 47.60);
-  --chart-4: oklch(0.7148 12.57 215.22);
-  --chart-5: oklch(0.6056 21.89 292.72);
+  --secondary: oklch(0.9796 1.57 75.28);
+  --secondary-foreground: oklch(0.3462 7.36 255.90);
+  --muted: oklch(0.9841 0.36 241);
+  --muted-foreground: oklch(0.5544 4.08 257);
+  --accent: oklch(0.9796 1.57 75.28);
+  --accent-foreground: oklch(0.3462 7.36 255.90);
+  --destructive: oklch(0.5771 21.49 27.36);
+  --border: oklch(0.9288 1.27 254);
+  --input: oklch(0.9288 1.27 254);
+  --ring: oklch(0.3462 7.36 255.90);
 
-  /* Sidebar lumineux — fond blanc cassé, texte foncé */
-  --sidebar: oklch(0.9885 0.54 274.97);
-  --sidebar-foreground: oklch(0.2795 3.68 260.03);
-  --sidebar-primary: oklch(0.5106 23.01 276.97);
+  /* Charts — harmonized 5-color palette */
+  --chart-1: oklch(0.3462 7.36 255.90);
+  --chart-2: oklch(0.6231 18.81 259.71);
+  --chart-3: oklch(0.6658 15.73 58.41);
+  --chart-4: oklch(0.596 12.77 163.26);
+  --chart-5: oklch(0.5858 22.18 17.60);
+
+  /* Sidebar — dark premium blue night */
+  --sidebar: oklch(0.2677 5.58 251.34);
+  --sidebar-foreground: oklch(0.9288 1.27 254);
+  --sidebar-primary: oklch(0.6658 15.73 58.41);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.9654 1.64 274.82);
-  --sidebar-accent-foreground: oklch(0.2795 3.68 260.03);
-  --sidebar-border: oklch(0.9231 1.65 274.81);
-  --sidebar-ring: oklch(0.5106 23.01 276.97);
+  --sidebar-accent: oklch(0.3423 7.10 251.71);
+  --sidebar-accent-foreground: oklch(0.9288 1.27 254);
+  --sidebar-border: oklch(0.3462 7.36 255.90);
+  --sidebar-ring: oklch(0.6658 15.73 58.41);
 }
 
 /* ============================================
-   DARK MODE — Deep Indigo
-   Professional dark theme with saturated accents
+   DARK MODE — Deep Blue Night
+   Premium dark theme, warm accent gold
    ============================================ */
 .dark {
-  --background: oklch(0.155 0.02 260);
-  --foreground: oklch(0.96 0.30 274);
-  --card: oklch(0.205 0.02 274);
-  --card-foreground: oklch(0.96 0.30 274);
-  --popover: oklch(0.205 0.02 274);
-  --popover-foreground: oklch(0.96 0.30 274);
-  --primary: oklch(0.5768 19.75 280.55);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.27 0.02 274);
-  --secondary-foreground: oklch(0.96 0.30 274);
-  --muted: oklch(0.27 0.02 260);
-  --muted-foreground: oklch(0.65 0.02 260);
-  --accent: oklch(0.27 0.02 274);
-  --accent-foreground: oklch(0.96 0.30 274);
+  --background: oklch(0.1932 3.91 263);
+  --foreground: oklch(0.9288 1.27 254);
+  --card: oklch(0.2322 4.61 262);
+  --card-foreground: oklch(0.9288 1.27 254);
+  --popover: oklch(0.2322 4.61 262);
+  --popover-foreground: oklch(0.9288 1.27 254);
+  --primary: oklch(0.6231 18.81 259.71);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.2848 5.28 260);
+  --secondary-foreground: oklch(0.9288 1.27 254);
+  --muted: oklch(0.2848 5.28 260);
+  --muted-foreground: oklch(0.7107 3.52 256);
+  --accent: oklch(0.2848 5.28 260);
+  --accent-foreground: oklch(0.9288 1.27 254);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(0.30 0.02 274);
-  --input: oklch(0.30 0.02 274);
-  --ring: oklch(0.5768 19.75 280.55);
-  --chart-1: oklch(0.5768 19.75 280.55);
-  --chart-2: oklch(0.65 17.00 283);
-  --chart-3: oklch(0.7049 18.67 47.60);
-  --chart-4: oklch(0.7148 12.57 215.22);
-  --chart-5: oklch(0.6056 21.89 292.72);
+  --border: oklch(0.3462 7.36 255.90);
+  --input: oklch(0.3462 7.36 255.90);
+  --ring: oklch(0.6231 18.81 259.71);
+  --chart-1: oklch(0.6231 18.81 259.71);
+  --chart-2: oklch(0.65 16.00 262);
+  --chart-3: oklch(0.6658 15.73 58.41);
+  --chart-4: oklch(0.596 12.77 163.26);
+  --chart-5: oklch(0.5858 22.18 17.60);
 
-  /* Sidebar sombre — fond profond indigo */
-  --sidebar: oklch(0.16 0.03 274);
-  --sidebar-foreground: oklch(0.92 0.50 274);
-  --sidebar-primary: oklch(0.5768 19.75 280.55);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.22 0.03 274);
-  --sidebar-accent-foreground: oklch(0.92 0.50 274);
-  --sidebar-border: oklch(0.28 0.03 274);
-  --sidebar-ring: oklch(0.5768 19.75 280.55);
+  /* Sidebar — deeper blue night */
+  --sidebar: oklch(0.1765 3.46 267);
+  --sidebar-foreground: oklch(0.869 2.00 252);
+  --sidebar-primary: oklch(0.7686 16.46 70.19);
+  --sidebar-primary-foreground: oklch(0.1765 3.46 267);
+  --sidebar-accent: oklch(0.252 4.58 260);
+  --sidebar-accent-foreground: oklch(0.869 2.00 252);
+  --sidebar-border: oklch(0.3462 7.36 255.90);
+  --sidebar-ring: oklch(0.7686 16.46 70.19);
 }
 
 @layer base {
@@ -132,6 +134,10 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Heading font override */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-plus-jakarta), sans-serif;
   }
 }
 
@@ -145,4 +151,56 @@
 }
 [data-slot="collapsible-content"][data-state="closed"] {
   height: 0;
+}
+
+/* ============================================
+   Glassmorphism utility classes
+   ============================================ */
+.glass-card {
+  background: oklch(1 0 0 / 70%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid oklch(1 0 0 / 20%);
+}
+.dark .glass-card {
+  background: oklch(0.2322 4.61 262 / 70%);
+  border: 1px solid oklch(0.3462 7.36 255.90 / 30%);
+}
+
+/* ============================================
+   Animated counter utility (for KPIs)
+   ============================================ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+.animate-delay-100 { animation-delay: 0.1s; opacity: 0; }
+.animate-delay-200 { animation-delay: 0.2s; opacity: 0; }
+.animate-delay-300 { animation-delay: 0.3s; opacity: 0; }
+.animate-delay-400 { animation-delay: 0.4s; opacity: 0; }
+
+/* ============================================
+   Gradient CTA button
+   ============================================ */
+.btn-gradient {
+  background: linear-gradient(135deg, oklch(0.3462 7.36 255.90), oklch(0.6658 15.73 58.41));
+  color: white;
+  transition: all 0.2s ease;
+}
+.btn-gradient:hover {
+  background: linear-gradient(135deg, oklch(0.40 8.00 255), oklch(0.72 17.00 58));
+  box-shadow: 0 4px 16px oklch(0.6658 15.73 58.41 / 30%);
+}
+
+/* ============================================
+   Sidebar glow effect (premium feel)
+   ============================================ */
+.sidebar-glow {
+  box-shadow: 2px 0 20px oklch(0.2677 5.58 251 / 15%);
+}
+.dark .sidebar-glow {
+  box-shadow: 2px 0 20px oklch(0.1765 3.46 267 / 25%);
 }

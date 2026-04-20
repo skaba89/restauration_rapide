@@ -33,27 +33,27 @@ export interface ColorPreset {
 
 export const COLOR_PRESETS: ColorPreset[] = [
   {
-    name: 'commercial-pro',
-    label: 'Commercial Pro',
-    primary: '#4F46E5',
-    secondary: '#EEF2FF',
-    accent: '#F97316',
-    description: 'Indigo professionnel + accent orange, idéal commercial',
+    name: 'savane-doree',
+    label: 'Savane Dorée',
+    primary: '#1E3A5F',
+    secondary: '#FFF7ED',
+    accent: '#D97706',
+    description: 'Bleu nuit + Ambre doré, premium restaurant Africa-First',
   },
   {
-    name: 'bleu-trust',
-    label: 'Bleu Trust',
-    primary: '#2563EB',
-    secondary: '#DBEAFE',
-    accent: '#F59E0B',
-    description: 'Bleu confiance + accent ambre, SaaS premium',
+    name: 'ocean-bleu',
+    label: 'Ocean Bleu',
+    primary: '#0369A1',
+    secondary: '#F0F9FF',
+    accent: '#F97316',
+    description: 'Bleu océan profond + accent orange, confiance et fraîcheur',
   },
   {
     name: 'teal-fresh',
     label: 'Teal Frais',
     primary: '#0D9488',
-    secondary: '#CCFBF1',
-    accent: '#F43F5E',
+    secondary: '#F0FDFA',
+    accent: '#E11D48',
     description: 'Teal dynamique + accent rose, moderne et vif',
   },
   {
@@ -68,57 +68,55 @@ export const COLOR_PRESETS: ColorPreset[] = [
     name: 'violet-royal',
     label: 'Violet Royal',
     primary: '#7C3AED',
-    secondary: '#EDE9FE',
-    accent: '#F97316',
-    description: 'Violet premium + accent orange, luxe et innovation',
+    secondary: '#F5F3FF',
+    accent: '#D97706',
+    description: 'Violet premium + accent ambre, luxe et innovation',
   },
   {
     name: 'rouge-passion',
     label: 'Rouge Passion',
     primary: '#DC2626',
     secondary: '#FEF2F2',
-    accent: '#1D4ED8',
+    accent: '#0369A1',
     description: 'Rouge vibrant + accent bleu, audacieux et fort',
   },
   {
     name: 'rose-flamme',
     label: 'Rose Flamme',
-    primary: '#EC4899',
+    primary: '#DB2777',
     secondary: '#FDF2F8',
-    accent: '#6366F1',
-    description: 'Rose tendance + accent indigo, style startup',
+    accent: '#1E3A5F',
+    description: 'Rose tendance + accent bleu nuit, style startup',
   },
   {
     name: 'ambre-dore',
     label: 'Ambre Doré',
-    primary: '#D97706',
+    primary: '#B45309',
     secondary: '#FFFBEB',
-    accent: '#4F46E5',
-    description: 'Ambre riche + accent indigo, chaleur et professionnalisme',
+    accent: '#1E3A5F',
+    description: 'Ambre riche + accent bleu, chaleur et professionnalisme',
   },
   {
     name: 'slate-moderne',
     label: 'Slate Moderne',
-    primary: '#475569',
+    primary: '#334155',
     secondary: '#F1F5F9',
-    accent: '#4F46E5',
-    description: 'Neutre élégant + accent indigo, minimaliste',
+    accent: '#D97706',
+    description: 'Neutre élégant + accent ambre, minimaliste',
   },
 ];
 
 // --- Font Options ---
 
 export const FONT_OPTIONS = [
-  'Inter',
-  'Poppins',
-  'Montserrat',
-  'Roboto',
-  'Playfair Display',
-  'Nunito',
-  'Lato',
   'Plus Jakarta Sans',
   'Outfit',
+  'Poppins',
+  'Montserrat',
+  'Inter',
   'DM Sans',
+  'Nunito',
+  'Lato',
 ] as const;
 
 export type FontOption = (typeof FONT_OPTIONS)[number];
@@ -126,15 +124,15 @@ export type FontOption = (typeof FONT_OPTIONS)[number];
 // --- Default Config ---
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  preset: 'commercial-pro',
-  primaryColor: '#4F46E5',
-  secondaryColor: '#EEF2FF',
-  accentColor: '#F97316',
-  fontHeading: 'Inter',
-  fontBody: 'Inter',
+  preset: 'savane-doree',
+  primaryColor: '#1E3A5F',
+  secondaryColor: '#FFF7ED',
+  accentColor: '#D97706',
+  fontHeading: 'Plus Jakarta Sans',
+  fontBody: 'Outfit',
   borderRadius: 0.625,
-  sidebarStyle: 'light',
-  sidebarColor: '#FAFBFF',
+  sidebarStyle: 'dark',
+  sidebarColor: '#0F2740',
   targetPages: ['admin', 'pos', 'kitchen', 'driver', 'public', 'organisateur'],
 };
 
@@ -326,12 +324,12 @@ export function applyTheme(config: ThemeConfig): void {
 
   switch (config.sidebarStyle) {
     case 'dark':
-      sidebarBg = hexToOkLCH(config.sidebarColor || '#1e1b4b');
-      sidebarFg = hexToOkLCH('#e0e7ff');
-      sidebarPrimary = primaryOkLCH;
-      sidebarPrimaryFg = primaryFg;
-      sidebarAccent = hexToOkLCH(lightenHex(config.sidebarColor || '#1e1b4b', 0.1));
-      sidebarAccentFg = hexToOkLCH('#e0e7ff');
+      sidebarBg = hexToOkLCH(config.sidebarColor || '#0F2740');
+      sidebarFg = hexToOkLCH('#E2E8F0');
+      sidebarPrimary = hexToOkLCH(config.accentColor || '#D97706');
+      sidebarPrimaryFg = hexToOkLCH('#ffffff');
+      sidebarAccent = hexToOkLCH(lightenHex(config.sidebarColor || '#0F2740', 0.08));
+      sidebarAccentFg = hexToOkLCH('#E2E8F0');
       break;
     case 'colored':
       sidebarBg = hexToOkLCH(config.sidebarColor);
@@ -361,10 +359,10 @@ export function applyTheme(config: ThemeConfig): void {
 
   // Border colors for sidebar
   const sidebarBorder = config.sidebarStyle === 'dark'
-    ? hexToOkLCH(lightenHex(config.sidebarColor || '#1e1b4b', 0.1))
+    ? hexToOkLCH(lightenHex(config.sidebarColor || '#0F2740', 0.08))
     : config.sidebarStyle === 'colored'
     ? hexToOkLCH(lightenHex(config.sidebarColor, 0.15))
-    : hexToOkLCH('#e2e5f1');
+    : hexToOkLCH('#E2E8F0');
   root.style.setProperty('--sidebar-border', sidebarBorder);
 
   // 5. Load Google Fonts
